@@ -6,17 +6,20 @@ import qualified Data.Set as S
 import Lib (run)
 import System.IO
 
-runDay01 :: (String -> Integer) -> IO Integer
-runDay01 f = run "Day01-input.txt" f
+runDay01Part1 :: IO Integer
+runDay01Part1 = run "Day01-input.txt" part1
 
-part1 :: String -> Integer
-part1 = sum . map parseLine . lines
+runDay01Part2 :: IO Integer
+runDay01Part2 = run "Day01-input.txt" part2
 
-part2 :: String -> Integer
+part1 :: [String] -> Integer
+part1 = sum . map parseLine
+
+part2 :: [String] -> Integer
 part2 = findFirstDup S.empty . sums
 
-sums :: String -> [Integer]
-sums = scanl1 (+) . cycle . map parseLine . lines
+sums :: [String] -> [Integer]
+sums = scanl1 (+) . cycle . map parseLine
 
 parseLine :: String -> Integer
 parseLine = read . filter (\c -> isNumber c || c == '-')
