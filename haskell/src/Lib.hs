@@ -2,7 +2,7 @@ module Lib
     ( run
     ) where
 
-run :: FilePath -> ([String] -> Integer) -> IO Integer
+run :: (Show a) => FilePath -> ([String] -> a) -> IO String
 run inputFile f = do
     contents <- readFile inputFile
-    return $ f . lines $ contents
+    return $ show . f . lines $ contents

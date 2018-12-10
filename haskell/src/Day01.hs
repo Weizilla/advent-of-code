@@ -6,10 +6,10 @@ import qualified Data.Set as S
 import Lib (run)
 import System.IO
 
-runDay01Part1 :: IO Integer
+runDay01Part1 :: IO String
 runDay01Part1 = run "Day01-input.txt" part1
 
-runDay01Part2 :: IO Integer
+runDay01Part2 :: IO String
 runDay01Part2 = run "Day01-input.txt" part2
 
 part1 :: [String] -> Integer
