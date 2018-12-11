@@ -4,5 +4,5 @@ module Lib
 
 run :: (Show a) => FilePath -> ([String] -> a) -> IO String
 run inputFile f = do
-    contents <- readFile inputFile
+    contents <- readFile $ "../inputs/" ++ inputFile
     return $ show . f . lines $ contents
