@@ -13,6 +13,9 @@ main =
                 actual <- runDay01Part2
                 actual `shouldBe` "287"
         describe "Day 02" $ do
-            it "Part 2" $ do
+            it "Part 1" $ do
                 actual <- runDay02Part1
                 actual `shouldBe` "3952"
+            it "Part 2" $ do
+                actual <- runDay02Part2
+                actual `shouldBe` "\"vtnikorkulbfejvyznqgdxpaw\""
