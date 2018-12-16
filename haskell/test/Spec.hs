@@ -24,3 +24,6 @@ main =
             it "Part 1" $ do
                 actual <- runDay03Part1
                 actual `shouldBe` "105047"
+            it "Part 2" $ do
+                actual <- runDay03Part2
+                actual `shouldBe` "658"
