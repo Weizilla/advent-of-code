@@ -24,6 +24,7 @@ dependencies:
 - containers
 - split
 - regex-pcre
+- parsec
 
 library:
   source-dirs: src
