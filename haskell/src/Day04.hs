@@ -3,7 +3,12 @@ module Day04 where
 import Text.Parsec.Char (string, digit, oneOf)
 import Text.Parsec.String (Parser)
 import Text.Parsec (many, (<|>), parse)
-import Data.List (sort)
+import Data.List.Split (chunk)
+import Data.List (sort, sortOn, group)
+import Data.Map (Map, insertWith, toList, (!))
+import qualified Data.Map as M
+import Data.Set (Set)
+import Lib (run)
 
 e =
     [ "[1518-11-01 00:00] Guard #10 begins shift"
@@ -29,24 +34,25 @@ eb = "[1518-11-01 00:00] Guard #10 begins shift"
 es = "[1518-11-01 00:05] falls asleep"
 ew = "[1518-11-01 00:25] wakes up"
 
+type GuardId = Integer
+type Date = String
+type Time = Integer
+
 data Log
-    = Begin {id :: String}
-    | Sleep {sDate :: String, sTime :: Int}
-    | Wake {wDate :: String, wTime :: Int}
+    = Begin {bId :: GuardId}
+    | Sleep {sDate :: Date, sTime :: Time}
+    | Wake {wDate :: Date, wTime :: Time}
     deriving (Show)
 
+
 guardText :: Parser Log
-guardText = do
-    string "Guard #"
-    d <- many digit
-    string " begins shift"
-    return $ Begin d
+guardText = Begin . read <$> (string "Guard #" *> many digit <* string " begins shift")
 
-sleepText :: String -> String -> Parser Log
-sleepText d t = string "falls asleep" *> pure (Sleep d (read t))
+sleepText :: Date -> String -> Parser Log
+sleepText d t = Sleep d (read t) <$ string "falls asleep"
 
-wakeText :: String -> String -> Parser Log
-wakeText d t = string "wakes up" *> pure (Wake d (read t))
+wakeText :: Date -> String -> Parser Log
+wakeText d t = Wake d (read t) <$ string "wakes up"
 
 parseLog :: Parser Log
 parseLog = do
@@ -63,3 +69,49 @@ parseLogs :: [String] -> [Log]
 parseLogs ls = case mapM (parse parseLog "") . sort $ ls of
     Right xs -> xs
     Left e -> error $ "Error parsing" ++ show e
+
+-- data DayLog = DayLog {
+--     dlId :: GuardId,
+--     sleepTimes :: [Integer]
+--     } deriving (Show, Ord, Eq)
+
+type SleepTimes = Map GuardId [Time]
+
+groupByDate :: [Log] -> SleepTimes -> [Log] -> SleepTimes
+groupByDate curr total [] = accumulate curr total
+groupByDate curr total (x : xs) = case x of
+    Begin { bId = i } -> groupByDate [x] t xs
+        where t = if null curr then total else accumulate curr total
+    _ -> groupByDate (x : curr) total xs
+
+accumulate :: [Log] -> SleepTimes -> SleepTimes
+accumulate curr total =
+    let
+        rCurr = reverse curr
+        Begin { bId = guardId } = head rCurr
+        st = calcSleepTimes [] . tail $ rCurr
+        m = insertWith (++) guardId st total
+    in m
+
+calcSleepTimes :: [Time] -> [Log] -> [Time]
+calcSleepTimes total [] = total
+calcSleepTimes total (Sleep { sTime = t1 } : Wake { wTime = t2 } : ls) =
+    calcSleepTimes ([t1 .. (t2 - 1)] ++ total) ls
+
+mostSleptGuard :: SleepTimes -> GuardId
+mostSleptGuard = fst . last . sortOn snd . toList . M.map length
+
+mostSleptTime :: GuardId -> SleepTimes -> Time
+mostSleptTime guardId st =
+    head . snd . maximum . map (\x -> (length x, x)) . group . sort $ st ! guardId
+
+part1 :: [String] -> Integer
+part1 input =
+    let
+        st = groupByDate [] M.empty . parseLogs $ input
+        gId = mostSleptGuard st
+        t = mostSleptTime gId st
+    in gId * t
+
+runDay04Part1 :: IO String
+runDay04Part1 = run "Day04-input.txt" part1
