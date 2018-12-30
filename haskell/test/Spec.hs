@@ -1,7 +1,7 @@
 import Day01 (runDay01Part1, runDay01Part2)
 import Day02 (runDay02Part1, runDay02Part2)
 import Day03 (runDay03Part1, runDay03Part2)
-import Day04 (runDay04Part1)
+import Day04 (runDay04Part1, runDay04Part2)
 import Test.Hspec
 
 main :: IO ()
@@ -32,3 +32,6 @@ main =
             it "Part 1" $ do
                 actual <- runDay04Part1
                 actual `shouldBe` "101262"
+            it "Part 2" $ do
+                actual <- runDay04Part2
+                actual `shouldBe` "71976"

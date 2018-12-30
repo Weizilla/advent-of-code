@@ -4,9 +4,10 @@ import Text.Parsec.Char (string, digit, oneOf)
 import Text.Parsec.String (Parser)
 import Text.Parsec (many, (<|>), parse)
 import Data.List.Split (chunk)
-import Data.List (sort, sortOn, group)
-import Data.Map (Map, insertWith, toList, (!))
-import qualified Data.Map as M
+import Data.List (sort, sortOn, group, maximumBy)
+import Data.Map.Strict (Map, insertWith, toList, (!), singleton, unionWith)
+import Data.Function (on)
+import qualified Data.Map.Strict as M
 import Data.Set (Set)
 import Lib (run)
 
@@ -33,6 +34,10 @@ e =
 eb = "[1518-11-01 00:00] Guard #10 begins shift"
 es = "[1518-11-01 00:05] falls asleep"
 ew = "[1518-11-01 00:25] wakes up"
+
+st = groupByDate [] M.empty . parseLogs $ e
+at = allTimes $ st
+-- ts = timeSleeps . allTimes $ st
 
 type GuardId = Integer
 type Date = String
@@ -69,11 +74,6 @@ parseLogs :: [String] -> [Log]
 parseLogs ls = case mapM (parse parseLog "") . sort $ ls of
     Right xs -> xs
     Left e -> error $ "Error parsing" ++ show e
-
--- data DayLog = DayLog {
---     dlId :: GuardId,
---     sleepTimes :: [Integer]
---     } deriving (Show, Ord, Eq)
 
 type SleepTimes = Map GuardId [Time]
 
@@ -115,3 +115,21 @@ part1 input =
 
 runDay04Part1 :: IO String
 runDay04Part1 = run "Day04-input.txt" part1
+
+type TimeSleeps = Map Time (Map GuardId Integer)
+
+allTimes :: SleepTimes -> [(Time, GuardId)]
+allTimes = concatMap (\(g, xs) -> zip xs (repeat g)) . toList
+
+maxSleep :: [(Time, GuardId)] -> (Time, GuardId)
+maxSleep = head . snd . maximumBy (compare `on` fst) . map (\l -> (length l, l)) . group . sort
+
+part2 :: [String] -> Integer
+part2 input =
+    let
+        (t, g) = maxSleep . allTimes $ st
+        st = groupByDate [] M.empty . parseLogs $ input
+    in t * g
+
+runDay04Part2 :: IO String
+runDay04Part2 = run "Day04-input.txt" part2
