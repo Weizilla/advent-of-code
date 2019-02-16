@@ -2,7 +2,7 @@ module Day06 where
 
 import Text.Parsec.Char (string, digit)
 import Text.Parsec.String (Parser)
-import Text.Parsec (many)
+import Text.Parsec (many, parse)
 
 e = ["1, 1",
     "1, 6",
@@ -11,13 +11,13 @@ e = ["1, 1",
     "5, 5",
     "8, 9"]
 
-type Point = (Integer, Integer)
+data Point = Point Integer Integer deriving (Show)
 
---parse :: [String] -> [Point]
+parsePoint :: Parser Point
+parsePoint = (\a b -> Point (read a) (read b)) <$> many digit <* string ", " <*> many digit
 
-pointText :: Parser Point
-pointText = do
-    x <- many digit
-    string ", "
-    y <- many digit
-    return (read x, read y)
+parseInput :: [String] -> [Point]
+parseInput input = case mapM (parse parsePoint "") input of
+    Right xs -> xs
+    Left e -> error $ "Error parsing" ++ show e
+
