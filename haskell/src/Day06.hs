@@ -59,10 +59,14 @@ calcPointChar p g =
     let distances = map (mDistance p) $ M.toList g
         sorted = L.groupBy ((==) `F.on` fst) . L.sortOn fst $ distances
         minDists = head sorted
-     in case (length minDists, head $ minDists) of
+     in case (length minDists, head minDists) of
             (1, (0, c)) -> C.toUpper c
             (1, (_, c)) -> c
             otherwise -> '.'
+
+calcNumPoints :: [Point] -> PointGrid -> M.Map Char Integer
+calcNumPoints allPoints g =
+    L.foldl' (\acc p -> M.insertWith (+) (C.toUpper $ g M.! p) 1 acc) M.empty allPoints
 
 printMap :: [Point] -> Integer -> PointGrid -> IO ()
 printMap allPoints r g = mapM_ printPoint allPoints
@@ -72,14 +76,15 @@ printMap allPoints r g = mapM_ printPoint allPoints
             then putStrLn $ [g M.! p]
             else putChar $ g M.! p
 
-runAndPrint :: [String] -> IO ()
+runAndPrint :: [String] -> String
 runAndPrint input =
     let points = parseInput input
         pointChars = M.fromList $ zip points ['a' ..]
         bounds = calcBounds points
         allPoints = calcAllPoints bounds
         dists = calcDistances allPoints pointChars
-     in printMap allPoints (maxX bounds) dists
+--     in printMap allPoints (maxX bounds) dists
+    in show $ calcNumPoints allPoints dists
 
-runDay06Part1 :: IO ()
-runDay06Part1 = display "Day06-input.txt" runAndPrint
+runDay06Part1 :: IO String
+runDay06Part1 = run "Day06-input.txt" runAndPrint
