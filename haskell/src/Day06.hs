@@ -5,7 +5,8 @@ import qualified Data.Function as F
 import qualified Data.List as L
 import qualified Data.Map as M
 import qualified Data.Ord as O
-import Lib (run, display)
+import qualified Data.Set as S
+import Lib (display, run)
 import Text.Parsec (many, parse)
 import Text.Parsec.Char (digit, string)
 import Text.Parsec.String (Parser)
@@ -50,8 +51,8 @@ mDistance Point {pX = p2X, pY = p2Y} (Point {pX = p1X, pY = p1Y}, c) =
 calcAllPoints :: Bounds -> [Point]
 calcAllPoints Bounds {maxX = maxX, maxY = maxY} = [Point x y | y <- [0 .. maxY], x <- [0 .. maxX]]
 
-calcDistances :: [Point] -> PointGrid -> PointGrid
-calcDistances allPoints input =
+calcNearest :: [Point] -> PointGrid -> PointGrid
+calcNearest allPoints input =
     L.foldl' (\acc p -> M.insert p (calcPointChar p input) acc) M.empty allPoints
 
 calcPointChar :: Point -> PointGrid -> Char
@@ -64,9 +65,22 @@ calcPointChar p g =
             (1, (_, c)) -> c
             otherwise -> '.'
 
-calcNumPoints :: [Point] -> PointGrid -> M.Map Char Integer
-calcNumPoints allPoints g =
-    L.foldl' (\acc p -> M.insertWith (+) (C.toUpper $ g M.! p) 1 acc) M.empty allPoints
+
+calcInfiniteChars :: Bounds -> PointGrid -> S.Set Char
+calcInfiniteChars Bounds {maxX = maxX, maxY = maxY} g =
+    let edgePoints =
+            [Point x y | y <- [0, maxY], x <- [0 .. maxX]] ++
+            [Point x y | y <- [0 .. maxY], x <- [0, maxX]]
+     in S.fromList $ L.map (\p -> C.toUpper $ g M.! p) edgePoints
+
+calcNumPoints :: [Point] -> PointGrid -> S.Set Char -> M.Map Char Integer
+calcNumPoints allPoints g infPoints = L.foldl' (accNumPoints g infPoints) M.empty allPoints
+
+accNumPoints :: PointGrid -> S.Set Char -> M.Map Char Integer -> Point -> M.Map Char Integer
+accNumPoints g infPoints acc p =
+    let c = C.toUpper $ g M.! p
+        inc = if S.member c infPoints then 0 else 1
+    in M.insertWith (+) (C.toUpper $ g M.! p) inc acc
 
 printMap :: [Point] -> Integer -> PointGrid -> IO ()
 printMap allPoints r g = mapM_ printPoint allPoints
@@ -76,15 +90,16 @@ printMap allPoints r g = mapM_ printPoint allPoints
             then putStrLn $ [g M.! p]
             else putChar $ g M.! p
 
-runAndPrint :: [String] -> String
-runAndPrint input =
+part1 :: [String] -> Integer
+part1 input =
     let points = parseInput input
         pointChars = M.fromList $ zip points ['a' ..]
         bounds = calcBounds points
         allPoints = calcAllPoints bounds
-        dists = calcDistances allPoints pointChars
---     in printMap allPoints (maxX bounds) dists
-    in show $ calcNumPoints allPoints dists
+        nearest = calcNearest allPoints pointChars
+        infChars = calcInfiniteChars bounds nearest
+        numPoints = calcNumPoints allPoints nearest infChars
+    in last . L.sort . map snd . M.toList $ numPoints
 
 runDay06Part1 :: IO String
-runDay06Part1 = run "Day06-input.txt" runAndPrint
+runDay06Part1 = run "Day06-input.txt" part1
