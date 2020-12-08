@@ -12,13 +12,8 @@ let test1Input = [
 let part1Expected = 514579
 let part2Expected = 241861950
 
-func day01() -> Int {
-//    part1()
-    return part2()
-}
-
-func part1() -> Int {
-    let inputs: Set = Set(readIntInput(1))
+func day1Part1() -> Int {
+    let inputs: Set = Set(readInputInt(1))
     for input in inputs {
         let other = 2020 - input
         if inputs.contains(other) {
@@ -28,12 +23,14 @@ func part1() -> Int {
     fatalError("Not found")
 }
 
-func part2() -> Int {
-    let inputs: Set = Set(readIntInput(1))
-    for input in inputs {
-        let other = 2020 - input
-        if inputs.contains(other) {
-            return input * other
+func day1Part2() -> Int {
+    let inputs: Set = Set(readInputInt(1))
+    for input1 in inputs {
+        for input2 in inputs {
+            let remaining = 2020 - input1 - input2
+            if inputs.contains(remaining) {
+                return input1 * input2 * remaining
+            }
         }
     }
     fatalError("Not found")
