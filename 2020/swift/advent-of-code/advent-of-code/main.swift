@@ -4,11 +4,11 @@
 
 import Foundation
 
-print(day03Part2())
+print(day04Part2())
 
 // MARK - input functions
 
-func readInput(_ day: Int, example: Int? = nil) -> [String] {
+func readInput(_ day: Int, example: Int? = nil, filterEmpty: Bool = true) -> [String] {
     let dayStr = String(format: "%02d", day)
     let fileName = example != nil ? "day-\(dayStr)-example-\(example!)" :  "day-\(dayStr)-input"
 
@@ -18,8 +18,8 @@ func readInput(_ day: Int, example: Int? = nil) -> [String] {
     guard let fileUrl = bundle.url(forResource: fileName, withExtension: "txt") else { fatalError("File url not found") }
     guard let contentData = FileManager.default.contents(atPath: fileUrl.path) else { fatalError("Content not found") }
     guard let contentString = String(data: contentData, encoding: .utf8) else { fatalError("Content string not found") }
-    return contentString.components(separatedBy: "\n")
-            .filter({ str in !str.isEmpty })
+    let contentArray = contentString.components(separatedBy: "\n")
+    return filterEmpty ? contentArray.filter({ str in !str.isEmpty }) : contentArray
 }
 
 func readIntInput(_ day: Int) -> [Int] {
