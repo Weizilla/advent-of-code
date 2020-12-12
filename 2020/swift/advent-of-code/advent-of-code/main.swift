@@ -4,13 +4,13 @@
 
 import Foundation
 
-print(day2Part2())
+print(day03Part2())
 
 // MARK - input functions
 
-func readInput(_ day: Int) -> [String] {
+func readInput(_ day: Int, example: Int? = nil) -> [String] {
     let dayStr = String(format: "%02d", day)
-    let fileName = "day-\(dayStr)-input"
+    let fileName = example != nil ? "day-\(dayStr)-example-\(example!)" :  "day-\(dayStr)-input"
 
     let currentDir = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
     let bundleDir = URL(fileURLWithPath: "advent-of-code-inputs.bundle", relativeTo: currentDir)
