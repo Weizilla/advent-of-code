@@ -4,7 +4,9 @@
 
 import Foundation
 
-print(day01())
+print(day2Part1())
+
+// MARK - input functions
 
 func readInput(_ day: Int) -> [String] {
     let dayStr = String(format: "%02d", day)
