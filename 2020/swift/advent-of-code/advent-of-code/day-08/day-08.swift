@@ -4,7 +4,7 @@ func day08Part1() -> Int {
     var instructions = readInput(8).map({readInstruction($0)})
 //    print(instructions)
 
-    let (register, inf) = run(instructions)
+    let (register, _) = run(instructions)
 //    print(instructions)
 
     return register
@@ -12,6 +12,18 @@ func day08Part1() -> Int {
 
 func day08Part2() -> Int {
     var instructions = readInput(8).map({readInstruction($0)})
+
+    for i in 0..<instructions.count {
+        instructions[i].flipped = true
+
+        let (register, inf) = run(instructions)
+
+        if (inf) {
+            instructions.forEach({i in i.reset()})
+        } else {
+            return register
+        }
+    }
 
     return 0
 }
@@ -56,16 +68,32 @@ enum InstructionType: String {
 }
 
 class Instruction : CustomStringConvertible {
-    let type: InstructionType
+    private let _type: InstructionType
     let value: Int
     var visited: Bool = false
+    var flipped: Bool = false
     var description: String {
-        "\(type) \(value) \(visited)"
+        "\(_type) \(value) \(visited) \(flipped)"
     }
 
     init(type: InstructionType, value: Int) {
-        self.type = type
+        _type = type
         self.value = value
+        visited = false
+    }
+
+    var type: InstructionType {
+        get {
+            switch _type {
+            case .acc: return .acc
+            case .jmp: return flipped ? .nop : .jmp
+            case .nop: return flipped ? .jmp : .nop
+            }
+        }
+    }
+
+    func reset() {
+        flipped = false
         visited = false
     }
 }
