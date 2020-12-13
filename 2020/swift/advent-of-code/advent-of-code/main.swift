@@ -4,7 +4,7 @@
 
 import Foundation
 
-print(day08Part2())
+print(day09Part2())
 
 // MARK - input functions
 
@@ -22,8 +22,8 @@ func readInput(_ day: Int, example: Int? = nil, filterEmpty: Bool = true) -> [St
     return filterEmpty ? contentArray.filter({ str in !str.isEmpty }) : contentArray
 }
 
-func readIntInput(_ day: Int) -> [Int] {
-    let strings = readInput(day)
+func readInputInt(_ day: Int, example: Int? = nil) -> [Int] {
+    let strings = readInput(day, example: example)
     return strings
             .filter({str in !str.isEmpty})
             .map({str in toInt(str)})
