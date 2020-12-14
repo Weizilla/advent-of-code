@@ -16,32 +16,42 @@ func day10Part1() -> Int {
 }
 
 func day10Part2() -> Int {
-    var input = readInputInt(10, example: 1).sorted()
+    var input = readInputInt(10, example: 2).sorted()
     input.insert(0, at: 0)
     input.insert(input.last! + 3, at: input.count)
 
-    var values = Set(input)
-//    print(input)
+    var allInputs = Set(input)
 
-    let paths = buildPaths(0, values: values)
+    // [0, 1, 4, 5, 6, 7, 10, 11, 12, 15, 16, 19, 22]
+    // paths
+    //  1  1  3  2  1  1  2   1   1   1   1   1   1
 
-//    print(paths)
+    // 4 -> 5 (don't count)
+    // 4 -> 6
+    // 4 -> 7
 
-    return paths.count
-}
+    // 5 -> 6
+    // 5 -> 7
 
-func buildPaths(_ root: Int, values: Set<Int>) -> [[Int]] {
-    var paths: [[Int]] = []
-    for i in 1..<4 {
-        let search = i + root
-//        print("Search \(search)")
-        if values.contains(search) {
-            let childPaths = buildPaths(search, values: values)
-//            print("Child paths \(childPaths)")
-            for childPath in childPaths {
-                paths.append([root] + childPath)
-            }
+    // 10 -> 11
+    // 10 -> 12
+
+    // 2 * (1 * 2) * 2
+
+    var pathCount: [Int: Int] = [:]
+
+    for i in 0..<input.count {
+        let curr = input[input.count - i - 1]
+        let count = (1..<4).map({curr + $0})
+            .filter({allInputs.contains($0)})
+            .filter({pathCount[$0] == nil})
+            .count
+        if (count > 1) {
+            pathCount[curr] = count
         }
     }
-    return paths.isEmpty ? [[root]] : paths
+
+    print(pathCount)
+
+    return pathCount.values.reduce(1, *)
 }
