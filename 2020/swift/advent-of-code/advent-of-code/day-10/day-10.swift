@@ -16,17 +16,19 @@ func day10Part1() -> Int {
 }
 
 func day10Part2() -> Int {
-    var input = readInputInt(10, example: 2).sorted()
+    var input = readInputInt(10).sorted()
     input.insert(0, at: 0)
     input.insert(input.last! + 3, at: input.count)
 
-    var allInputs = Set(input)
+    print(input)
+
+    let allInputs = Set(input)
 
     // [0, 1, 4, 5, 6, 7, 10, 11, 12, 15, 16, 19, 22]
     // paths
     //  1  1  3  2  1  1  2   1   1   1   1   1   1
 
-    // 4 -> 5 (don't count)
+    // 4 -> 5
     // 4 -> 6
     // 4 -> 7
 
@@ -36,22 +38,18 @@ func day10Part2() -> Int {
     // 10 -> 11
     // 10 -> 12
 
-    // 2 * (1 * 2) * 2
-
     var pathCount: [Int: Int] = [:]
 
+    // go backwards, for each num, sum up all of the # of paths for each possible next step
     for i in 0..<input.count {
         let curr = input[input.count - i - 1]
-        let count = (1..<4).map({curr + $0})
+        var count = (1..<4).map({curr + $0})
             .filter({allInputs.contains($0)})
-            .filter({pathCount[$0] == nil})
-            .count
-        if (count > 1) {
-            pathCount[curr] = count
-        }
+            .map({pathCount[$0] ?? 1})
+            .reduce(0, +)
+        count = count == 0 ? 1 : count
+        pathCount[curr] = count
     }
 
-    print(pathCount)
-
-    return pathCount.values.reduce(1, *)
+    return pathCount[0]!
 }
