@@ -4,7 +4,7 @@
 
 import Foundation
 
-print(day11Part2())
+print(day12Part2())
 
 // MARK - input functions
 
