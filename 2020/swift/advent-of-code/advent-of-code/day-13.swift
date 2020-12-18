@@ -18,6 +18,24 @@ func day13Part2() -> Int {
     let busIds = input[1].split(separator: ",")
         .enumerated()
         .filter({i in i.1 != "x"})
-    print(busIds)
-    return 0
+        .map({ (x, y) in (offset: x, busId: Int(y)!)})
+
+    let maxBus = busIds.sorted(by: {$0.busId > $1.busId}).first!
+    var timestamp = maxBus.busId
+    while (!isMatch(timestamp: timestamp, maxBus: maxBus, busIds: busIds)) {
+        timestamp += maxBus.busId
+//        print(timestamp)
+    }
+    return timestamp
+}
+
+func isMatch(timestamp: Int, maxBus: (offset: Int, busId: Int), busIds: [(offset: Int, busId: Int)]) -> Bool {
+    let t0 = timestamp - maxBus.offset
+    for (offset, busId) in busIds {
+        let rem = (t0 + offset) % busId
+        if rem != 0 {
+            return false
+        }
+    }
+    return true
 }
