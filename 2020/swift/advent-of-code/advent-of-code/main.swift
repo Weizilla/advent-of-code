@@ -4,7 +4,7 @@
 
 import Foundation
 
-print(day18Part1())
+print(day18Part2())
 
 // MARK - input functions
 
@@ -34,5 +34,11 @@ func toInt(_ str: String) -> Int {
         return maybeInt
     } else {
         fatalError("Not an int: \(str)")
+    }
+}
+
+extension String {
+    func leftPad(toLength: Int, withPad: String) -> String {
+        String(String(reversed()).padding(toLength: toLength, withPad: withPad, startingAt: 0).reversed())
     }
 }
