@@ -26,7 +26,11 @@ func day16Part2() -> Int {
     let yourTicket = secondSplit[0].map(readTicket)[0]
     let nearbyTickets = secondSplit[1].map(readTicket)
 
-    print(rules)
+//    print("Rules ------------------")
+//    for r in rules.sorted(by: {$0.name < $1.name}) {
+//        print(r)
+//    }
+//    print("-------------------------")
 
     var allRanges: [ClosedRange<Int>] = []
     for rule in rules {
@@ -37,39 +41,46 @@ func day16Part2() -> Int {
     var validTickets = nearbyTickets.filter({validTicket(fields: $0, allRanges: &allRanges)})
     validTickets.append(yourTicket)
 
-    print("vt \(validTickets)")
+//    print("vt \(validTickets)")
 
     var fields: [Int: [Int]] = [:]
     for i in 0..<yourTicket.count {
-        let allFields = nearbyTickets.map({$0[i]})
+        let allFields = validTickets.map({$0[i]})
         fields[i] = allFields
     }
 
-    print(fields)
-    print("3 \(fields[3]?.sorted())")
+//    print("fields -----------------")
+//    for i in Array(fields.keys).sorted() {
+//        print("f \(i) \(fields[i]!.sorted())")
+//    }
+//    print("-------------------------")
 
     var ruleNames: [String: [Int]] = [:]
     for (i, fs) in fields {
+        var hasRule = false
         for rule in rules {
             if fs.allSatisfy({rule.isValid($0)}) {
                 ruleNames.merge([rule.name: [i]], uniquingKeysWith: +)
+                hasRule = true
             }
+        }
+        if !hasRule {
+            print("Something missing rule \(i)")
+            fatalError()
         }
     }
 
-    print("rn \(ruleNames)")
+//    print("rn \(ruleNames)")
 
-    var changed = true
-    while (ruleNames.values.filter({$0.count > 1}).count > 0 && changed) {
-        changed = false
-        let (name, singleRowIndex) = ruleNames.first(where: {(k, v) in v.count == 1})!
-        for (key, value) in ruleNames {
-            if (value.count > 1 && value.contains(singleRowIndex[0])) {
-                ruleNames[key] = value.filter({ $0 != singleRowIndex[0] })
-                changed = true
+    while (ruleNames.values.filter({$0.count > 1}).count > 0) {
+        for (name, singleRowIndex) in ruleNames.filter({(k, v) in v.count == 1}) {
+            for (key, value) in ruleNames {
+                if (value.count > 1) {
+                    ruleNames[key] = value.filter({ $0 != singleRowIndex[0] })
+                }
             }
         }
-        print(ruleNames)
+//        print(ruleNames)
     }
 
     var answer = 1
