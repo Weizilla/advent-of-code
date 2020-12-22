@@ -3,20 +3,20 @@ import Foundation
 func day20Part1() -> Int {
     var input = readInput(20)
     let tiles = readTiles(input)
-    var allBorders: [Border: [String]] = [:]
+    var allBorders: [Border: [Int]] = [:]
 
     for tile in tiles {
-        tile.borders.forEach({allBorders.merge([$0: [tile.id]], uniquingKeysWith: +)})
+        tile.allBorders.forEach({allBorders.merge([$0: [tile.id]], uniquingKeysWith: +)})
     }
 //
 //    for (b, ids) in allBorders {
 //        print("\(b) \(ids))")
 //    }
 
-    var numBordersPerTile: [String: Int] = [:]
+    var numBordersPerTile: [Int: Int] = [:]
     for tile in tiles {
         var num = 0
-        for border in tile.borders {
+        for border in tile.allBorders {
             num += allBorders[border]!.count
         }
         numBordersPerTile[tile.id] = num
@@ -29,14 +29,13 @@ func day20Part1() -> Int {
 
 func readTiles(_ input: [String]) -> [Tile] {
     var tiles: [Tile] = []
-    var currTileId: String? = nil
+    var currTileId: Int? = nil
     var currTile: [[Character]] = []
 
     for line in input {
         if line.contains("Tile") {
             if currTileId != nil {
                 tiles.append(Tile(currTileId!, currTile))
-                tiles.append(Tile("\(currTileId!)R", currTile))
             }
             currTileId = parseId(line)
             currTile = []
@@ -54,11 +53,14 @@ func day20Part2() -> Int {
     var input = readInput(20, example: 1)
     let tiles = readTiles(input)
     var allBorders: [Border: [Tile]] = [:]
+    var width = Int(sqrt(Double(tiles.count)))
 
+    // all borders for all orientations
     for tile in tiles {
-        tile.borders.forEach({allBorders.merge([$0: [tile]], uniquingKeysWith: +)})
+        tile.allBorders.forEach({allBorders.merge([$0: [tile]], uniquingKeysWith: +)})
     }
 
+    // figure out border and tile types
     for tile in tiles {
         var totalTiles = 0
         for border in tile.borders {
@@ -78,101 +80,121 @@ func day20Part2() -> Int {
         }
     }
 
-    for tile in tiles {
-        print(tile)
-    }
+//    for tile in tiles {
+//        print(tile)
+//    }
 
-    var width = Int(sqrt(Double(tiles.count)))
+    // figure out tile id grid
+    var placedTileIds: Set<Int> = []
+    var placedBorders: Set<Border> = []
+    var placedTiles: [[Int]: Tile] = [:]
 
-    var unplacedTiles = Set(tiles.map({$0.id}))
-    var unplacedBorders = Set(allBorders.keys)
-    var placedTiles: [[Int]: String] = [:]
-
+    // start at a corner
     let firstCorner = tiles.filter({$0.type == .CORNER}).sorted(by: {$0.id < $1.id}).first!
-//    print("first \(firstCorner)")
-//    unplacedTiles.remove(firstCorner.id)
-//    placedTiles[[0, 0]] = firstCorner.id
-//    print(placedTiles)
-//
-//    let firstInside = firstCorner.borders.filter({allBorders[$0]!.count == 2}).first!
-//    print("first edge: \(firstInside)")
-//
-//    let nextTile = allBorders[firstInside]!.filter({unplacedTiles.contains($0.id)}).first!
-//    print("next tile \(nextTile)")
-//    unplacedTiles.remove(nextTile.id)
-//    placedTiles[[1, 0]] = nextTile.id
-//    print(placedTiles)
-//
-//    let nextEdge = nextTile.oppositeBorders[firstInside]!
-//    let next2Tile = allBorders[nextEdge]!.filter({unplacedTiles.contains($0.id)}).first!
-//    print("next2 tile \(next2Tile)")
-//    unplacedTiles.remove(next2Tile.id)
-//    placedTiles[[2, 0]] = next2Tile.id
-//    print(placedTiles)
+    var nextBorder = firstCorner.borders.filter({ $0.type == .INSIDE}).first!
+    placedTileIds.insert(firstCorner.id)
+    placedTiles[[0, 0]] = firstCorner
 
-    var prevTile = firstCorner
-    var nextEdge = prevTile.borders.filter({ $0.type == .INSIDE}).first!
-    unplacedTiles.remove(firstCorner.id)
-    placedTiles[[0, 0]] = firstCorner.id
-    for y in 0..<1 {
-        for x in 0..<width {
-            if (x == 0 && y == 0) {
-                continue
-            }
+    // build first row
+    for x in 1..<width {
+        placedBorders.insert(nextBorder)
+        placedBorders.insert(nextBorder.reversed())
 
-            let currTile = allBorders[nextEdge]!.filter({unplacedTiles.contains($0.id)}).first!
-            unplacedTiles.remove(currTile.id)
-            placedTiles[[x, y]] = currTile.id
+        let currTile = allBorders[nextBorder]!.filter({!placedTileIds.contains($0.id)}).first!
+        placedTileIds.insert(currTile.id)
+        placedTiles[[x, 0]] = currTile
 
-            let n = currTile.oppositeBorders[nextEdge]!
-            nextEdge = n
-            prevTile = currTile
-            print("pt \(placedTiles)")
-        }
+        nextBorder = currTile.oppositeBorders[nextBorder]!
     }
+
+    // build each column
+    for x in 0..<width {
+        var nextBorder = placedTiles[[x, 0]]!.borders.filter({$0.type == .INSIDE && !placedBorders.contains($0)}).first!
+        for y in 1..<width {
+            placedBorders.insert(nextBorder)
+            placedBorders.insert(nextBorder.reversed())
+
+            let currTile = allBorders[nextBorder]!.filter({!placedTileIds.contains($0.id)}).first!
+            placedTileIds.insert(currTile.id)
+            placedTiles[[x, y]] = currTile
+
+            nextBorder = currTile.oppositeBorders[nextBorder]!
+        }
+
+    }
+
+    print("========================")
+    var p = ""
+    for x in 0..<width {
+        for y in 0..<width {
+            p += "[(\(x),\(y)) \(placedTiles[[x, y]]?.id.description ?? "x" )]"
+        }
+        p += "\n"
+    }
+    print(p)
 
     return 0
-
 }
 
-
-func parseId(_ line: String) -> String {
-    line.split(separator: " ")[1].replacingOccurrences(of: ":", with: "")
+func parseId(_ line: String) -> Int {
+    Int(line.split(separator: " ")[1].replacingOccurrences(of: ":", with: ""))!
 }
 
 class Tile: CustomStringConvertible {
-    let id: String
+    let id: Int
     var tile: [[Character]]
     var type: TileType
     var borders: [Border]
     var oppositeBorders: [Border: Border]
+    var adjacentBorders: [Border: [Border]]
+    var allBorders: [Border]
 
-    init(_ id: String, _ tile: [[Character]]) {
+    init(_ id: Int, _ tile: [[Character]]) {
         self.id = id
         self.type = .UNKNOWN
         self.tile = tile
         oppositeBorders = [:]
 
-        let top = Border(tile[0])
-        let bottom = Border(tile[tile.count - 1])
-        let left = Border(tile.map({$0[0]}))
-        let right = Border(tile.map({$0[tile[0].count - 1]}))
+        let top = Border(String(id), tile[0])
+        let bottom = Border(String(id), tile[tile.count - 1])
+        let left = Border(String(id), tile.map({$0[0]}))
+        let right = Border(String(id), tile.map({$0[tile[0].count - 1]}))
         borders = [
             top,
             bottom,
             left,
             right
         ]
+        allBorders = [
+            top, top.reversed(),
+            bottom, bottom.reversed(),
+            left, left.reversed(),
+            right, right.reversed(),
+        ]
         oppositeBorders = [
             left: right,
             right: left,
             top: bottom,
             bottom: top,
+            left.reversed(): right.reversed(),
+            right.reversed(): left.reversed(),
+            top.reversed(): bottom.reversed(),
+            bottom.reversed(): top.reversed(),
+        ]
+        adjacentBorders = [
+            left: [top, bottom],
+            right: [top, bottom],
+            top: [left, right],
+            bottom: [left, right],
+            left.reversed(): [top.reversed(), bottom.reversed()],
+            right.reversed(): [top.reversed(), bottom.reversed()],
+            top.reversed(): [left.reversed(), right.reversed()],
+            bottom.reversed(): [left.reversed(), right.reversed()],
         ]
     }
 
     var description: String {
-        var line = "\(id) \(type) \n"
+        var line = "[\(id) \(type)]"
 //        for t in tile {
 //            line += "\(String(t))\n"
 //        }
@@ -181,10 +203,12 @@ class Tile: CustomStringConvertible {
 }
 
 class Border: Hashable, CustomStringConvertible {
+    let id: String
     let value: [Character]
     var type: BorderType
 
-    init(_ value: [Character]) {
+    init(_ id: String, _ value: [Character]) {
+        self.id = id
         self.value = value
         type = .UNKNOWN
     }
@@ -192,17 +216,19 @@ class Border: Hashable, CustomStringConvertible {
     func hash(into hasher: inout Hasher) {
         hasher.combine(value)
     }
-//
-//    func reversed() -> Border {
-//        Border(Array(value.reversed()))
-//    }
+
+    func reversed() -> Border {
+        var b = Border(id, Array(value.reversed()))
+        b.type = type
+        return b
+    }
 
     static func ==(lhs: Border, rhs: Border) -> Bool {
         lhs.value == rhs.value
     }
 
     var description: String {
-        String(value)
+        String(id)
     }
 }
 
