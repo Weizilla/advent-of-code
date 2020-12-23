@@ -51,7 +51,7 @@ func readTiles(_ input: [String]) -> [Tile] {
 
 func day20Part2() -> Int {
     var input = readInput(20, example: 1)
-    let tiles = readTiles(input)
+    var tiles = readTiles(input)
     var allBorders: [Border: [Tile]] = [:]
     var width = Int(sqrt(Double(tiles.count)))
 
@@ -61,6 +61,33 @@ func day20Part2() -> Int {
     }
 
     // figure out border and tile types
+    calcTypes(allBorders: &allBorders, tiles: &tiles)
+
+//    for tile in tiles {
+//        print(tile)
+//    }
+
+    var placedTiles = buildGrid(&allBorders, &tiles, width)
+
+    printTiles(&placedTiles, width)
+
+    let bigTile = buildBigTile(&placedTiles, width)
+
+    // print big tile
+    var result = ""
+    for line in bigTile {
+        result += String(line) + "\n"
+    }
+    print(result)
+
+    return 0
+}
+
+func parseId(_ line: String) -> Int {
+    Int(line.split(separator: " ")[1].replacingOccurrences(of: ":", with: ""))!
+}
+
+func calcTypes(allBorders: inout [Border: [Tile]], tiles: inout [Tile]) {
     for tile in tiles {
         var totalTiles = 0
         for border in tile.borders {
@@ -79,70 +106,72 @@ func day20Part2() -> Int {
         default: fatalError("unexpected num: \(totalTiles)")
         }
     }
+}
 
-//    for tile in tiles {
-//        print(tile)
-//    }
-
-    // figure out tile id grid
-    var placedTileIds: Set<Int> = []
-    var placedBorderValues: Set<Border> = []
-    var placedTiles: [[Int]: TileRef] = [:]
+func buildFirstRow(_ allBorders: inout [Border: [Tile]], _ tiles: inout [Tile], _ width: Int) -> ([Tile], Set<Border>) {
+    var firstRow: [Tile] = []
+    var firstRowIds: Set<Int> = []
+    var firstRowBorders: Set<Border> = []
 
     // start at a corner
     let firstCorner = tiles.filter({$0.type == .CORNER}).sorted(by: {$0.id < $1.id}).first!
     var nextBorder = firstCorner.borders.filter({ $0.type == .INSIDE}).first!
-    placedTileIds.insert(firstCorner.id)
-    placedTiles[[0, 0]] = TileRef(firstCorner, nextBorder, .RIGHT, nextBorder.isReversed)
+    firstRow.append(firstCorner)
+    firstRowIds.insert(firstCorner.id)
 
-    // build first row
     for x in 1..<width {
-        placedBorderValues.insert(nextBorder)
-        placedBorderValues.insert(nextBorder.reversed())
+        firstRowBorders.insert(nextBorder)
+        firstRowBorders.insert(nextBorder.reversed())
 
-        let currTile = allBorders[nextBorder]!.filter({!placedTileIds.contains($0.id)}).first!
-        placedTileIds.insert(currTile.id)
-        placedTiles[[x, 0]] = TileRef(currTile, nextBorder, .LEFT, nextBorder.isReversed)
+        let currTile = allBorders[nextBorder]!.filter({!firstRowIds.contains($0.id)}).first!
+        firstRowIds.insert(currTile.id)
+        firstRow.append(currTile)
 
         nextBorder = currTile.oppositeBorders[nextBorder]!
     }
 
+    return (firstRow, firstRowBorders)
+}
+
+func buildGrid(_ allBorders: inout [Border: [Tile]], _ tiles: inout [Tile], _ width: Int) -> [[Int]: TileRef] {
+    let (firstRow, firstRowBorders) = buildFirstRow(&allBorders, &tiles, width)
+
+    var placedTileIds: Set<Int> = []
+    var placedTiles: [[Int]: TileRef] = [:]
+
     // build each column
     for x in 0..<width {
-        var nextBorder = placedTiles[[x, 0]]!.tile.borders.filter({$0.type == .INSIDE && !placedBorderValues.contains($0)}).first!
-        for y in 1..<width {
-            placedBorderValues.insert(nextBorder)
-            placedBorderValues.insert(nextBorder.reversed())
+        let topTile = firstRow[x]
+        var nextBorder = topTile.borders.filter({$0.type == .INSIDE && !firstRowBorders.contains($0)}).first!
+        let topBorder = topTile.oppositeBorders[nextBorder]!
+        placedTileIds.insert(topTile.id)
+        placedTiles[[x, 0]] = TileRef(topTile, topBorder)
 
+        for y in 1..<width {
             let currTile = allBorders[nextBorder]!.filter({!placedTileIds.contains($0.id)}).first!
             placedTileIds.insert(currTile.id)
-            placedTiles[[x, y]] = TileRef(currTile, nextBorder, .TOP, nextBorder.isReversed)
+            placedTiles[[x, y]] = TileRef(currTile, nextBorder)
 
             nextBorder = currTile.oppositeBorders[nextBorder]!
         }
-
     }
 
+    return placedTiles
+}
+
+func printTiles(_ tiles: inout [[Int]: TileRef], _ width: Int) {
     print("========================")
     var p = ""
     for y in 0..<width {
         for x in 0..<width {
-            p += "[(\(x),\(y)) \(placedTiles[[x, y]]?.description ?? "x" )]"
+            p += "[(\(x),\(y)) \(tiles[[x, y]]?.description ?? "x" )]"
         }
         p += "\n"
     }
     print(p)
-
-    let bigTile = genBigTile(placedTiles, width)
-
-    return 0
 }
 
-func parseId(_ line: String) -> Int {
-    Int(line.split(separator: " ")[1].replacingOccurrences(of: ":", with: ""))!
-}
-
-func genBigTile(_ tiles: [[Int]: TileRef], _ width: Int) -> [[Character]] {
+func buildBigTile(_ tiles: inout [[Int]: TileRef], _ width: Int) -> [[Character]] {
     var result = "======================\n"
     var bigTile: [[Character]] = []
 
@@ -153,7 +182,8 @@ func genBigTile(_ tiles: [[Int]: TileRef], _ width: Int) -> [[Character]] {
                     bigTile.append([])
                 }
                 for lineX in 0..<10 {
-                    let char: Character = tiles[[tileX, tileY]]!.tile.tile[lineY][lineX]
+                    let tileRef = tiles[[tileX, tileY]]!
+                    let char = tileRef.tile.getCharacter(x: lineX, y: lineY, tileRef)
                     bigTile[(tileY * 11) + lineY].append(char)
                 }
                 bigTile[(tileY * 11) + lineY].append(" ")
@@ -164,29 +194,20 @@ func genBigTile(_ tiles: [[Int]: TileRef], _ width: Int) -> [[Character]] {
         }
     }
 
-    for line in bigTile {
-        result += String(line) + "\n"
-    }
-
-    print(result)
-
     return bigTile
 }
 
 class TileRef: CustomStringConvertible {
     let tile: Tile
-    let border: Border
-    let borderLoc: BorderLoc
-    let borderRev: Bool
-    init(_ tile: Tile, _ border: Border, _ borderLoc: BorderLoc, _ borderRev: Bool) {
+    let topBorder: Border
+
+    init(_ tile: Tile, _ topBorder: Border) {
         self.tile = tile
-        self.border = border
-        self.borderLoc = borderLoc
-        self.borderRev = borderRev
+        self.topBorder = topBorder
     }
 
     var description: String {
-        "\(tile.id) \(border) \(borderLoc) \(borderRev)"
+        "\(tile.id) \(topBorder)"
     }
 }
 
@@ -196,8 +217,15 @@ class Tile: CustomStringConvertible {
     var type: TileType
     var borders: [Border]
     var oppositeBorders: [Border: Border]
-    var adjacentBorders: [Border: [Border]]
-    var allBorders: [Border: BorderLoc]
+    var allBorders: [Border: BorderOrientation]
+    let top: Border
+    let bottom: Border
+    let left: Border
+    let right: Border
+    let topR: Border
+    let bottomR: Border
+    let leftR: Border
+    let rightR: Border
 
     init(_ id: Int, _ tile: [[Character]]) {
         self.id = id
@@ -205,51 +233,33 @@ class Tile: CustomStringConvertible {
         self.tile = tile
         oppositeBorders = [:]
 
-        let top = Border(String(id), tile[0])
-        let bottom = Border(String(id), tile[tile.count - 1])
-        let left = Border(String(id), tile.map({$0[0]}))
-        let right = Border(String(id), tile.map({$0[tile[0].count - 1]}))
-        borders = [
-            top,
-            bottom,
-            left,
-            right
-        ]
+        top = Border(String(id), tile[0])
+        bottom = Border(String(id), tile[tile.count - 1])
+        left = Border(String(id), tile.map({$0[0]}))
+        right = Border(String(id), tile.map({$0[tile[0].count - 1]}))
+
+        topR = top.reversed()
+        bottomR = bottom.reversed()
+        leftR = left.reversed()
+        rightR = right.reversed()
+
+        borders = [top, bottom, left, right]
+
         allBorders = [
-            top: .TOP, top.reversed(): .TOP,
-            bottom: .BOTTOM, bottom.reversed(): .BOTTOM,
-            left: .LEFT, left.reversed(): .LEFT,
-            right: .RIGHT, right.reversed(): .RIGHT,
+            top: .TOP, topR: .TOP_R, bottom: .BOTTOM, bottomR: .BOTTOM_R,
+            left: .LEFT, leftR: .LEFT_R, right: .RIGHT, rightR: .RIGHT_R,
         ]
+
         oppositeBorders = [
-            left: right,
-            right: left,
-            top: bottom,
-            bottom: top,
-            left.reversed(): right.reversed(),
-            right.reversed(): left.reversed(),
-            top.reversed(): bottom.reversed(),
-            bottom.reversed(): top.reversed(),
-        ]
-        adjacentBorders = [
-            left: [top, bottom],
-            right: [top, bottom],
-            top: [left, right],
-            bottom: [left, right],
-            left.reversed(): [top.reversed(), bottom.reversed()],
-            right.reversed(): [top.reversed(), bottom.reversed()],
-            top.reversed(): [left.reversed(), right.reversed()],
-            bottom.reversed(): [left.reversed(), right.reversed()],
+            left: right, right: left, top: bottom, bottom: top,
+            leftR: rightR, rightR: leftR, topR: bottomR, bottomR: topR,
         ]
     }
 
-    func getTiles(_ tileRef: TileRef) -> [[Character]] {
-        let borderLoc = allBorders[tileRef.border]!
-        if borderLoc == tileRef.borderLoc {
-            return tile
-        }
+    func getCharacter(x: Int, y: Int, _ tileRef: TileRef) -> Character {
+        let borderLoc = allBorders[tileRef.topBorder]!
 
-        return tile
+        return tile[y][x]
     }
 
     var description: String {
@@ -293,11 +303,15 @@ class Border: Hashable, CustomStringConvertible {
     }
 }
 
-enum BorderLoc {
+enum BorderOrientation {
     case LEFT
     case TOP
     case RIGHT
     case BOTTOM
+    case LEFT_R
+    case TOP_R
+    case RIGHT_R
+    case BOTTOM_R
 }
 
 enum TileType {
