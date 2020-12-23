@@ -116,6 +116,7 @@ func buildFirstRow(_ allBorders: inout [Border: [Tile]], _ tiles: inout [Tile], 
     // start at a corner
     let firstCorner = tiles.filter({$0.type == .CORNER}).sorted(by: {$0.id < $1.id}).first!
     var nextBorder = firstCorner.borders.filter({ $0.type == .INSIDE}).first!
+    //TODO NEXT this border can be reversed when picked. tiles will be placed correctly but flipped
     firstRow.append(firstCorner)
     firstRowIds.insert(firstCorner.id)
 
@@ -144,13 +145,15 @@ func buildGrid(_ allBorders: inout [Border: [Tile]], _ tiles: inout [Tile], _ wi
         let topTile = firstRow[x]
         var nextBorder = topTile.borders.filter({$0.type == .INSIDE && !firstRowBorders.contains($0)}).first!
         let topBorder = topTile.oppositeBorders[nextBorder]!
+        let borderO = topTile.allBorders[topBorder]!
         placedTileIds.insert(topTile.id)
-        placedTiles[[x, 0]] = TileRef(topTile, topBorder)
+        placedTiles[[x, 0]] = TileRef(topTile, topBorder, borderO)
 
         for y in 1..<width {
             let currTile = allBorders[nextBorder]!.filter({!placedTileIds.contains($0.id)}).first!
+            let borderO = currTile.allBorders[nextBorder]!
             placedTileIds.insert(currTile.id)
-            placedTiles[[x, y]] = TileRef(currTile, nextBorder)
+            placedTiles[[x, y]] = TileRef(currTile, nextBorder, borderO)
 
             nextBorder = currTile.oppositeBorders[nextBorder]!
         }
@@ -200,14 +203,16 @@ func buildBigTile(_ tiles: inout [[Int]: TileRef], _ width: Int) -> [[Character]
 class TileRef: CustomStringConvertible {
     let tile: Tile
     let topBorder: Border
+    let borderOrientation: BorderOrientation
 
-    init(_ tile: Tile, _ topBorder: Border) {
+    init(_ tile: Tile, _ topBorder: Border, _ borderOrientation: BorderOrientation) {
         self.tile = tile
         self.topBorder = topBorder
+        self.borderOrientation = borderOrientation
     }
 
     var description: String {
-        "\(tile.id) \(topBorder)"
+        "\(tile.id) \(topBorder) \(borderOrientation)"
     }
 }
 
@@ -257,9 +262,44 @@ class Tile: CustomStringConvertible {
     }
 
     func getCharacter(x: Int, y: Int, _ tileRef: TileRef) -> Character {
+
+
         let borderLoc = allBorders[tileRef.topBorder]!
 
-        return tile[y][x]
+        let newX: Int
+        let newY: Int
+
+        switch (borderLoc) {
+        case .TOP:
+            newX = x
+            newY = y
+//        case .TOP_R:
+//            newX = 9 - x
+//            newY = y
+        case .RIGHT:
+            newX = 9 - y
+            newY = x
+        case .RIGHT_R:
+            newX = 9 - y
+            newY = 9 - x
+        case .LEFT:
+            newX = y
+            newY = x
+        case .LEFT_R:
+            newX = y
+            newY = 9 - x
+//        case .BOTTOM:
+//            newX = x
+//            newY = 9 - y
+//        case .BOTTOM_R:
+//            newX = 9 - x
+//            newY = 9 - y
+        default:
+            newX = x
+            newY = y
+        }
+
+        return tile[newY][newX]
     }
 
     var description: String {
@@ -274,13 +314,11 @@ class Tile: CustomStringConvertible {
 class Border: Hashable, CustomStringConvertible {
     let id: String
     let value: [Character]
-    let isReversed: Bool
     var type: BorderType
 
-    init(_ id: String, _ value: [Character], _ isReversed: Bool = false) {
+    init(_ id: String, _ value: [Character]) {
         self.id = id
         self.value = value
-        self.isReversed = isReversed
         type = .UNKNOWN
     }
 
@@ -289,7 +327,7 @@ class Border: Hashable, CustomStringConvertible {
     }
 
     func reversed() -> Border {
-        var b = Border(id, Array(value.reversed()), !isReversed)
+        var b = Border(id, Array(value.reversed()))
         b.type = type
         return b
     }
@@ -299,7 +337,7 @@ class Border: Hashable, CustomStringConvertible {
     }
 
     var description: String {
-        String(value) + (isReversed ? "R" : "")
+        "\(id) \(String(value))"
     }
 }
 
@@ -312,6 +350,7 @@ enum BorderOrientation {
     case TOP_R
     case RIGHT_R
     case BOTTOM_R
+    case UNKNOWN
 }
 
 enum TileType {
