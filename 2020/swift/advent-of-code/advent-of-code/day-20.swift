@@ -112,15 +112,22 @@ func buildFirstRow(_ allBorders: inout [Border: [Tile]], _ tiles: inout [Tile], 
     var firstRow: [Tile] = []
     var firstRowIds: Set<Int> = []
     var firstRowBorders: Set<Border> = []
+    var firstRowBottomBorders: [Border] = []
 
     // start at a corner
     let firstCorner = tiles.filter({$0.type == .CORNER}).sorted(by: {$0.id < $1.id}).first!
-    var nextBorder = firstCorner.borders.filter({ $0.type == .INSIDE}).first!
-    //TODO NEXT this border can be reversed when picked. tiles will be placed correctly but flipped
+    var nextBorder = firstCorner.borders.filter({
+        $0.type == .INSIDE && firstCorner.rightBorders[$0]!.type == .INSIDE
+    }).first!
+    firstRowBottomBorders.append(firstCorner.rightBorders[nextBorder]!)
+    print("first corner next border: \(nextBorder)")
+    print("first bottom: \(firstRowBottomBorders)")
+
     firstRow.append(firstCorner)
     firstRowIds.insert(firstCorner.id)
 
     for x in 1..<width {
+        print("next \(nextBorder)")
         firstRowBorders.insert(nextBorder)
         firstRowBorders.insert(nextBorder.reversed())
 
@@ -129,7 +136,11 @@ func buildFirstRow(_ allBorders: inout [Border: [Tile]], _ tiles: inout [Tile], 
         firstRow.append(currTile)
 
         nextBorder = currTile.oppositeBorders[nextBorder]!
+        firstRowBottomBorders.append(currTile.rightBorders[nextBorder]!)
     }
+
+    print("first \(firstRowBorders)")
+    print("first bottom: \(firstRowBottomBorders)")
 
     return (firstRow, firstRowBorders)
 }
@@ -223,6 +234,8 @@ class Tile: CustomStringConvertible {
     var borders: [Border]
     var oppositeBorders: [Border: Border]
     var allBorders: [Border: BorderOrientation]
+    var leftBorders: [Border: Border]
+    var rightBorders: [Border: Border]
     let top: Border
     let bottom: Border
     let left: Border
@@ -259,6 +272,14 @@ class Tile: CustomStringConvertible {
             left: right, right: left, top: bottom, bottom: top,
             leftR: rightR, rightR: leftR, topR: bottomR, bottomR: topR,
         ]
+        rightBorders = [
+            top: right, right: bottom, bottom: left, left: top,
+            topR: left, leftR: bottom, bottomR: right, rightR: bottom,
+        ]
+        leftBorders = [
+            top: left, left: bottom, bottom: right, right: top,
+            topR: rightR, rightR: bottomR, bottomR: leftR, leftR: topR,
+        ]
     }
 
     func getCharacter(x: Int, y: Int, _ tileRef: TileRef) -> Character {
@@ -273,9 +294,9 @@ class Tile: CustomStringConvertible {
         case .TOP:
             newX = x
             newY = y
-//        case .TOP_R:
-//            newX = 9 - x
-//            newY = y
+        case .TOP_R:
+            newX = 9 - x
+            newY = y
         case .RIGHT:
             newX = 9 - y
             newY = x
@@ -288,12 +309,12 @@ class Tile: CustomStringConvertible {
         case .LEFT_R:
             newX = y
             newY = 9 - x
-//        case .BOTTOM:
-//            newX = x
-//            newY = 9 - y
-//        case .BOTTOM_R:
-//            newX = 9 - x
-//            newY = 9 - y
+        case .BOTTOM:
+            newX = x
+            newY = 9 - y
+        case .BOTTOM_R:
+            newX = 9 - x
+            newY = 9 - y
         default:
             newX = x
             newY = y
