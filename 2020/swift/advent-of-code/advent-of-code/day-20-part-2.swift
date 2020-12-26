@@ -1,10 +1,16 @@
 import Foundation
 
+var seaMonster = [
+    Array("                  # "),
+    Array("#    ##    ##    ###"),
+    Array(" #  #  #  #  #  #   "),
+]
+
 func day20Part2() -> Int {
-    var input = readInput(20, example: 1)
+    let input = readInput(20)
     var tiles = readTiles(input)
     var allBorders: [Border: [Tile]] = [:]
-    var width = Int(sqrt(Double(tiles.count / 2)))
+    let width = Int(sqrt(Double(tiles.count / 2)))
 
     for tile in tiles {
         for border in tile.value.borders.keys {
@@ -21,16 +27,24 @@ func day20Part2() -> Int {
     var placedTiles = placeTiles(&allBorders, &firstRow, width)
     printTiles(&placedTiles, width)
 
-    let bigTile = buildBigTile(&placedTiles, width)
+    var bigTile = buildBigTile(&placedTiles, width)
+    printBigTile(&bigTile)
 
-    // print big tile
-    var result = ""
-    for line in bigTile {
-        result += String(line) + "\n"
+    var numMonsters = findSeaMonster(&bigTile)
+    print("Num monsters: \(numMonsters)")
+
+    var flippedBigTile: [[Character]] = []
+    for row in bigTile {
+        flippedBigTile.append(row.reversed())
     }
-    print(result)
 
-    return 0
+    var flipNum = findSeaMonster(&flippedBigTile)
+    numMonsters += flipNum
+
+    let totalHash = bigTile.map({$0.filter({$0 == "#"}).count}).reduce(0, +)
+    print("Num monsters: \(numMonsters) total hash = \(totalHash)")
+
+    return totalHash - (numMonsters * 15)
 }
 
 func readTiles(_ input: [String]) -> [String: Tile] {
@@ -92,15 +106,17 @@ func buildFirstRow(_ allBorders: inout [Border: [Tile]], _ firstCorner: TileRef,
 
     var currTile = firstCorner.tile
     var nextBorder = firstCorner.border
+    var bottom = currTile.rightBorders[nextBorder]!
 
-    firstRow.append(TileRef(currTile, currTile.rightBorders[nextBorder]!, currTile.borders[nextBorder]!))
+    firstRow.append(TileRef(currTile, bottom, currTile.borders[bottom]!))
 //    print("first \(firstRow) \(firstRowBottomBorders)")
 
     for x in 1..<width {
         let search = nextBorder.reversed()
         currTile = allBorders[search]!.filter({$0.numId != currTile.numId}).first!
         nextBorder = currTile.oppositeBorders[search]!
-        firstRow.append(TileRef(currTile, currTile.rightBorders[nextBorder]!, currTile.borders[nextBorder]!))
+        bottom = currTile.rightBorders[nextBorder]!
+        firstRow.append(TileRef(currTile, bottom, currTile.borders[bottom]!))
 //        print("curr \(currTile) \(nextBorder)")
     }
 
@@ -115,7 +131,8 @@ func placeTiles(_ allBorders: inout [Border: [Tile]], _ firstRow: inout [TileRef
     for x in 0..<width {
         var currTile = firstRow[x].tile
         var nextBorder = firstRow[x].border
-        placedTiles[[0, x]] = TileRef(currTile, currTile.oppositeBorders[nextBorder]!, currTile.borders[nextBorder]!)
+        let top = currTile.oppositeBorders[nextBorder]!
+        placedTiles[[0, x]] = TileRef(currTile, top, currTile.borders[top]!)
 //        print("placed [0, \(x)] \(placedTiles)")
 
         for y in 1..<width {
@@ -144,38 +161,78 @@ func printTiles(_ tiles: inout [[Int]: TileRef], _ width: Int) {
 }
 
 func buildBigTile(_ tiles: inout [[Int]: TileRef], _ width: Int) -> [[Character]] {
-    var result = "======================\n"
     var bigTile: [[Character]] = []
 
     for tileY in 0..<width {
         for tileX in 0..<width {
-            for lineY in 0..<10 {
+            for lineY in 0..<8 {
                 if (tileX == 0) {
                     bigTile.append([])
                 }
-                for lineX in 0..<10 {
+                for lineX in 0..<8 {
                     let tileRef = tiles[[tileY, tileX]]!
-                    let char = tileRef.tile.getCharacter(x: lineX, y: lineY, tileRef)
-                    bigTile[(tileY * 11) + lineY].append(char)
+                    let char = tileRef.tile.getCharacter(x: lineX + 1, y: lineY + 1, tileRef)
+                    bigTile[(tileY * 8) + lineY].append(char)
                 }
-                bigTile[(tileY * 11) + lineY].append(" ")
             }
-            if (tileX == 0) {
-                bigTile.append([])
+        }
+    }
+    return bigTile
+}
+
+func printBigTile(_ bigTile: inout [[Character]]) {
+    var result = ""
+    for line in bigTile {
+        result += String(line) + "\n"
+    }
+    print(result)
+}
+
+func findSeaMonster(_ bigTile: inout [[Character]]) -> Int {
+    let maxY = bigTile.count
+    let maxX = bigTile[0].count
+    var num = 0
+
+    for orientation in Orientation.allCases {
+        for lineY in 0..<maxY {
+            var gridRow: [Character] = []
+            for lineX in 0..<maxX {
+                let gridChar = getGridChar(&bigTile, x: lineX, y: lineY, orientation)
+                gridRow.append(gridChar)
+
+                var monster = true
+//                print("start at \(lineX), \(lineY)")
+                for mY in 0..<seaMonster.count {
+                    for mX in 0..<seaMonster[mY].count {
+                        let isMonsterPart = seaMonster[mY][mX] == "#"
+                        let checkY = lineY + mY
+                        let checkX = lineX + mX
+                        if (checkY >= maxY || checkX >= maxX) {
+                            monster = false
+                        } else if (isMonsterPart) {
+                            let isSeaHash = getGridChar(&bigTile, x: checkX, y: checkY, orientation) == "#"
+                            if (!isSeaHash) {
+                                monster = false
+                            }
+                        }
+                    }
+                }
+                if monster {
+                    num += 1
+                }
             }
         }
     }
 
-    return bigTile
+    return num
 }
-
 
 class Tile: CustomStringConvertible, Equatable {
     let id: String
     let numId: Int
-    let tile: [[Character]]
+    var tile: [[Character]]
     let flipped: Bool
-    let borders: [Border: BorderLocation]
+    let borders: [Border: Orientation]
     let oppositeBorders: [Border: Border]
     let rightBorders: [Border: Border]
     let leftBorders: [Border: Border]
@@ -203,41 +260,26 @@ class Tile: CustomStringConvertible, Equatable {
 
     func getCharacter(x: Int, y: Int, _ tileRef: TileRef) -> Character {
         let borderLoc = borders[tileRef.border]!
-
-        let newX: Int
-        let newY: Int
-
-        switch (borderLoc) {
-        case .TOP:
-            newX = x
-            newY = y
-        case .RIGHT:
-            newX = y
-            newY = 9 - x
-        case .LEFT:
-            newX = y
-            newY = x
-        case .BOTTOM:
-            newX = x
-            newY = 9 - y
-        default:
-            newX = x
-            newY = y
-        }
-
-        return tile[newY][newX]
+        // return x y if the case border is at top (if left is at top)
+        return getGridChar(&tile, x: x, y: y, borderLoc)
     }
 
     var description: String {
-        var line = "[\(id) f=\(flipped)]"
-//        for t in tile {
-//            line += "\(String(t))\n"
-//        }
-        return line
+        "[\(id.leftPad(toLength: 5, withPad: " "))]"
     }
 
     static func ==(lhs: Tile, rhs: Tile) -> Bool {
         lhs.id == rhs.id
+    }
+}
+
+func getGridChar(_ grid: inout [[Character]], x: Int, y: Int, _ orientation: Orientation) -> Character {
+    let max = grid.count - 1
+    switch (orientation) {
+    case .TOP: return grid[y][x]
+    case .RIGHT: return grid[x][max - y]
+    case .LEFT: return grid[max - x][y]
+    case .BOTTOM: return grid[max - y][max - x]
     }
 }
 
@@ -268,20 +310,20 @@ class Border: Hashable, CustomStringConvertible {
 class TileRef: CustomStringConvertible {
     let tile: Tile
     let border: Border
-    let borderLoc: BorderLocation
+    let borderLoc: Orientation
 
-    init(_ tile: Tile, _ border: Border, _ borderLoc: BorderLocation) {
+    init(_ tile: Tile, _ border: Border, _ borderLoc: Orientation) {
         self.tile = tile
         self.border = border
         self.borderLoc = borderLoc
     }
 
     var description: String {
-        "\(tile) \(border) \(borderLoc)"
+        "\(tile) \(border) \(borderLoc.rawValue.leftPad(toLength: 6, withPad: " "))"
     }
 }
 
-enum BorderLocation {
+enum Orientation: String, CaseIterable {
     case TOP
     case RIGHT
     case BOTTOM
