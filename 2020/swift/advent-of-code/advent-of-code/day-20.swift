@@ -38,7 +38,7 @@ func readTiles1(_ input: [String]) -> [Tile1] {
             if currTileId != nil {
                 tiles.append(Tile1(currTileId!, currTile))
             }
-            currTileId = parseId(line)
+            currTileId = parseIdDay20(line)
             currTile = []
         } else {
             currTile.append(Array(line))
