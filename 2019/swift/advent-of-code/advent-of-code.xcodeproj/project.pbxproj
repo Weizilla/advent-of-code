@@ -16,6 +16,8 @@
 		1CB5B2862BCCF3BA92FF0FEF /* day-09.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CB5B03904ACC74424CE41D4 /* day-09.swift */; };
 		1CB5B32CB1BA017F967B2F5B /* day-08-input.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5BC857875409D535B4E65 /* day-08-input.txt */; };
 		1CB5B38D9278C829235AA58B /* day-10-example-1.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5B0C0F398CF21CF7FB620 /* day-10-example-1.txt */; };
+		1CB5B4365022988890D2106A /* day-03-example-2.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5BFF790569F14DE023662 /* day-03-example-2.txt */; };
+		1CB5B466A3E76AAD4F4299B5 /* day-03-example-3.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5BB289B81D697DF4153C3 /* day-03-example-3.txt */; };
 		1CB5B46D686EB057DA0E3A4A /* day-06-example-1.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5BFAE168CA3B2D9356F78 /* day-06-example-1.txt */; };
 		1CB5B5236FA7929B09E85474 /* day-07.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CB5BAB043F413E07FC314F9 /* day-07.swift */; };
 		1CB5B6915881EF7C59312E3A /* day-07-input.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5BA5C661095F637C41155 /* day-07-input.txt */; };
@@ -77,6 +79,7 @@
 		1CB5BA60A7BBFF35BEECC8AF /* day-04-input.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-04-input.txt"; sourceTree = "<group>"; };
 		1CB5BAA725330F6122F5C4BA /* day-05-input.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-05-input.txt"; sourceTree = "<group>"; };
 		1CB5BAB043F413E07FC314F9 /* day-07.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "day-07.swift"; sourceTree = "<group>"; };
+		1CB5BB289B81D697DF4153C3 /* day-03-example-3.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-03-example-3.txt"; sourceTree = "<group>"; };
 		1CB5BB5C1A19E8F4F1F11D3E /* day-02-input.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-02-input.txt"; sourceTree = "<group>"; };
 		1CB5BC0888349CCA839EBC61 /* day-06-input.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-06-input.txt"; sourceTree = "<group>"; };
 		1CB5BC857875409D535B4E65 /* day-08-input.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-08-input.txt"; sourceTree = "<group>"; };
@@ -84,6 +87,7 @@
 		1CB5BDBF6D1F5E565620A65C /* day-07-example-1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-07-example-1.txt"; sourceTree = "<group>"; };
 		1CB5BE9069043C824BED5713 /* day-02-example-1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-02-example-1.txt"; sourceTree = "<group>"; };
 		1CB5BFAE168CA3B2D9356F78 /* day-06-example-1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-06-example-1.txt"; sourceTree = "<group>"; };
+		1CB5BFF790569F14DE023662 /* day-03-example-2.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-03-example-2.txt"; sourceTree = "<group>"; };
 		B68A310B259ACE8C008F61F9 /* advent-of-code-inputs.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "advent-of-code-inputs.bundle"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B68A310D259ACE8C008F61F9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B68A3113259ACEB4008F61F9 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = main.swift; path = "advent-of-code-inputs/main.swift"; sourceTree = SOURCE_ROOT; };
@@ -154,6 +158,8 @@
 				1CB5B10C19DA867BDD775679 /* day-09-input.txt */,
 				1CB5B0C0F398CF21CF7FB620 /* day-10-example-1.txt */,
 				1CB5B375C0A99D0FF6A110CA /* day-02-example-2.txt */,
+				1CB5BFF790569F14DE023662 /* day-03-example-2.txt */,
+				1CB5BB289B81D697DF4153C3 /* day-03-example-3.txt */,
 			);
 			path = "advent-of-code-inputs";
 			sourceTree = "<group>";
@@ -275,6 +281,8 @@
 				1CB5B74296541364D9581955 /* day-09-input.txt in Resources */,
 				1CB5B38D9278C829235AA58B /* day-10-example-1.txt in Resources */,
 				1CB5B787DC571CE533A071BF /* day-02-example-2.txt in Resources */,
+				1CB5B4365022988890D2106A /* day-03-example-2.txt in Resources */,
+				1CB5B466A3E76AAD4F4299B5 /* day-03-example-3.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
