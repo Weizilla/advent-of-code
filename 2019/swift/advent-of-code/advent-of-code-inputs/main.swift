@@ -1,6 +1,6 @@
 import Foundation
 
-print(day05Part2())
+print(day06Part2())
 
 
 // MARK - input functions
@@ -35,6 +35,15 @@ func toInt(_ str: String) -> Int {
     } else {
         fatalError("Not an int: \(str)")
     }
+}
+
+func printDict<Key, Value>(_ dict: Dictionary<Key, Value>) where Key: Hashable, Key: Comparable {
+    var result = ""
+    var keys = Array(dict.keys).sorted()
+    for key in keys {
+        result += "\(key): \(dict[key]!), "
+    }
+    print("[\(result)]")
 }
 
 extension String {
