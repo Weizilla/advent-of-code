@@ -22,7 +22,7 @@ func day06Part1() -> Int {
 }
 
 func day06Part2() -> Int {
-    let inputs = readInput(6, example: 2)
+    let inputs = readInput(6)
 
     var nodes = [String: Node]()
 
@@ -40,16 +40,41 @@ func day06Part2() -> Int {
 
     printDict(nodes)
 
-    let head = nodes["COM"]!
-    let total = count(head, 0)
-    return total
+    let start = nodes["YOU"]!
+    let end = nodes["SAN"]!
+    let pathCount = findPath(start, end, &nodes)
+    return pathCount - 2
 }
 
 private func count(_ node: Node, _ level: Int) -> Int {
     level + node.next.map({count($0, level + 1)}).reduce(0, +)
 }
 
-private class Node: CustomStringConvertible {
+private func findPath(_ start: Node, _ end: Node, _ nodes: inout [String: Node]) -> Int {
+    // Dijkstra's algorithm
+    var unvisited = Set<Node>(nodes.values)
+    var pathCount = Dictionary(uniqueKeysWithValues: nodes.values.map({($0, 1000)}))
+    pathCount[start] = 0
+
+    while (!unvisited.isEmpty) {
+        let currNode: Node = unvisited.map({($0, pathCount[$0]!)}).min(by: {$0.1 < $1.1})!.0
+
+        let newCount = pathCount[currNode]! + 1
+        for node in currNode.all {
+            if unvisited.contains(node) {
+                pathCount[node] = newCount
+            } else {
+                let prevCount = pathCount[node]!
+                pathCount[node] = min(prevCount, newCount)
+            }
+        }
+        unvisited.remove(currNode)
+    }
+
+    return pathCount[end]!
+}
+
+private class Node: CustomStringConvertible, Hashable {
     let value: String
     var next: [Node]
     var prev: Node?
@@ -62,5 +87,17 @@ private class Node: CustomStringConvertible {
 
     var description: String {
         "\(value) prev=[\(prev?.value.description ?? "")] next=[\(next.map({$0.value}).joined(separator: ","))]"
+    }
+
+    var all: [Node] {
+        next + (prev != nil ? [prev!] : [])
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(value)
+    }
+
+    static func ==(lhs: Node, rhs: Node) -> Bool {
+        lhs.value == rhs.value
     }
 }
