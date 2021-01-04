@@ -1,21 +1,23 @@
 import Foundation
 
 func day05Part1() -> Int {
-    var intCodes = readInputInt(5, separator: ",")
-    printProgram(&intCodes)
+    let intCodes = readInputInt(5, separator: ",")
+    let program = IntCode(intCodes)
+    program.printProgram()
     let inputs = [1]
-    let outputs = executeProgram(program: &intCodes, inputs: inputs)
-    printProgram(&intCodes)
+    let outputs = program.run(inputs)
+    program.printProgram()
 
     return outputs.last!
 }
 
 func day05Part2() -> Int {
-    var intCodes = readInputInt(5, separator: ",")
-    printProgram(&intCodes)
+    let intCodes = readInputInt(5, separator: ",")
+    let program = IntCode(intCodes)
+    program.printProgram()
     let inputs = [5]
-    let outputs = executeProgram(program: &intCodes, inputs: inputs)
+    let outputs = program.run(inputs)
+    program.printProgram()
 
-    printProgram(&intCodes)
     return outputs.last!
 }

@@ -1,64 +1,95 @@
 import Foundation
 
-func executeProgram(program: inout [Int], inputs: [Int]) -> [Int] {
-    let inputInstruction = InputInstruction(inputs)
-    let outputInstruction = OutputInstruction()
-    let instructions = Dictionary(uniqueKeysWithValues: [
-        AddInstruction(),
-        MultiplyInstruction(),
-        outputInstruction,
-        inputInstruction,
-        JumpIfFalseInstruction(),
-        JumpIfTrueInstruction(),
-        LessThanInstruction(),
-        EqualInstruction(),
-    ].map( { ($0.opCode, $0)}))
+class IntCode {
+    var program: [Int]
+    var hasHalt: Bool
+    var currInstruction = 0
 
-    var currIndex = 0
-    while currIndex < program.count {
-        let fullOpCode = program[currIndex]
-        let opCode = fullOpCode % 100
-        var jump = false
-
-        if let instruction = instructions[opCode] {
-            var params = [Int]()
-            if instruction.numReadParams > 0 {
-                let inputParameters = program[currIndex + 1...currIndex + instruction.numReadParams]
-                let modes = readModes(fullOpCode)
-                for (i, inputParam) in inputParameters.enumerated() {
-                    let mode = modes[i] ?? .Position
-                    let value: Int
-                    switch mode {
-                    case .Position: value = program[inputParam]
-                    case .Intermediate: value = inputParam
-                    }
-                    params.append(value)
-                }
-            }
-            currIndex += instruction.numReadParams
-
-            let result = instruction.execute(params: params, program: &program)
-
-            if let writeValue = result.writeValue {
-                let writeAddress = program[currIndex + 1]
-                program[writeAddress] = writeValue
-                currIndex += 1
-            }
-
-            if let pointerJump = result.pointerJump {
-                currIndex = pointerJump
-                jump = true
-            }
-        } else if opCode == 99 {
-            break
-        }
-
-        if !jump {
-            currIndex += 1
-        }
+    init(_ program: [Int]) {
+        self.program = program
+        self.hasHalt = false
+        self.currInstruction = 0
     }
 
-    return outputInstruction.outputs
+    func run(_ inputs: [Int]) -> [Int] {
+        let inputInstruction = InputInstruction(inputs)
+        let outputInstruction = OutputInstruction()
+        let instructions = Dictionary(uniqueKeysWithValues: [
+            AddInstruction(),
+            MultiplyInstruction(),
+            outputInstruction,
+            inputInstruction,
+            JumpIfFalseInstruction(),
+            JumpIfTrueInstruction(),
+            LessThanInstruction(),
+            EqualInstruction(),
+        ].map( { ($0.opCode, $0)}))
+
+        while currInstruction < program.count {
+            let fullOpCode = program[currInstruction]
+            let opCode = fullOpCode % 100
+            var jump = false
+
+            if let instruction = instructions[opCode] {
+                if let currInput = instruction as? InputInstruction {
+                    if !currInput.hasInputs {
+                        break
+                    }
+                }
+
+                var params = [Int]()
+                if instruction.numReadParams > 0 {
+                    let inputParameters = program[currInstruction + 1...currInstruction + instruction.numReadParams]
+                    let modes = readModes(fullOpCode)
+                    for (i, inputParam) in inputParameters.enumerated() {
+                        let mode = modes[i] ?? .Position
+                        let value: Int
+                        switch mode {
+                        case .Position: value = program[inputParam]
+                        case .Intermediate: value = inputParam
+                        }
+                        params.append(value)
+                    }
+                }
+                currInstruction += instruction.numReadParams
+
+                let result = instruction.execute(params: params, program: &program)
+
+                if let writeValue = result.writeValue {
+                    let writeAddress = program[currInstruction + 1]
+                    program[writeAddress] = writeValue
+                    currInstruction += 1
+                }
+
+                if let pointerJump = result.pointerJump {
+                    currInstruction = pointerJump
+                    jump = true
+                }
+            } else if opCode == 99 {
+                hasHalt = true
+                break
+            }
+
+            if !jump {
+                currInstruction += 1
+            }
+        }
+
+        return outputInstruction.outputs
+    }
+
+
+    func printProgram() {
+        var output = ["Index ", "Codes "]
+        for (i, code) in program.enumerated() {
+            output[0] += "[\(String(i).leftPad(toLength: 4, withPad: " "))] "
+            output[1] += " \(String(code).leftPad(toLength: 4, withPad: " "))  "
+        }
+        print("-------------------------")
+        print(output[0])
+        print(output[1])
+    }
+
 }
 
 private class Instruction {
@@ -103,6 +134,10 @@ private class InputInstruction: Instruction {
 //        print("INPUT \(result)")
         currInput += 1
         return Result(writeValue: result)
+    }
+
+    var hasInputs: Bool {
+        currInput < inputs.count
     }
 }
 
@@ -163,17 +198,6 @@ private struct Result {
         self.writeValue = writeValue
         self.pointerJump = pointerJump
     }
-}
-
-func printProgram(_ program: inout [Int]) {
-    var output = ["Codes ", "Index "]
-    for (i, code) in program.enumerated() {
-        output[0] += "[\(String(i).leftPad(toLength: 3, withPad: " "))] "
-        output[1] += " \(String(code).leftPad(toLength: 3, withPad: " "))  "
-    }
-    print("-------------------------")
-    print(output[0])
-    print(output[1])
 }
 
 private func readModes(_ inputCode: Int) -> [Int: ParameterMode] {
