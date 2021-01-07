@@ -1,14 +1,16 @@
 import Foundation
 
 class IntCode {
-    var program: [Int]
+    var program: [Int: Int]
     var hasHalt: Bool
     var currInstruction = 0
+    var relativeBase = 0
 
     init(_ program: [Int]) {
-        self.program = program
+        self.program = Dictionary(uniqueKeysWithValues: program.enumerated().map({($0.offset, $0.element)}))
         self.hasHalt = false
         self.currInstruction = 0
+        self.relativeBase = 0
     }
 
     func run(_ inputs: [Int]) -> [Int] {
@@ -23,11 +25,15 @@ class IntCode {
             JumpIfTrueInstruction(),
             LessThanInstruction(),
             EqualInstruction(),
+            RelativeDeltaInstruction(),
         ].map( { ($0.opCode, $0)}))
 
-        while currInstruction < program.count {
-            let fullOpCode = program[currInstruction]
+        while !hasHalt {
+//            printProgram()
+
+            let fullOpCode = program[currInstruction]!
             let opCode = fullOpCode % 100
+            let modes = readModes(fullOpCode)
             var jump = false
 
             if let instruction = instructions[opCode] {
@@ -39,14 +45,14 @@ class IntCode {
 
                 var params = [Int]()
                 if instruction.numReadParams > 0 {
-                    let inputParameters = program[currInstruction + 1...currInstruction + instruction.numReadParams]
-                    let modes = readModes(fullOpCode)
+                    let inputParameters = (currInstruction + 1...currInstruction + instruction.numReadParams).map({program[$0] ?? 0})
                     for (i, inputParam) in inputParameters.enumerated() {
                         let mode = modes[i] ?? .Position
                         let value: Int
                         switch mode {
-                        case .Position: value = program[inputParam]
+                        case .Position: value = program[inputParam] ?? 0
                         case .Intermediate: value = inputParam
+                        case .Relative: value = program[relativeBase + inputParam] ?? 0
                         }
                         params.append(value)
                     }
@@ -56,14 +62,27 @@ class IntCode {
                 let result = instruction.execute(params: params, program: &program)
 
                 if let writeValue = result.writeValue {
-                    let writeAddress = program[currInstruction + 1]
+                    let inputParam = program[currInstruction + 1] ?? 0
+                    let writeAddress: Int
+                    let mode = modes[instruction.numReadParams] ?? .Position
+                    switch mode {
+                    case .Position: writeAddress = inputParam
+                    case .Intermediate: fatalError("intermediate when writing")
+                    case .Relative: writeAddress = inputParam + relativeBase
+                    }
+
                     program[writeAddress] = writeValue
+//                    print("write \(writeAddress)=\(writeValue)")
                     currInstruction += 1
                 }
 
                 if let pointerJump = result.pointerJump {
                     currInstruction = pointerJump
                     jump = true
+                }
+
+                if let relativeDelta = result.relativeDelta {
+                    relativeBase += relativeDelta
                 }
             } else if opCode == 99 {
                 hasHalt = true
@@ -80,14 +99,15 @@ class IntCode {
 
 
     func printProgram() {
-        var output = ["Index ", "Codes "]
-        for (i, code) in program.enumerated() {
+        var output = ["Index ", "Codes ", "Curr  ", "Relative \(relativeBase) Current \(currInstruction)"]
+        for i in program.keys.sorted() {
+            let code = program[i]!
             output[0] += "[\(String(i).leftPad(toLength: 4, withPad: " "))] "
             output[1] += " \(String(code).leftPad(toLength: 4, withPad: " "))  "
+            output[2] += i == currInstruction ? "    |  " : "       "
         }
         print("-------------------------")
-        print(output[0])
-        print(output[1])
+        output.forEach({print($0)})
     }
 
 }
@@ -96,7 +116,7 @@ private class Instruction {
     var opCode: Int { 0 }
     var numReadParams: Int { 0 }
 
-    func execute(params: [Int], program: inout [Int]) -> Result {
+    func execute(params: [Int], program: inout [Int: Int]) -> Result {
         Result(writeValue: nil, pointerJump: nil)
     }
 }
@@ -105,7 +125,7 @@ private class AddInstruction : Instruction {
     override var opCode: Int { 1 }
     override var numReadParams: Int { 2 }
 
-    override func execute(params: [Int], program: inout [Int]) -> Result {
+    override func execute(params: [Int], program: inout [Int: Int]) -> Result {
         Result(writeValue: params[0] + params[1])
     }
 }
@@ -114,7 +134,7 @@ private class MultiplyInstruction: Instruction {
     override var opCode: Int { 2 }
     override var numReadParams: Int { 2 }
 
-    override func execute(params: [Int], program: inout [Int]) -> Result {
+    override func execute(params: [Int], program: inout [Int: Int]) -> Result {
         Result(writeValue: params[0] * params[1])
     }
 }
@@ -129,9 +149,9 @@ private class InputInstruction: Instruction {
         self.inputs = inputs
     }
 
-    override func execute(params: [Int], program: inout [Int]) -> Result {
+    override func execute(params: [Int], program: inout [Int: Int]) -> Result {
         let result = inputs[currInput]
-//        print("INPUT \(result)")
+        print("INPUT \(result)")
         currInput += 1
         return Result(writeValue: result)
     }
@@ -147,8 +167,8 @@ private class OutputInstruction: Instruction {
 
     var outputs: [Int] = []
 
-    override func execute(params: [Int], program: inout [Int]) -> Result {
-//        print("OUTPUT \(params[0])")
+    override func execute(params: [Int], program: inout [Int: Int]) -> Result {
+        print("OUTPUT \(params[0])")
         outputs.append(params[0])
         return Result()
     }
@@ -158,7 +178,7 @@ private class JumpIfTrueInstruction: Instruction {
     override var opCode: Int { 5 }
     override var numReadParams: Int { 2 }
 
-    override func execute(params: [Int], program: inout [Int]) -> Result {
+    override func execute(params: [Int], program: inout [Int: Int]) -> Result {
         params[0] > 0 ? Result(pointerJump: params[1]) : Result()
     }
 }
@@ -167,7 +187,7 @@ private class JumpIfFalseInstruction: Instruction {
     override var opCode: Int { 6 }
     override var numReadParams: Int { 2 }
 
-    override func execute(params: [Int], program: inout [Int]) -> Result {
+    override func execute(params: [Int], program: inout [Int: Int]) -> Result {
         params[0] == 0 ? Result(pointerJump: params[1]) : Result()
     }
 }
@@ -176,7 +196,7 @@ private class LessThanInstruction: Instruction {
     override var opCode: Int { 7 }
     override var numReadParams: Int { 2 }
 
-    override func execute(params: [Int], program: inout [Int]) -> Result {
+    override func execute(params: [Int], program: inout [Int: Int]) -> Result {
         Result(writeValue: params[0] < params[1] ? 1 : 0)
     }
 }
@@ -185,18 +205,29 @@ private class EqualInstruction: Instruction {
     override var opCode: Int { 8 }
     override var numReadParams: Int { 2 }
 
-    override func execute(params: [Int], program: inout [Int]) -> Result {
+    override func execute(params: [Int], program: inout [Int: Int]) -> Result {
         Result(writeValue: params[0] == params[1] ? 1 : 0)
+    }
+}
+
+private class RelativeDeltaInstruction: Instruction {
+    override var opCode: Int { 9 }
+    override var numReadParams: Int { 1 }
+
+    override func execute(params: [Int], program: inout [Int: Int]) -> Result {
+        Result(relativeDelta: params[0])
     }
 }
 
 private struct Result {
     let writeValue: Int?
     let pointerJump: Int?
+    let relativeDelta: Int?
 
-    init(writeValue: Int? = nil, pointerJump: Int? = nil) {
+    init(writeValue: Int? = nil, pointerJump: Int? = nil, relativeDelta: Int? = nil) {
         self.writeValue = writeValue
         self.pointerJump = pointerJump
+        self.relativeDelta = relativeDelta
     }
 }
 
@@ -211,11 +242,13 @@ private func readModes(_ inputCode: Int) -> [Int: ParameterMode] {
 private enum ParameterMode: String, CustomStringConvertible {
     case Position
     case Intermediate
+    case Relative
 
     static func parse(_ value: Int) -> ParameterMode {
         switch (value) {
         case 0: return .Position
         case 1: return .Intermediate
+        case 2: return .Relative
         default: fatalError("Unknown \(value)")
         }
     }
