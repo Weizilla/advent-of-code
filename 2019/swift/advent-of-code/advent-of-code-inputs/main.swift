@@ -1,6 +1,6 @@
 import Foundation
 
-print(day10Part1())
+print(day10Part2())
 
 
 // MARK - input functions
@@ -37,11 +37,14 @@ func toInt(_ str: String) -> Int {
     }
 }
 
-func printDict<Key, Value>(_ dict: Dictionary<Key, Value>) where Key: Hashable, Key: Comparable {
+func printDict<Key, Value>(_ dict: Dictionary<Key, Value>, line: Bool = false) where Key: Hashable, Key: Comparable {
     var result = ""
     var keys = Array(dict.keys).sorted()
     for key in keys {
         result += "\(key): \(dict[key]!), "
+        if line {
+            result += "\n"
+        }
     }
     print("[\(result)]")
 }
