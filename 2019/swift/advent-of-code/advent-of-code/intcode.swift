@@ -5,17 +5,19 @@ class IntCode {
     var hasHalt: Bool
     var currInstruction = 0
     var relativeBase = 0
+    let printIO: Bool
 
-    init(_ program: [Int]) {
+    init(_ program: [Int], printIO: Bool = false) {
         self.program = Dictionary(uniqueKeysWithValues: program.enumerated().map({($0.offset, $0.element)}))
         self.hasHalt = false
         self.currInstruction = 0
         self.relativeBase = 0
+        self.printIO = printIO
     }
 
     func run(_ inputs: [Int]) -> [Int] {
-        let inputInstruction = InputInstruction(inputs)
-        let outputInstruction = OutputInstruction()
+        let inputInstruction = InputInstruction(inputs, printIO: printIO)
+        let outputInstruction = OutputInstruction(printIO: printIO)
         let instructions = Dictionary(uniqueKeysWithValues: [
             AddInstruction(),
             MultiplyInstruction(),
@@ -144,14 +146,18 @@ private class InputInstruction: Instruction {
     override var numReadParams: Int { 0 }
     var inputs: [Int]
     var currInput = 0
+    let printIO: Bool
 
-    init(_ inputs: [Int]) {
+    init(_ inputs: [Int], printIO: Bool) {
         self.inputs = inputs
+        self.printIO = printIO
     }
 
     override func execute(params: [Int], program: inout [Int: Int]) -> Result {
         let result = inputs[currInput]
-        print("INPUT \(result)")
+        if printIO {
+            print("INPUT \(result)")
+        }
         currInput += 1
         return Result(writeValue: result)
     }
@@ -164,11 +170,17 @@ private class InputInstruction: Instruction {
 private class OutputInstruction: Instruction {
     override var opCode: Int { 4 }
     override var numReadParams: Int { 1 }
-
+    let printIO: Bool
     var outputs: [Int] = []
 
+    init(printIO: Bool) {
+        self.printIO = printIO
+    }
+
     override func execute(params: [Int], program: inout [Int: Int]) -> Result {
-        print("OUTPUT \(params[0])")
+        if printIO {
+            print("OUTPUT \(params[0])")
+        }
         outputs.append(params[0])
         return Result()
     }
