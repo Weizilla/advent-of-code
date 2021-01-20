@@ -15,7 +15,22 @@ func day12Part1() -> Int {
 }
 
 func day12Part2() -> Int {
-    return 0
+    let lines = readInput(12, example: 1)
+    var moons = lines.map(readMoon)
+
+    var seen = Set<[Int]>();
+
+    var hash = moons.map({ $0.hash }).reduce([], +)
+    var i = 0
+    while (seen.insert(hash).inserted) {
+        applyGravity(&moons)
+        applyVelocity(&moons)
+        hash = moons.map({ $0.hash }).reduce([], +)
+//        print(hash)
+        i += 1
+    }
+
+    return i
 }
 
 private func readMoon(_ input: String) -> Moon {
@@ -98,6 +113,10 @@ private class Moon: CustomStringConvertible {
 
     var description: String {
         "pos=\(position) vel=\(velocity)"
+    }
+
+    var hash: [Int] {
+        [position.x, position.y, position.z, velocity.x, velocity.y, velocity.z]
     }
 }
 
