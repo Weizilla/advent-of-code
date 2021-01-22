@@ -15,22 +15,54 @@ func day12Part1() -> Int {
 }
 
 func day12Part2() -> Int {
-    let lines = readInput(12, example: 1)
-    var moons = lines.map(readMoon)
+    let lines = readInput(12)
+    let moons = lines.map(readMoon)
 
-    var seen = Set<[Int]>();
+    var moonsX = moons.map({Moon(x:$0.position.x, y: 0, z: 0)})
+    let (offsetX, periodX) = calcOffsetPeriod(&moonsX)
+    print("offset \(offsetX) period \(periodX)")
+
+    var moonsY = moons.map({Moon(x: 0, y:$0.position.y, z: 0)})
+    let (offsetY, periodY) = calcOffsetPeriod(&moonsY)
+    print("offset \(offsetY) period \(periodY)")
+
+    var moonsZ = moons.map({Moon(x: 0, y: 0, z:$0.position.z)})
+    let (offsetZ, periodZ) = calcOffsetPeriod(&moonsZ)
+    print("offset \(offsetZ) period \(periodZ)")
+
+    var firstM = firstMultiplier(periodX, periodY)
+    var secondM = firstMultiplier(periodZ, firstM)
+    print("fM \(firstM) sM \(secondM)")
+
+    return secondM
+}
+
+private func firstMultiplier(_ a: Int, _ b: Int) -> Int {
+    let mx = max(a, b)
+    let mn = min(a, b)
+    var r = mx
+    while (r % mn != 0) {
+        r += mx
+    }
+    return r
+}
+
+private func calcOffsetPeriod(_ moons: inout [Moon]) -> (Int, Int) {
+    var seen = [[Int]: Int]()
 
     var hash = moons.map({ $0.hash }).reduce([], +)
     var i = 0
-    while (seen.insert(hash).inserted) {
+    var offset = seen.updateValue(i, forKey: hash)
+    while (offset == nil) {
         applyGravity(&moons)
         applyVelocity(&moons)
-        hash = moons.map({ $0.hash }).reduce([], +)
-//        print(hash)
+
         i += 1
+        hash = moons.map({ $0.hash }).reduce([], +)
+        offset = seen.updateValue(i, forKey: hash)
     }
 
-    return i
+    return (offset!, i - offset!)
 }
 
 private func readMoon(_ input: String) -> Moon {
@@ -116,7 +148,7 @@ private class Moon: CustomStringConvertible {
     }
 
     var hash: [Int] {
-        [position.x, position.y, position.z, velocity.x, velocity.y, velocity.z]
+        position.hash + velocity.hash
     }
 }
 
@@ -137,5 +169,9 @@ private class Triple: CustomStringConvertible {
 
     var absSum: Int {
         abs(x) + abs(y) + abs(z)
+    }
+
+    var hash: [Int] {
+        [x, y, z]
     }
 }

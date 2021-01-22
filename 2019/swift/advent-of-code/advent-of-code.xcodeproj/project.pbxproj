@@ -10,6 +10,7 @@
 		1CB5B0272BA27FAC55A06E3C /* day-02.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CB5B62791B3D6F79225ABC8 /* day-02.swift */; };
 		1CB5B0435F8C0F8E44B1C81A /* day-23.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CB5BACD07E5FC57D89183C5 /* day-23.swift */; };
 		1CB5B076ABD271399F2FC01A /* day-02-input.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5BB5C1A19E8F4F1F11D3E /* day-02-input.txt */; };
+		1CB5B098A31AD38E827856EB /* day-12-example-3.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5BC4C851FDD06ECC4BD92 /* day-12-example-3.txt */; };
 		1CB5B0ADCF600699CB1A1983 /* day-10-example-5.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5B714A282B7AE51258807 /* day-10-example-5.txt */; };
 		1CB5B0F154E30980A8E35D13 /* day-12-example-2.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5B6FA90CD5C986B9A6172 /* day-12-example-2.txt */; };
 		1CB5B0FA072698F52F75EFA1 /* day-14-input.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5B8A574F3C13D9383C3DE /* day-14-input.txt */; };
@@ -191,6 +192,7 @@
 		1CB5BB8D1A87E2AB99C1358A /* day-05-example-3.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-05-example-3.txt"; sourceTree = "<group>"; };
 		1CB5BB9CEE0FC46821F025C5 /* day-22-input.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-22-input.txt"; sourceTree = "<group>"; };
 		1CB5BC0888349CCA839EBC61 /* day-06-input.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-06-input.txt"; sourceTree = "<group>"; };
+		1CB5BC4C851FDD06ECC4BD92 /* day-12-example-3.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-12-example-3.txt"; sourceTree = "<group>"; };
 		1CB5BC4F1AC61BF591F6D4CE /* day-12-input.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-12-input.txt"; sourceTree = "<group>"; };
 		1CB5BC6B686AEECE958933C9 /* day-07-example-3.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-07-example-3.txt"; sourceTree = "<group>"; };
 		1CB5BC857875409D535B4E65 /* day-08-input.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-08-input.txt"; sourceTree = "<group>"; };
@@ -336,6 +338,7 @@
 				1CB5B3B04DA0CC8F476ED535 /* day-24-input.txt */,
 				1CB5BEF512C263D941732275 /* day-25-example-1.txt */,
 				1CB5B6FA90CD5C986B9A6172 /* day-12-example-2.txt */,
+				1CB5BC4C851FDD06ECC4BD92 /* day-12-example-3.txt */,
 			);
 			path = "advent-of-code-inputs";
 			sourceTree = "<group>";
@@ -523,6 +526,7 @@
 				1CB5BD21784949D79E0F7682 /* day-24-input.txt in Resources */,
 				1CB5B2108E0FD4F231734364 /* day-25-example-1.txt in Resources */,
 				1CB5B0F154E30980A8E35D13 /* day-12-example-2.txt in Resources */,
+				1CB5B098A31AD38E827856EB /* day-12-example-3.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
