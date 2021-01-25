@@ -48,7 +48,9 @@
 		1CB5B54BCD07664876FF9CBB /* day-06-example-2.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5BB028C65B5D687193D15 /* day-06-example-2.txt */; };
 		1CB5B55DF17732128CB6287B /* day-11-input.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5BDEF6797B5D7097A1A19 /* day-11-input.txt */; };
 		1CB5B591DA7F38C4D39D923D /* day-17-input.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5B0F6A0B22A297FE9BD5A /* day-17-input.txt */; };
+		1CB5B5EF8161998E694A74B4 /* day-14-example-3.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5B60F8AED84B8EB4AB462 /* day-14-example-3.txt */; };
 		1CB5B5F9D7A62DA6B79128C9 /* day-19-example-1.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5B531B69AEEDF205C4B36 /* day-19-example-1.txt */; };
+		1CB5B6450778E611EAEEB394 /* day-14-example-5.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5BB5CBE9D6D54829C0CA3 /* day-14-example-5.txt */; };
 		1CB5B6546BE02BECFC147BE6 /* day-16-input.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5BCBAA5F03835D31423E5 /* day-16-input.txt */; };
 		1CB5B65EE5F26F09D6B4E7EA /* day-12-example-1.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5B439328971ABF6DB3C3A /* day-12-example-1.txt */; };
 		1CB5B663DE84502F9EAB71EC /* day-15-example-1.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5B172CC8CAE8260C152A9 /* day-15-example-1.txt */; };
@@ -64,6 +66,7 @@
 		1CB5B7BF1FF89919CE058C36 /* day-15.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CB5B1EED3EF71C9A5DB7967 /* day-15.swift */; };
 		1CB5B7EEE150303E3CA5B64E /* day-08.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CB5B0A90E275138F3EC0167 /* day-08.swift */; };
 		1CB5B7F9D3256BF5BA1756FF /* day-05-example-8.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5BEB894595E5500FC413F /* day-05-example-8.txt */; };
+		1CB5B8281A17F9CA4A3C92ED /* day-14-example-4.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5B9D9CEE79B8290532BAF /* day-14-example-4.txt */; };
 		1CB5B88DA33A531BCBE3CF5E /* day-05-example-1.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5B66BE0D3577E5873AF1A /* day-05-example-1.txt */; };
 		1CB5B8CCE3BA2677AB7F2BA5 /* day-24-example-1.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5B2DB61E35C17F668168A /* day-24-example-1.txt */; };
 		1CB5B8CE0D4485E8540A7FDA /* day-18-example-1.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5BB6D5786AFFCD25B535A /* day-18-example-1.txt */; };
@@ -88,6 +91,7 @@
 		1CB5BC4338792D6F9A405E87 /* day-14-example-1.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5B72B09C3CB7EA77C5CA4 /* day-14-example-1.txt */; };
 		1CB5BC7C5195B76194EF9BDD /* day-10-example-3.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5B90952E3A03437B004DE /* day-10-example-3.txt */; };
 		1CB5BCA853FE65B31CECD560 /* day-05-input.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5BAA725330F6122F5C4BA /* day-05-input.txt */; };
+		1CB5BCF5E34BA9302763CE69 /* day-14-example-2.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5BB8ED21D226D60FD4C8F /* day-14-example-2.txt */; };
 		1CB5BD21784949D79E0F7682 /* day-24-input.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5B3B04DA0CC8F476ED535 /* day-24-input.txt */; };
 		1CB5BD63AF7AF2EF54FE6F62 /* day-03.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CB5B0EA5E222CCADA02502D /* day-03.swift */; };
 		1CB5BD8B10AB67F9F74C2010 /* day-04-input.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1CB5BA60A7BBFF35BEECC8AF /* day-04-input.txt */; };
@@ -152,6 +156,7 @@
 		1CB5B4BE31D51AD0D34CC5A0 /* day-04-example-1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-04-example-1.txt"; sourceTree = "<group>"; };
 		1CB5B531B69AEEDF205C4B36 /* day-19-example-1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-19-example-1.txt"; sourceTree = "<group>"; };
 		1CB5B5C097DF65D26AEEF76E /* day-06.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "day-06.swift"; sourceTree = "<group>"; };
+		1CB5B60F8AED84B8EB4AB462 /* day-14-example-3.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-14-example-3.txt"; sourceTree = "<group>"; };
 		1CB5B62791B3D6F79225ABC8 /* day-02.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "day-02.swift"; sourceTree = "<group>"; };
 		1CB5B638E42601C496E8535A /* day-23-example-1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-23-example-1.txt"; sourceTree = "<group>"; };
 		1CB5B66BE0D3577E5873AF1A /* day-05-example-1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-05-example-1.txt"; sourceTree = "<group>"; };
@@ -178,6 +183,7 @@
 		1CB5B99356FCE81D288BFCF9 /* day-10-input.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-10-input.txt"; sourceTree = "<group>"; };
 		1CB5B998000552D64821A743 /* day-05-example-2.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-05-example-2.txt"; sourceTree = "<group>"; };
 		1CB5B99A5EFDE2CE3C6F2FA9 /* day-04.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "day-04.swift"; sourceTree = "<group>"; };
+		1CB5B9D9CEE79B8290532BAF /* day-14-example-4.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-14-example-4.txt"; sourceTree = "<group>"; };
 		1CB5B9F450B23D407E603F20 /* day-14.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "day-14.swift"; sourceTree = "<group>"; };
 		1CB5BA5C661095F637C41155 /* day-07-input.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-07-input.txt"; sourceTree = "<group>"; };
 		1CB5BA60A7BBFF35BEECC8AF /* day-04-input.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-04-input.txt"; sourceTree = "<group>"; };
@@ -187,9 +193,11 @@
 		1CB5BB028C65B5D687193D15 /* day-06-example-2.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-06-example-2.txt"; sourceTree = "<group>"; };
 		1CB5BB289B81D697DF4153C3 /* day-03-example-3.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-03-example-3.txt"; sourceTree = "<group>"; };
 		1CB5BB5C1A19E8F4F1F11D3E /* day-02-input.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-02-input.txt"; sourceTree = "<group>"; };
+		1CB5BB5CBE9D6D54829C0CA3 /* day-14-example-5.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-14-example-5.txt"; sourceTree = "<group>"; };
 		1CB5BB6A3E329D9FD00F4AED /* day-10-example-4.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-10-example-4.txt"; sourceTree = "<group>"; };
 		1CB5BB6D5786AFFCD25B535A /* day-18-example-1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-18-example-1.txt"; sourceTree = "<group>"; };
 		1CB5BB8D1A87E2AB99C1358A /* day-05-example-3.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-05-example-3.txt"; sourceTree = "<group>"; };
+		1CB5BB8ED21D226D60FD4C8F /* day-14-example-2.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-14-example-2.txt"; sourceTree = "<group>"; };
 		1CB5BB9CEE0FC46821F025C5 /* day-22-input.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-22-input.txt"; sourceTree = "<group>"; };
 		1CB5BC0888349CCA839EBC61 /* day-06-input.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-06-input.txt"; sourceTree = "<group>"; };
 		1CB5BC4C851FDD06ECC4BD92 /* day-12-example-3.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "day-12-example-3.txt"; sourceTree = "<group>"; };
@@ -339,6 +347,10 @@
 				1CB5BEF512C263D941732275 /* day-25-example-1.txt */,
 				1CB5B6FA90CD5C986B9A6172 /* day-12-example-2.txt */,
 				1CB5BC4C851FDD06ECC4BD92 /* day-12-example-3.txt */,
+				1CB5BB8ED21D226D60FD4C8F /* day-14-example-2.txt */,
+				1CB5B60F8AED84B8EB4AB462 /* day-14-example-3.txt */,
+				1CB5B9D9CEE79B8290532BAF /* day-14-example-4.txt */,
+				1CB5BB5CBE9D6D54829C0CA3 /* day-14-example-5.txt */,
 			);
 			path = "advent-of-code-inputs";
 			sourceTree = "<group>";
@@ -527,6 +539,10 @@
 				1CB5B2108E0FD4F231734364 /* day-25-example-1.txt in Resources */,
 				1CB5B0F154E30980A8E35D13 /* day-12-example-2.txt in Resources */,
 				1CB5B098A31AD38E827856EB /* day-12-example-3.txt in Resources */,
+				1CB5BCF5E34BA9302763CE69 /* day-14-example-2.txt in Resources */,
+				1CB5B5EF8161998E694A74B4 /* day-14-example-3.txt in Resources */,
+				1CB5B8281A17F9CA4A3C92ED /* day-14-example-4.txt in Resources */,
+				1CB5B6450778E611EAEEB394 /* day-14-example-5.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
