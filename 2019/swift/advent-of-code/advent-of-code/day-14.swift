@@ -1,21 +1,27 @@
 import Foundation
 
 func day14Part1() -> Int {
-    let input = readInput(14, example: 4)
+    let input = readInput(14, example: 1)
     let reactions = Dictionary(uniqueKeysWithValues: input.map(parseLine).map({($0.name, $0)}))
     print(reactions)
 
     var stack = ["FUEL": 1]
     while (!stack.keys.allSatisfy({$0 == "ORE"})) {
         let notOres = stack.filter({$0.key != "ORE"})
-        let element = notOres.filter({!reactions[$0.key]!.makesOre}).first ?? notOres.first!
+        let element = notOres.first!
 
         let needName = element.key
         let needAmount = stack.removeValue(forKey: needName)!
         let reaction = reactions[needName]!
-        let multiplier = Int(ceil(Double(needAmount) / Double(reaction.amount)))
-        for (consumeName, consumeAmount) in reaction.consumes {
-            stack.merge([consumeName: consumeAmount * multiplier], uniquingKeysWith: +)
+        let multiplier = Int(floor(Double(needAmount) / Double(reaction.amount)))
+        if multiplier > 0 {
+            for (consumeName, consumeAmount) in reaction.consumes {
+                stack.merge([consumeName: consumeAmount * multiplier], uniquingKeysWith: +)
+            }
+        }
+        let remaining = needAmount % reaction.amount
+        if remaining > 0 {
+            stack.merge([needName: remaining], uniquingKeysWith: +)
         }
 
 //        print("-------------------")
