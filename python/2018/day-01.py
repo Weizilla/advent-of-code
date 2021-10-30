@@ -1,25 +1,31 @@
-from utils import read_int_input
+from typing import Union
+
+from solution import Solution
 
 
-def day01_part1() -> int:
-    return sum(read_int_input(1))
+class Day1(Solution):
 
+    def __init__(self) -> None:
+        super().__init__(1)
 
-def day01_part2() -> int:
-    input = read_int_input(1)
-    seen = set()
-    freq = 0
-    i = 0
-    while True:
-        curr = input[i % len(input)]
-        freq += curr
-        if freq in seen:
-            return freq
-        else:
-            seen.add(freq)
+    def part1(self) -> Union[str, int]:
+        return sum(self.read_int_input())
 
-        i += 1
+    def part2(self) -> Union[str, int]:
+        input = self.read_int_input()
+        seen = set()
+        freq = 0
+        i = 0
+        while True:
+            curr = input[i % len(input)]
+            freq += curr
+            if freq in seen:
+                return freq
+            else:
+                seen.add(freq)
+
+            i += 1
 
 
 if __name__ == "__main__":
-    print(day01_part2())
+    Day1().run()
