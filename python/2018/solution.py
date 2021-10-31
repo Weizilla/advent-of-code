@@ -12,13 +12,11 @@ class Solution(abc.ABC):
         colorama.init()
         self.day = day
 
-    @abc.abstractmethod
     def part1(self) -> Union[str, int]:
-        pass
+        raise NotImplementedError("Not implemented")
 
-    @abc.abstractmethod
     def part2(self) -> Union[str, int]:
-        pass
+        raise NotImplementedError("Not implemented")
 
     def read_input(self, example: Optional[int] = None) -> [str]:
         file_type = f"example-{example}" if example else "input"
@@ -31,13 +29,24 @@ class Solution(abc.ABC):
         return [int(i) for i in self.read_input(example)]
 
     def run(self):
-        results = self.part2()
-        part = 2
+        part = None
+        results = None
 
-        if results is None:
-            results = self.part1()
-            part = 1
+        try:
+            results = self.part2()
+            part = 2
+        except NotImplementedError:
+            pass
 
-        if results is not None:
+        if not part:
+            try:
+                results = self.part1()
+                part = 1
+            except NotImplementedError:
+                pass
+
+        if part:
             print(f"{colorama.Fore.LIGHTBLACK_EX}Day {self.day} part {part} results:")
             print(f"{colorama.Fore.RED}{results}")
+        else:
+            print(f"{colorama.Fore.LIGHTBLACK_EX}Day {self.day} not done")
