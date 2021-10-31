@@ -1,5 +1,6 @@
 import abc
 from pathlib import Path
+from typing import Optional
 from typing import Union
 
 import colorama
@@ -19,14 +20,15 @@ class Solution(abc.ABC):
     def part2(self) -> Union[str, int]:
         pass
 
-    def read_input(self) -> [str]:
-        path = (Path(__file__).parent / f"inputs/day-{self.day:02}-input.txt").resolve()
+    def read_input(self, example: Optional[int] = None) -> [str]:
+        file_type = f"example-{example}" if example else "input"
+        path = (Path(__file__).parent / f"inputs/day-{self.day:02}-{file_type}.txt").resolve()
         with open(path, "r") as f:
             all_lines = f.read().strip()
             return [r.strip() for r in all_lines.splitlines()]
 
-    def read_int_input(self) -> [int]:
-        return [int(i) for i in self.read_input()]
+    def read_int_input(self, example: Optional[int]) -> [int]:
+        return [int(i) for i in self.read_input(example)]
 
     def run(self):
         results = self.part2()
@@ -37,7 +39,5 @@ class Solution(abc.ABC):
             part = 1
 
         if results is not None:
-            print(f"Day {self.day} part {part} results:")
+            print(f"{colorama.Fore.LIGHTBLACK_EX}Day {self.day} part {part} results:")
             print(f"{colorama.Fore.RED}{results}")
-        else:
-            print(f"Day {self.day} not done")
