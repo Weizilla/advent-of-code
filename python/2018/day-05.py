@@ -34,6 +34,7 @@ class LinkedList:
 
     def delete(self, node: Node):
         node.delete()
+
         if self.head == node:
             self.head = node.next
 
@@ -68,9 +69,13 @@ class Day5(Solution):
     def part1(self) -> Union[str, int]:
         input = list(self.read_input()[0])
 
+        polymer = self.react(input)
+
+        return len(polymer)
+
+    def react(self, input: [str]) -> LinkedList:
         polymer = LinkedList()
         [polymer.add(i) for i in input]
-        # print(polymer)
 
         changed = True
         while changed:
@@ -86,22 +91,34 @@ class Day5(Solution):
                     # print(" " + str(polymer))
                     # print("---")
                     changed = True
-                    # break
                     curr = curr_next.next
+                    if not curr:
+                        break
                     curr_next = curr.next
                 else:
                     curr = curr_next
                     curr_next = curr.next
 
-            # print(polymer)
-
-        return len(polymer)
+        return polymer
 
     def opposite(self, letter: str) -> str:
         return letter.lower() if letter.isupper() else letter.upper()
 
+    def part2(self) -> Union[str, int]:
+        input = self.read_input()[0]
+        all_letters = sorted(list(set(input.lower())))
 
-# def part2(self) -> Union[str, int]:
+        reacted_lengths = []
+        for l in all_letters:
+            polymer = self.react([i for i in input if i.lower() != l])
+            # print(polymer)
+
+            len_polyer = len(polymer)
+            reacted_lengths.append((len_polyer, l))
+            print(f"reacted {l} {len_polyer}")
+
+        reacted_lengths.sort()
+        return reacted_lengths[0][0]
 
 
 if __name__ == "__main__":
