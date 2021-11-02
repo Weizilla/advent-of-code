@@ -1,4 +1,5 @@
 from typing import Optional
+from typing import Sized
 from typing import Union
 
 from solution import Solution
@@ -10,7 +11,7 @@ class Node:
         self.prev = prev
         self.next = next
 
-    def delete(self):
+    def delete(self) -> None:
         if self.prev:
             self.prev.next = self.next
 
@@ -19,7 +20,7 @@ class Node:
 
 
 class LinkedList:
-    def __init__(self):
+    def __init__(self) -> None:
         self.head = None
         self.tail = None
 
@@ -32,7 +33,7 @@ class LinkedList:
             self.head = Node(value)
             self.tail = self.head
 
-    def delete(self, node: Node):
+    def delete(self, node: Node) -> None:
         node.delete()
 
         if self.head == node:
@@ -41,9 +42,9 @@ class LinkedList:
         if self.tail == node:
             self.tail = node.prev
 
-    def __str__(self):
+    def __str__(self) -> str:
         if not self.head:
-            return
+            return ""
 
         all = []
 
@@ -57,7 +58,7 @@ class LinkedList:
 
         return "".join(all)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(str(self))
 
 
@@ -67,13 +68,13 @@ class Day5(Solution):
         super().__init__(5)
 
     def part1(self) -> Union[str, int]:
-        input = list(self.read_input()[0])
+        input = list(self.read_input(1)[0])
 
         polymer = self.react(input)
 
         return len(polymer)
 
-    def react(self, input: [str]) -> LinkedList:
+    def react(self, input: [str]) -> Sized:
         polymer = LinkedList()
         [polymer.add(i) for i in input]
 
@@ -91,13 +92,13 @@ class Day5(Solution):
                     # print(" " + str(polymer))
                     # print("---")
                     changed = True
-                    curr = curr_next.next
-                    if not curr:
-                        break
-                    curr_next = curr.next
+                    curr = curr.prev
+                    curr_next = curr.next if curr else None
                 else:
                     curr = curr_next
                     curr_next = curr.next
+
+            # print("===")
 
         return polymer
 
@@ -115,7 +116,7 @@ class Day5(Solution):
 
             len_polyer = len(polymer)
             reacted_lengths.append((len_polyer, l))
-            print(f"reacted {l} {len_polyer}")
+            # print(f"reacted {l} {len_polyer}")
 
         reacted_lengths.sort()
         return reacted_lengths[0][0]
