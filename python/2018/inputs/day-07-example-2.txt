@@ -1,0 +1,4 @@
+Step B must be finished before step C can begin.
+Step A must be finished before step B can begin.
+Step J must be finished before step B can begin.
+Step E must be finished before step C can begin.
