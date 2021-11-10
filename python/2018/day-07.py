@@ -32,14 +32,9 @@ class Day7(Solution):
 
     def part1(self) -> Union[str, int]:
         input = self.read_input()
-
         nodes = self.parse_input(input)
-        print("\n".join(str(n) for n in nodes))
 
         start_nodes = sorted([n for n in nodes if not n.prev])
-        end_nodes = [n for n in nodes if not n.next]
-        print(f"Start {start_nodes}")
-        print(f"End node {end_nodes}")
 
         path = []
         to_visit = set(start_nodes)
@@ -47,10 +42,9 @@ class Day7(Solution):
         while to_visit:
             curr = sorted(list(to_visit))[0]
             path.append(curr.id)
-
             to_visit.remove(curr)
 
-            next_visit = [n for n in curr.next if all([np not in to_visit for np in n.prev]) if n.id not in path]
+            next_visit = [n for n in curr.next if not n.prev or all([np.id in path for np in n.prev])]
 
             to_visit = to_visit.union(next_visit)
 
