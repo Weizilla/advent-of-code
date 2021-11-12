@@ -11,6 +11,7 @@ class Solution(abc.ABC):
     def __init__(self, day: int) -> None:
         colorama.init()
         self.day = day
+        self.example = None
 
     def part1(self) -> Union[str, int]:
         raise NotImplementedError("Not implemented")
@@ -18,19 +19,20 @@ class Solution(abc.ABC):
     def part2(self) -> Union[str, int]:
         raise NotImplementedError("Not implemented")
 
-    def read_input(self, example: Optional[int] = None) -> [str]:
-        file_type = f"example-{example}" if example else "input"
+    def read_input(self) -> [str]:
+        file_type = f"example-{self.example}" if self.example else "input"
         path = (Path(__file__).parent / f"inputs/day-{self.day:02}-{file_type}.txt").resolve()
         with open(path, "r") as f:
             all_lines = f.read().strip()
             return [r.strip() for r in all_lines.splitlines()]
 
-    def read_int_input(self, example: Optional[int]) -> [int]:
-        return [int(i) for i in self.read_input(example)]
+    def read_int_input(self) -> [int]:
+        return [int(i) for i in self.read_input()]
 
-    def run(self):
+    def run(self, example: Optional[int] = None):
         part = None
         results = None
+        self.example = example
 
         try:
             results = self.part2()
