@@ -1,0 +1,35 @@
+{
+  "env" : {
+    "browser" : true,
+    "es2021" : true
+  },
+  "extends" : [
+    "airbnb-base",
+    "airbnb-typescript/base"
+  ],
+  "parser" : "@typescript-eslint/parser",
+  "parserOptions" : {
+    "ecmaVersion" : 13,
+    "sourceType" : "module",
+    "project" : ["./tsconfig.json"]
+  },
+  "plugins" : [
+    "@typescript-eslint"
+  ],
+  "rules" : {
+    "quotes" : "off",
+    "@typescript-eslint/quotes" : [
+      "error", "double", { "allowTemplateLiterals" : true }
+    ],
+    "no-plusplus" : "off",
+    "no-console" : ["error", { "allow" : ["log", "warn", "error"] }],
+    "lines-between-class-members" : "off",
+    "@typescript-eslint/lines-between-class-members" : "off",
+    "class-methods-use-this" : "off",
+    "no-unused-vars" : "off",
+    "@typescript-eslint/no-unused-vars" : "warn",
+    "no-trailing-spaces" : "off",
+    "arrow-parens" : ["warn", "as-needed"],
+    "max-len" : ["warn", 120]
+  }
+}
