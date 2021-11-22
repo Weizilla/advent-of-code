@@ -1,0 +1,17 @@
+import Solution from "./solution";
+
+class DayDAY extends Solution {
+  constructor(example?: number) {
+    super(DAY, example);
+  }
+
+  part1(): number | string | undefined {
+    return undefined;
+  }
+
+  part2(): number | string | undefined {
+    return undefined;
+  }
+}
+
+(new DayDAY()).run();
