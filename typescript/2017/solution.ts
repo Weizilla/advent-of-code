@@ -2,6 +2,10 @@ import chalk from "chalk";
 import { readFileSync } from "fs";
 import path from "path";
 
+function print(input: any, color: string = "black") {
+  console.log(chalk.keyword(color)("%s"), input);
+}
+
 class Solution {
   day: number;
   example?: number;
@@ -17,10 +21,6 @@ class Solution {
 
   part2(): number | string | undefined {
     return undefined;
-  }
-
-  print(input: any, color: string = "black") {
-    console.log(chalk.keyword(color)("%s"), input);
   }
 
   readInput(): string[] {
@@ -43,18 +43,18 @@ class Solution {
   run() {
     let result = this.part2();
     if (result !== undefined) {
-      this.print(`Day ${this.day} Part 2`, "blue");
-      this.print(result, "red");
+      print(`Day ${this.day} Part 2`, "blue");
+      print(result, "red");
     } else {
       result = this.part1();
       if (result !== undefined) {
-        this.print(`Day ${this.day} Part 1`, "blue");
-        this.print(result, "red");
+        print(`Day ${this.day} Part 1`, "blue");
+        print(result, "red");
       } else {
-        this.print(`Day ${this.day} not implemented`, "blue");
+        print(`Day ${this.day} not implemented`, "blue");
       }
     }
   }
 }
 
-export default Solution;
+export { print, Solution };

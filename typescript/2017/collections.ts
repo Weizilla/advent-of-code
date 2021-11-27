@@ -3,7 +3,7 @@ interface HashKey {
 }
 
 class HashMap<K extends HashKey, V> {
-  map: Map<String, V>;
+  map: Map<string, V>;
 
   constructor() {
     this.map = new Map();
@@ -22,7 +22,7 @@ class HashMap<K extends HashKey, V> {
   }
 
   toString(): string {
-    return this.map.toString();
+    return JSON.stringify(Array.from(this.map.entries()));
   }
 }
 
