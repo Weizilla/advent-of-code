@@ -31,6 +31,8 @@
     "no-trailing-spaces" : "off",
     "arrow-parens" : ["warn", "as-needed"],
     "max-len" : ["warn", 120],
-    "max-classes-per-file" : "off"
+    "max-classes-per-file" : "off",
+    "no-else-return" : "off",
+    "no-underscore-dangle" : "off"
   }
 }
