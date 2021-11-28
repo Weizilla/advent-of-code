@@ -29,14 +29,14 @@ class Node {
       return sameAbove[0];
     }
 
-    const weightCounter = new HashMap<number, number>();
+    const weightCounter = new Map<number, number>();
     weights.forEach(w => {
       const count = weightCounter.get(w) || 0;
       weightCounter.set(w, count + 1);
     });
 
-    const desiredWeight = parseInt(Array.from(weightCounter.map.entries())
-      .filter(([v, c], i) => c > 1)[0][0], 10);
+    const desiredWeight: number = Array.from(weightCounter.entries())
+      .filter(([v, c], i) => c > 1)[0][0];
 
     const badNode = this.aboveNodes.filter(n => n.combinedWeight() !== desiredWeight)[0];
 
@@ -52,8 +52,8 @@ class Day7 extends Solution {
   part1(): number | string | undefined {
     const programs = this.readPrograms();
     const hasPointer = new Set<string>();
-    Array.from(programs.map.values()).flatMap(n => n.aboveIds).forEach(n => hasPointer.add(n));
-    const noPointers = Array.from(programs.map.keys()).filter(s => !hasPointer.has(s));
+    programs.values().flatMap(n => n.aboveIds).forEach(n => hasPointer.add(n));
+    const noPointers = programs.keys().filter(s => !hasPointer.has(s));
 
     // this.print(programs);
     print(noPointers);
@@ -63,8 +63,8 @@ class Day7 extends Solution {
   part2(): number | string | undefined {
     const programs = this.readPrograms();
     const hasPointer = new Set<string>();
-    Array.from(programs.map.values()).flatMap(n => n.aboveIds).forEach(n => hasPointer.add(n));
-    const bottom = Array.from(programs.map.keys()).filter(s => !hasPointer.has(s))[0];
+    programs.values().flatMap(n => n.aboveIds).forEach(n => hasPointer.add(n));
+    const bottom = Array.from(programs.keys()).filter(s => !hasPointer.has(s))[0];
 
     return programs.get(bottom)?.sameWeight()!;
   }
@@ -74,16 +74,16 @@ class Day7 extends Solution {
     const inputs = this.readInput();
     const inputRe = /([\w]+) \(([\d]+)\)( -> )*([\w, ]*)/;
 
-    for (const input of inputs) {
+    inputs.forEach(input => {
       const match = input.match(inputRe)!;
       const id = match[1];
       const weight = parseInt(match[2], 10);
       const aboveIds = match[4] ? match[4].replace(/,/g, "").split(" ") : [];
       const node = new Node(id, weight, aboveIds);
       programs.set(id, node);
-    }
+    });
 
-    for (const node of programs.map.values()) {
+    for (const node of programs.values()) {
       node.aboveNodes = node.aboveIds.map(n => programs.get(n)!);
     }
 
