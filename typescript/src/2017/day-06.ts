@@ -1,9 +1,9 @@
-import Solution from "./solution";
-import { HashMap } from "./collections";
+import { Solution } from "../solution";
+import { HashMap } from "../collections";
 
 class Day6 extends Solution {
   constructor(example?: number) {
-    super(6, example);
+    super(6, 2017, example);
   }
 
   part1(): number | string | undefined {

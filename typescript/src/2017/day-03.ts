@@ -1,5 +1,6 @@
-import Solution from "./solution";
-import { HashKey, HashMap } from "./collections";
+import { Solution } from "../solution";
+import { HashKey, HashMap } from "../collections";
+import { print } from "../utils";
 
 class Point implements HashKey {
   x: number;
@@ -17,13 +18,13 @@ class Point implements HashKey {
 
 class Day3 extends Solution {
   constructor(example?: number) {
-    super(3, example);
+    super(3, 2017, example);
   }
 
   part1(): number | string | undefined {
     const inputs = this.readInputInts();
     const solutions = inputs.map(n => this.solvePart1(n));
-    this.print(solutions);
+    print(solutions);
     return solutions[solutions.length - 1];
   }
 

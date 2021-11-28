@@ -1,17 +1,15 @@
-import chalk from "chalk";
 import { readFileSync } from "fs";
 import path from "path";
-
-function print(input: any, color: string = "black") {
-  console.log(chalk.keyword(color)("%s"), input);
-}
+import { print } from "./utils";
 
 class Solution {
   day: number;
+  year: number;
   example?: number;
 
-  constructor(day: number, example?: number) {
+  constructor(day: number, year: number, example?: number) {
     this.day = day;
+    this.year = year;
     this.example = example;
   }
 
@@ -31,7 +29,7 @@ class Solution {
     } else {
       inputFilename = `inputs/day-${day}-input.txt`;
     }
-    const inputs = readFileSync(path.join(__dirname, inputFilename), "utf-8");
+    const inputs = readFileSync(path.join(__dirname, this.year.toString(), inputFilename), "utf-8");
     return inputs.split("\n")
       .filter((v) => v.trim().length > 0);
   }
@@ -57,4 +55,4 @@ class Solution {
   }
 }
 
-export { print, Solution };
+export { Solution };

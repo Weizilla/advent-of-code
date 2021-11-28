@@ -1,8 +1,8 @@
-import Solution from "./solution";
+import { Solution } from "../solution";
 
 class Day5 extends Solution {
   constructor(example?: number) {
-    super(5, example);
+    super(5, 2017, example);
   }
 
   part1(): number | string | undefined {

@@ -1,5 +1,6 @@
-import { print, Solution } from "./solution";
-import { HashMap } from "./collections";
+import { Solution } from "../solution";
+import { HashMap } from "../collections";
+import { print } from "../utils";
 
 class Node {
   id: string;
@@ -46,7 +47,7 @@ class Node {
 
 class Day7 extends Solution {
   constructor(example?: number) {
-    super(7, example);
+    super(7, 2017, example);
   }
 
   part1(): number | string | undefined {
