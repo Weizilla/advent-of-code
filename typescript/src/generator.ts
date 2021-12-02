@@ -33,4 +33,4 @@ function generate(year: number) {
   print(newDayPath);
 }
 
-generate(2017);
+generate(2021);
