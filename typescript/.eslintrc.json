@@ -27,12 +27,13 @@
     "@typescript-eslint/lines-between-class-members" : "off",
     "class-methods-use-this" : "off",
     "no-unused-vars" : "off",
-    "@typescript-eslint/no-unused-vars" : "warn",
+    "@typescript-eslint/no-unused-vars" : ["error", { "argsIgnorePattern" : "_" }],
     "no-trailing-spaces" : "off",
     "arrow-parens" : ["warn", "as-needed"],
     "max-len" : ["warn", 120],
     "max-classes-per-file" : "off",
     "no-else-return" : "off",
-    "no-underscore-dangle" : "off"
+    "no-underscore-dangle" : "off",
+    "no-bitwise" : "off"
   }
 }
