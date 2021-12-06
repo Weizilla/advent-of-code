@@ -8,7 +8,10 @@ function sum(input: Iterable<number>) {
   return [...input].reduce((p, c) => p + c, 0);
 }
 
-function range(end: number, start: number = 0, includeEnd: boolean = false): number[] {
+function range(endInput: number, startInput: number = 0, includeEnd: boolean = false): number[] {
+  const start = Math.trunc(startInput);
+  const end = Math.trunc(endInput);
+
   if (start === end) {
     return [start];
   }
