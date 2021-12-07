@@ -1,5 +1,5 @@
 import { Solution } from "../solution";
-import {print, range} from "../utils";
+import { range } from "../utils";
 
 class Day6 extends Solution {
   constructor(example?: number) {
@@ -7,26 +7,21 @@ class Day6 extends Solution {
   }
 
   part1(): number | string | undefined {
-    const initial = [3, 4, 3, 1, 2];
-    const fishes = this.makeFishes(initial, 4);
+    const initial = this.readInput()[0].split(",").map(n => parseInt(n, 10));
+    const fishes = this.makeFishes(initial, 80);
     return fishes;
-    print(this.makeFish(3, 0, 18)); // 4, 11, 18
-    // print(this.makeFish(0, 4, 18)); // 13
-    // print(this.makeFish(8, 4, 18));
-    // print(this.makeFish(8, 11,18));
-    // print(this.makeFish(8, 18,18));
-
-    // const num = this.makeFishes(initial, 18);
-    // return num;
-    return 0;
   }
 
   makeFish(initial: number, startDayInput: number, endDay: number): number[] {
-    // return start days
+    // returns start days
     const startDay = startDayInput - (8 - initial);
     const numFish = Math.trunc((endDay - startDay) / 7);
+    if (numFish === 0) {
+      return [];
+    }
     const newFish = range(numFish, 1, true).map(n => (n * 7) + startDay + 2).filter(n => n > 0 && n <= endDay);
-    // print(`${initial} ${startDayInput} ${startDay} ${numFish} new ${newFish}`);
+    // print(`init=${initial} start=${startDayInput} real_start=${startDay} num=${numFish}
+    // new=${JSON.stringify(newFish)}`);
     return newFish;
   }
 
@@ -36,7 +31,7 @@ class Day6 extends Solution {
     }
 
     let newFishes = initial.flatMap(n => this.makeFish(n, 0, days));
-    print(newFishes);
+    // print(newFishes);
     let numFishes = newFishes.length;
     while (newFishes.length > 0) {
       const moreFish = newFishes.flatMap(n => this.makeFish(8, n, days));
@@ -47,7 +42,9 @@ class Day6 extends Solution {
   }
 
   part2(): number | string | undefined {
-    return undefined;
+    const initial = this.readInput()[0].split(",").map(n => parseInt(n, 10));
+    const fishes = this.makeFishes(initial, 256);
+    return fishes;
   }
 }
 
