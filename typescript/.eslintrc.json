@@ -34,6 +34,7 @@
     "max-classes-per-file" : "off",
     "no-else-return" : "off",
     "no-underscore-dangle" : "off",
-    "no-bitwise" : "off"
+    "no-bitwise" : "off",
+    "no-param-reassign" : ["error", { "props" : false }]
   }
 }
