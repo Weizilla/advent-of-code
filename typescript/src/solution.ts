@@ -38,6 +38,12 @@ class Solution {
     return this.readInput().map(n => parseInt(n, 10));
   }
 
+  print(input: string, color: string = "black") {
+    if (this.example !== undefined) {
+      print(input, color);
+    }
+  }
+
   run() {
     let result = this.part2();
     if (result !== undefined) {
