@@ -73,4 +73,29 @@ class HashMap<K extends HashKey, V> {
   }
 }
 
-export { HashMap, HashKey, HashSet };
+class Counter {
+  private _map: Map<string, number>;
+
+  constructor() {
+    this._map = new Map<string, number>();
+  }
+
+  count(value: string) {
+    this.add(value, 1);
+  }
+
+  add(value: string, inc: number) {
+    const count = this._map.get(value) || 0;
+    this._map.set(value, count + inc);
+  }
+
+  maxCount(): number {
+    return Math.max(...this._map.values());
+  }
+
+  minCount(): number {
+    return Math.min(...this._map.values());
+  }
+}
+
+export { HashMap, HashKey, HashSet, Counter };
