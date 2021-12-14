@@ -1,19 +1,5 @@
 import { Solution } from "../solution";
-import { print } from "../utils";
-
-class Node {
-  value: string;
-  next: Node | null;
-
-  constructor(value: string) {
-    this.value = value;
-    this.next = null;
-  }
-
-  toString(): string {
-    return `${this.value} ${this.next?.value || ""}`;
-  }
-}
+import { Counter } from "../collections";
 
 class Day14 extends Solution {
   constructor(example?: number) {
@@ -42,14 +28,13 @@ class Day14 extends Solution {
   }
 
   private calcMinMaxDiff(polymer: string) {
-    const counts = new Map<string, number>();
+    const counter = new Counter();
     polymer.split("").forEach(p => {
-      const count = counts.get(p) || 0;
-      counts.set(p, count + 1);
+      counter.count(p);
     });
 
-    const maxNum = Array.from([...counts.entries()]).sort(([_1, n1], [_2, n2]) => n2 - n1)[0][1];
-    const minNum = Array.from([...counts.entries()]).sort(([_1, n1], [_2, n2]) => n1 - n2)[0][1];
+    const maxNum = counter.maxCount();
+    const minNum = counter.minCount();
 
     this.print(`${minNum} ${maxNum}`);
 
@@ -82,74 +67,77 @@ class Day14 extends Solution {
   part2(): number | string | undefined {
     const inputs = this.readInput();
     const rules = this.readRules(inputs);
-
     const polymer = inputs[0].split("");
-    const head = new Node(polymer[0]);
-    let prev = head;
-    for (let i = 1; i < polymer.length; i++) {
-      const n = new Node(polymer[i]);
-      prev.next = n;
-      prev = n;
-    }
+    let pairs = this.calcPairs(polymer);
 
-    this.printList(head);
+    this.printPairs(`step 0`, pairs);
 
     for (let i = 0; i < 40; i++) {
-      const numAdded = this.runStep2(head, rules);
-      print(`${i} Num added ${numAdded}`);
+      pairs = this.runStep2b(pairs, rules);
+      this.printPairs(`step act ${i + 1}`, pairs);
     }
 
-    this.printList(head);
-
-    return head.value;
+    return this.calcCounts2b(polymer, pairs);
   }
 
-  printList(head: Node) {
-    let output = "";
-    let curr: Node | null = head;
-    while (curr !== null) {
-      output += curr.value;
-      curr = curr.next;
+  private calcPairs(polymer: string[]): Map<string, number> {
+    const pairs = new Map<string, number>();
+    for (let i = 0; i < polymer.length - 1; i++) {
+      const pair = `${polymer[i]}${polymer[i + 1]}`;
+      const count = pairs.get(pair) || 0;
+      pairs.set(pair, count + 1);
     }
-    this.print(output);
+    return pairs;
   }
 
-  runStep2(head: Node | null, rules: Map<string, string>): number {
-    let numAdded = 0;
-    let curr: Node | null = head;
-    while (curr !== null && curr.next) {
-      const pair = `${curr.value}${curr.next.value}`;
-      const insert = rules.get(pair);
-      if (insert) {
-        const i = new Node(insert);
-        const next = curr.next;
-        curr.next = i;
-        i.next = next;
-        curr = next;
-        numAdded++;
+  private runStep2b(pairs: Map<string, number>, rules: Map<string, string>): Map<string, number> {
+    const newPairs = new Map<string, number>();
+
+    for (const pair of pairs.keys()) {
+      if (rules.has(pair)) {
+        const insert = rules.get(pair);
+        const count = pairs.get(pair)!;
+
+        const [p1, p2] = [...pair.split("")];
+        const firstHalf = `${p1}${insert}`;
+        const firstHalfCount = newPairs.get(firstHalf) || 0;
+        newPairs.set(firstHalf, firstHalfCount + count);
+
+        const lastHalf = `${insert}${p2}`;
+        const lastHalfCount = newPairs.get(lastHalf) || 0;
+        newPairs.set(lastHalf, lastHalfCount + count);
       } else {
-        curr = curr.next;
+        newPairs.set(pair, pairs.get(pair)!);
       }
     }
-    return numAdded;
+    return newPairs;
   }
 
-  private calcMinMaxDiff2(head: Node) {
-    const counts = new Map<string, number>();
+  private calcCounts2b(polymer: string[], pairs: Map<string, number>): number {
+    const counter = new Counter();
 
-    let curr: Node | null = head;
-    while (curr !== null) {
-      const count = counts.get(curr.value) || 0;
-      counts.set(curr.value, count + 1);
-      curr = curr.next;
+    for (const pair of pairs.keys()) {
+      const [p1, p2] = [...pair.split("")];
+      counter.add(p1, pairs.get(pair)!);
+      counter.add(p2, pairs.get(pair)!);
     }
 
-    const maxNum = Array.from([...counts.entries()]).sort(([_1, n1], [_2, n2]) => n2 - n1)[0][1];
-    const minNum = Array.from([...counts.entries()]).sort(([_1, n1], [_2, n2]) => n1 - n2)[0][1];
+    counter.count(polymer[0]);
+    counter.count(polymer[polymer.length - 1]);
 
-    this.print(`${minNum} ${maxNum}`);
+    const maxNum = counter.maxCount();
+    const minNum = counter.minCount();
 
-    return maxNum - minNum;
+    return (maxNum - minNum) / 2;
+  }
+
+  printPairs(message: string, pairs: Map<string, number>) {
+    let output = `${message} `;
+    const keys = [...pairs.keys()].sort();
+    keys.forEach(k => {
+      output += `${k} ${pairs.get(k)!} `;
+    });
+    this.print(output);
   }
 }
 
