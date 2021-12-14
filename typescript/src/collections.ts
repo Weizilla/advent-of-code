@@ -2,6 +2,38 @@ interface HashKey {
   toString(): string;
 }
 
+class HashSet<K extends HashKey> {
+  private _values: Map<string, K>;
+
+  constructor() {
+    this._values = new Map<string, K>();
+  }
+
+  has(value: K): boolean {
+    return this._values.has(value.toString());
+  }
+
+  add(value: K) {
+    this._values.set(value.toString(), value);
+  }
+
+  values(): Array<K> {
+    return Array.from(this._values.values());
+  }
+
+  delete(value: K) {
+    this._values.delete(value.toString());
+  }
+
+  size() {
+    return this._values.size;
+  }
+
+  toString(): string {
+    return JSON.stringify(Array.from(this._values.keys()));
+  }
+}
+
 class HashMap<K extends HashKey, V> {
   private _map: Map<string, V>;
   private _keys: Map<string, K>;
@@ -41,4 +73,4 @@ class HashMap<K extends HashKey, V> {
   }
 }
 
-export { HashMap, HashKey };
+export { HashMap, HashKey, HashSet };
