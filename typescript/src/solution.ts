@@ -45,14 +45,18 @@ class Solution {
   }
 
   run() {
+    let start = Date.now();
     let result = this.part2();
     if (result !== undefined) {
-      print(`Day ${this.day} Part 2`, "blue");
+      const duration = Math.ceil((Date.now() - start) / 1000);
+      print(`Day ${this.day} Part 2 in ${duration} s`, "blue");
       print(result, "red");
     } else {
+      start = Date.now();
       result = this.part1();
       if (result !== undefined) {
-        print(`Day ${this.day} Part 1`, "blue");
+        const duration = Math.ceil((Date.now() - start) / 1000);
+        print(`Day ${this.day} Part 1 ${duration} s`, "blue");
         print(result, "red");
       } else {
         print(`Day ${this.day} not implemented`, "blue");
