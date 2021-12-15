@@ -98,4 +98,78 @@ class Counter {
   }
 }
 
-export { HashMap, HashKey, HashSet, Counter };
+class Point implements HashKey {
+  x: number;
+  y: number;
+
+  constructor(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+  }
+
+  toString(): string {
+    return `(${this.x},${this.y})`;
+  }
+}
+
+class Grid {
+  private values: HashMap<Point, number>;
+  maxX: number;
+  maxY: number;
+
+  constructor(input: string[]) {
+    this.values = new HashMap<Point, number>();
+    this.maxY = input.length;
+    this.maxX = input[0].split("").length;
+
+    for (let y = 0; y < this.maxY; y++) {
+      const row = input[y].split("");
+      for (let x = 0; x < this.maxX; x++) {
+        const value = parseInt(row[x], 10);
+        this.values.set(new Point(x, y), value);
+      }
+    }
+  }
+
+  toString(): string {
+    let output = "";
+    for (let y = 0; y < this.maxY; y++) {
+      for (let x = 0; x < this.maxX; x++) {
+        const value = this.values.get(new Point(x, y)) ?? " ";
+        output += value.toString();
+      }
+      output += "\n";
+    }
+    return output;
+  }
+
+  surround(point: Point, diagonal: boolean = false): Point[] {
+    const {x, y} = point;
+    const s = [
+      [x - 1, y],
+      [x + 1, y],
+      [x, y - 1],
+      [x, y + 1],
+    ];
+    if (diagonal) {
+      s.push(...[[x - 1, y - 1],
+        [x + 1, y + 1],
+        [x - 1, y + 1],
+        [x + 1, y - 1]]);
+    }
+    return s.filter(([nX, nY]) => nX >= 0 && nX < this.maxX && nY >= 0 && nY < this.maxY)
+      .map(([nX, nY]) => new Point(nX, nY));
+  }
+
+  value(point: Point): number {
+    return this.values.get(point)!;
+  }
+
+  set(point: Point, value: number) {
+    this.maxX = Math.max(this.maxX, point.x + 1);
+    this.maxY = Math.max(this.maxY, point.y + 1);
+    this.values.set(point, value);
+  }
+}
+
+export { HashMap, HashKey, HashSet, Counter, Grid, Point };
