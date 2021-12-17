@@ -21,20 +21,30 @@ function binToDec(input: string): number {
 }
 
 class Packet {
+  pType: string;
   version: number;
   type: number;
   _length: number;
   subpackets: Packet[];
 
-  constructor(version: number, type: number, length: number) {
+  constructor(pType: string, version: number, type: number, length: number) {
+    this.pType = pType;
     this.type = type;
     this.version = version;
     this._length = length;
     this.subpackets = [];
   }
 
+  addSubpacket(packet: Packet) {
+    this.subpackets.push(packet);
+  }
+
   length(): number {
     return this._length + sum(this.subpackets.map(p => p.length()));
+  }
+
+  toString(): string {
+    return `${this.pType} ver=${this.version} type=${this.type} len=${this.length()}`;
   }
 }
 
@@ -42,18 +52,19 @@ class Literal extends Packet {
   value: number;
 
   constructor(version: number, type: number, valueLen: number, value: number) {
-    super(version, type, 6 + valueLen);
+    super("LIT", version, type, 6 + valueLen);
     this.value = value;
+  }
+
+  toString(): string {
+    return `${super.toString()} value=${this.value}`;
   }
 }
 
 class Operator extends Packet {
-
-  constructor(version: number, type: number, subPackets: Packet[]) {
-    super(version, type, 7);
-    this.subpackets = subPackets;
+  constructor(version: number, type: number) {
+    super("OPT", version, type, 7);
   }
-
 }
 
 class Day16 extends Solution {
@@ -62,7 +73,7 @@ class Day16 extends Solution {
   }
 
   part1(): number | string | undefined {
-    const inputs = this.readInput().splice(4, 4);
+    const inputs = this.readInput().slice(4, 5);
     const sumVers = inputs.map(i => {
       const sumVer = this.runPart1(i);
       this.print(`${i} ${sumVer}`);
@@ -73,27 +84,25 @@ class Day16 extends Solution {
   }
 
   runPart1(input: string): number {
-    this.print(`Input ${input}`);
     const bin = hexToBin(input);
-    const head = this.parsePacket(bin);
+    this.print(`Input ${input} ${this.dumpBin(bin)}`);
+    const head = this.parsePacket(bin, 0);
 
     return this.sumVersions(head);
   }
 
-  parsePacket(input: string): Packet {
+  parsePacket(input: string, depth: number): Packet {
     const version = binToDec(input.slice(0, 3));
     const type = binToDec(input.slice(3, 6));
-    this.print(`bin=${input} v=${version} type=${type}`);
-
-    const rest = input.slice(6, input.length);
+    const subpackets = input.slice(6, input.length);
     if (type === 4) {
-      return this.parseLiteral(version, type, rest);
+      return this.parseLiteral(version, type, depth, subpackets);
     } else {
-      return this.parseOperator(version, type, rest);
+      return this.parseOperator(version, type, depth, subpackets);
     }
   }
 
-  private parseLiteral(version: number, type: number, rest: string): Literal {
+  private parseLiteral(version: number, type: number, depth: number, rest: string): Literal {
     let start = 0;
     const digits: string[] = [];
 
@@ -104,44 +113,57 @@ class Day16 extends Solution {
     rest.slice(start + 1, start + 5).split("").forEach(c => digits.push(c));
 
     const value = binToDec(digits.join(""));
-    const remainder = rest.slice(start + 5, rest.length);
-    this.print(`LIT value ${value} rem ${remainder}`);
-    return new Literal(version, type, start + 5, value);
+    const literal = new Literal(version, type, start + 5, value);
+    this.print(literal, depth);
+    return literal;
   }
 
-  private parseOperator(version: number, type: number, rest: string): Packet {
+  private parseOperator(version: number, type: number, depth: number, rest: string): Packet {
     const lengthId = rest.slice(0, 1);
-    this.print(`Len id ${lengthId}`);
 
     if (lengthId === "0") {
-      const subLenBin = rest.slice(1, 16);
-      let subLen = binToDec(subLenBin);
+      let subLen = binToDec(rest.slice(1, 16));
       let remainder = rest.slice(16, rest.length);
-      this.print(`OPT ver ${version} sub len ${subLen} rem ${remainder}`);
-      const subPackets = [];
+      const packet = new Operator(version, type);
+      this.print(`* ${packet} sublen=${subLen} ${this.dumpBin(remainder)}`, depth);
+
       while (subLen > 0) {
-        const p = this.parsePacket(remainder);
-        subPackets.push(p);
+        const p = this.parsePacket(remainder, depth + 1);
+        packet.addSubpacket(p);
         subLen -= p.length();
         remainder = remainder.slice(p.length(), remainder.length);
+        this.print(`- ${packet} sublen=${subLen} ${this.dumpBin(remainder)}`, depth);
       }
-      return new Operator(version, type, subPackets);
+      return packet;
     } else if (lengthId === "1") {
-      const subNumBin = rest.slice(1, 12);
-      let subNum = binToDec(subNumBin);
+      let subNum = binToDec(rest.slice(1, 12));
       let remainder = rest.slice(12, rest.length);
-      this.print(`OPT ver ${version} sub num ${subNum} sub bin ${subNumBin} rem ${remainder}`);
-      const subPackets = [];
+      const packet = new Operator(version, type);
+      this.print(`* ${packet} subnum=${subNum} ${this.dumpBin(remainder)}`, depth);
+
       while (subNum > 0) {
-        const p = this.parsePacket(remainder);
-        subPackets.push(p);
+        const p = this.parsePacket(remainder, depth + 1);
+        packet.addSubpacket(p);
         subNum--;
         remainder = remainder.slice(p.length(), remainder.length);
+        this.print(`- ${packet} subnum=${subNum} ${this.dumpBin(remainder)}`, depth);
       }
-      return new Operator(version, type, subPackets);
+
+      return packet;
     }
 
     throw Error(`Unsupported len id ${lengthId}`);
+  }
+
+  dumpBin(bin: string): string {
+    let output = "";
+    for (let i = 0; i < bin.length; i++) {
+      if (i % 5 === 0) {
+        output += `(${i})`;
+      }
+      output += bin.slice(i, i + 1);
+    }
+    return output;
   }
 
   private sumVersions(head: Packet): number {
