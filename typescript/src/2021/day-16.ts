@@ -46,24 +46,53 @@ class Packet {
   toString(): string {
     return `${this.pType} ver=${this.version} type=${this.type} len=${this.length()}`;
   }
+
+  value(): number {
+    return 0;
+  }
 }
 
 class Literal extends Packet {
-  value: number;
+  _value: number;
 
   constructor(version: number, type: number, valueLen: number, value: number) {
     super("LIT", version, type, 6 + valueLen);
-    this.value = value;
+    this._value = value;
   }
 
   toString(): string {
-    return `${super.toString()} value=${this.value}`;
+    return `${super.toString()} value=${this._value}`;
+  }
+
+  value(): number {
+    return this._value;
   }
 }
 
 class Operator extends Packet {
-  constructor(version: number, type: number) {
-    super("OPT", version, type, 7);
+  constructor(version: number, type: number, subLen: number) {
+    super("OPT", version, type, 7 + subLen);
+  }
+
+  value(): number {
+    switch (this.type) {
+      case 0:
+        return sum(this.subpackets.map(p => p.value()));
+      case 1:
+        return this.subpackets.map(p => p.value()).reduce((a, b) => a * b);
+      case 2:
+        return Math.min(...this.subpackets.map(p => p.value()));
+      case 3:
+        return Math.max(...this.subpackets.map(p => p.value()));
+      case 5:
+        return this.subpackets[0].value() > this.subpackets[1].value() ? 1 : 0;
+      case 6:
+        return this.subpackets[0].value() < this.subpackets[1].value() ? 1 : 0;
+      case 7:
+        return this.subpackets[0].value() === this.subpackets[1].value() ? 1 : 0;
+      default:
+        throw Error();
+    }
   }
 }
 
@@ -73,7 +102,7 @@ class Day16 extends Solution {
   }
 
   part1(): number | string | undefined {
-    const inputs = this.readInput().slice(4, 5);
+    const inputs = this.readInput();
     const sumVers = inputs.map(i => {
       const sumVer = this.runPart1(i);
       this.print(`${i} ${sumVer}`);
@@ -124,7 +153,7 @@ class Day16 extends Solution {
     if (lengthId === "0") {
       let subLen = binToDec(rest.slice(1, 16));
       let remainder = rest.slice(16, rest.length);
-      const packet = new Operator(version, type);
+      const packet = new Operator(version, type, 15);
       this.print(`* ${packet} sublen=${subLen} ${this.dumpBin(remainder)}`, depth);
 
       while (subLen > 0) {
@@ -138,7 +167,7 @@ class Day16 extends Solution {
     } else if (lengthId === "1") {
       let subNum = binToDec(rest.slice(1, 12));
       let remainder = rest.slice(12, rest.length);
-      const packet = new Operator(version, type);
+      const packet = new Operator(version, type, 11);
       this.print(`* ${packet} subnum=${subNum} ${this.dumpBin(remainder)}`, depth);
 
       while (subNum > 0) {
@@ -171,8 +200,22 @@ class Day16 extends Solution {
   }
 
   part2(): number | string | undefined {
-    return undefined;
+    const inputs = this.readInput();
+    const sumVers = inputs.map(i => {
+      const sumVer = this.runPart2(i);
+      this.print(`${i} ${sumVer}`);
+      return sumVer;
+    });
+
+    return sumVers[0];
+  }
+
+  runPart2(input: string): number {
+    const bin = hexToBin(input);
+    this.print(`Input ${input} ${this.dumpBin(bin)}`);
+    const head = this.parsePacket(bin, 0);
+    return head.value();
   }
 }
 
-(new Day16(1)).run();
+(new Day16()).run();
