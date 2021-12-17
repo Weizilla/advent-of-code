@@ -1,7 +1,7 @@
 import chalk from "chalk";
 
-function print(input: any, color: string = "black") {
-  console.log(chalk.keyword(color)(input));
+function print(input: any, padding: number = 0, color: string = "black") {
+  console.log("".padStart(padding * 2, " ") + chalk.keyword(color)(input));
 }
 
 function sum(input: Iterable<number>) {

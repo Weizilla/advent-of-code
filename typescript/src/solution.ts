@@ -38,9 +38,9 @@ class Solution {
     return this.readInput().map(n => parseInt(n, 10));
   }
 
-  print(input: any, color: string = "black") {
+  print(input: any, padding: number = 0, color: string = "black") {
     if (this.example !== undefined) {
-      print(input, color);
+      print(input, padding, color);
     }
   }
 
@@ -49,17 +49,17 @@ class Solution {
     let result = this.part2();
     if (result !== undefined) {
       const duration = Math.ceil((Date.now() - start) / 1000);
-      print(`Day ${this.day} Part 2 in ${duration} s`, "blue");
-      print(result, "red");
+      print(`Day ${this.day} Part 2 in ${duration} s`, 0, "blue");
+      print(result, 0, "red");
     } else {
       start = Date.now();
       result = this.part1();
       if (result !== undefined) {
         const duration = Math.ceil((Date.now() - start) / 1000);
-        print(`Day ${this.day} Part 1 ${duration} s`, "blue");
-        print(result, "red");
+        print(`Day ${this.day} Part 1 ${duration} s`, 0, "blue");
+        print(result, 0, "red");
       } else {
-        print(`Day ${this.day} not implemented`, "blue");
+        print(`Day ${this.day} not implemented`, 0, "blue");
       }
     }
   }
