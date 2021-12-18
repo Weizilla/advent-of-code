@@ -35,6 +35,8 @@
     "no-else-return" : "off",
     "no-underscore-dangle" : "off",
     "no-bitwise" : "off",
-    "no-param-reassign" : ["error", { "props" : false }]
+    "no-param-reassign" : ["error", { "props" : false }],
+    "object-curly-spacing" : "warn",
+    "padded-blocks" : "off"
   }
 }
