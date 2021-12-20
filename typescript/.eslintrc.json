@@ -37,6 +37,13 @@
     "no-bitwise" : "off",
     "no-param-reassign" : ["error", { "props" : false }],
     "object-curly-spacing" : "warn",
-    "padded-blocks" : "off"
+    "padded-blocks" : "off",
+    "no-multiple-empty-lines" : "warn",
+    "no-restricted-syntax" : [
+      "error",
+      "ForInStatement",
+      "LabeledStatement",
+      "WithStatement"
+    ]
   }
 }
