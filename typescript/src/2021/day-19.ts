@@ -1,5 +1,5 @@
 import { Solution } from "../solution";
-import { HashSet, Point } from "../collections";
+import { HashKey, HashMap, HashSet, Point } from "../collections";
 import { print, range } from "../utils";
 
 class Transform extends Point {
@@ -7,10 +7,6 @@ class Transform extends Point {
 }
 
 class Rotation extends Transform {
-}
-
-class Translation extends Transform {
-
 }
 
 const ROTATIONS = [
@@ -59,59 +55,91 @@ class Scanner {
   }
 }
 
+class RotationId implements HashKey {
+  id: number;
+  rotation: Rotation;
+
+  constructor(id: number, rotation: Rotation) {
+    this.id = id;
+    this.rotation = rotation;
+  }
+
+  toString(): string {
+    return `${this.id}|${this.rotation}`;
+  }
+}
+
 class Day19 extends Solution {
+  rotations: HashMap<RotationId, Point[]>;
+  basePoints: Map<number, Point[]>;
+  compared: Map<number, number[]>;
+
   constructor(example?: number) {
     super(19, 2021, example);
+    this.rotations = new HashMap<RotationId, Point[]>();
+    this.basePoints = new Map<number, Point[]>();
+    this.compared = new Map<number, number[]>();
   }
 
   part1(): number | string | undefined {
     const scanners = this.readScanners();
 
-    // this.print(scanners.join("\n"));
-    //
-
-    // this.print("0");
-    // this.print(scanners[0].points.join("\n"));
-    //
-    // for (const p of this.allRotations(scanners[0].points)) {
-    //   this.print("---------");
-    //   this.print(p.join("\n"));
-    // }
-
-    const basePoints = new HashSet<Point>(scanners[0].points);
-    const toMerge = range(scanners.length);
+    this.basePoints.set(0, scanners[0].points);
+    let toMerge = range(scanners.length, 1);
 
     while (toMerge.length > 0) {
-      const i = toMerge.reverse().pop()!;
-      toMerge.reverse();
-      const scanner = scanners[i];
-      const points = this.mergePoints(basePoints, scanner);
-      if (points.length > 0) {
-        const len = basePoints.size();
-        basePoints.add(...points);
-        print(`${i}  before ${len} found ${points.length} after ${basePoints.size()}`);
-      } else {
-        toMerge.push(i);
+      const thisRound = [...toMerge];
+      toMerge = [];
+      for (const i of thisRound) {
+        print(`Searching scanner=${i} left=${toMerge.length} base size=${this.basePoints.size} cached size=${this.rotations.size()}`);
+        const scanner = scanners[i];
+        const points = this.mergePoints(scanner);
+        if (points.length > 0) {
+          this.basePoints.set(i, points);
+          print(`merged ${i}`);
+        } else {
+          toMerge.push(i);
+        }
+      }
+
+      if (toMerge.length === thisRound.length) {
+        print("Nothing got merged");
+        return 0;
       }
     }
 
-    return basePoints.size();
+    const allPoints = new HashSet<Point>();
+    Array.from(this.basePoints.values()).forEach(p => allPoints.add(...p));
+    return allPoints.size();
   }
 
-  private mergePoints(basePoints: Iterable<Point>, scanner: Scanner): Point[] {
-    print(`Searching scanner ${scanner.id}`);
-    for (const basePoint of basePoints) {
-      for (const rotMatrix of ROTATIONS) {
-        const rotation = this.rotate(scanner.points, rotMatrix);
-        for (const r of rotation) {
-          const rotationTranslated = this.translate(basePoint, r, rotation);
-          const numMatch = this.numMatch(basePoints, rotationTranslated);
-          if (numMatch >= 12) {
-            return rotationTranslated;
+  private mergePoints(scanner: Scanner): Point[] {
+    const start = Date.now();
+    let numCompare = 0;
+    for (const i of this.basePoints.keys()) {
+      const compared = this.compared.get(i) || [];
+      if (compared.indexOf(scanner.id) === -1) {
+        compared.push(scanner.id);
+        this.compared.set(i, compared);
+
+        const basePoints = this.basePoints.get(i)!;
+        for (const basePoint of basePoints) {
+          for (const rotMatrix of ROTATIONS) {
+            const rotation = this.rotate(scanner, rotMatrix);
+            for (const rotationPoint of rotation) {
+              const rotationTranslated = this.translate(basePoint, rotationPoint, rotation);
+              numCompare++;
+              const numMatch = this.numMatch(basePoints, rotationTranslated);
+              if (numMatch >= 12) {
+                print(`Successful merged ${Date.now() - start}`);
+                return rotationTranslated;
+              }
+            }
           }
         }
       }
     }
+    print(`No merge took ${Date.now() - start} num compare=${numCompare}`, 0, "red");
 
     return [];
   }
@@ -141,10 +169,16 @@ class Day19 extends Solution {
     return scanners;
   }
 
+  private rotate(scanner: Scanner, rotation: Rotation): Point[] {
+    const rotationId = new RotationId(scanner.id, rotation);
+    const cached = this.rotations.get(rotationId);
+    if (cached) {
+      return cached;
+    }
 
-  private rotate(points: Point[], rotation: Rotation): Point[] {
+    const {points} = scanner;
     const newPoints = points.map(p => this.rotatePoint(p, rotation));
-    this.sort(newPoints);
+    this.rotations.set(rotationId, newPoints);
     return newPoints;
   }
 
@@ -183,7 +217,6 @@ class Day19 extends Solution {
   private translate(base: Point, reference: Point, points: Point[]): Point[] {
     const t = base.sum(reference.scale(-1));
     const newPoints = points.map(p => p.sum(t));
-    this.sort(newPoints);
     return newPoints;
   }
 
