@@ -25,4 +25,23 @@ function range(endInput: number, startInput: number = 0, includeEnd: boolean = f
   return results;
 }
 
-export { print, sum, range };
+function hexToBin(input: string): string {
+  const bins: string[] = [];
+  for (const i of input.split("")) {
+    parseInt(i, 16).toString(2)
+      .padStart(4, "0")
+      .split("")
+      .forEach(b => bins.push(b));
+  }
+  return bins.join("");
+}
+
+function hexToDec(input: string): number {
+  return parseInt(input, 16);
+}
+
+function binToDec(input: string): number {
+  return parseInt(input, 2);
+}
+
+export { print, sum, range, hexToBin, hexToDec, binToDec };
