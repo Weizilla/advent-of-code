@@ -10,35 +10,35 @@ class Rotation extends Transform {
 }
 
 const ROTATIONS = [
-  new Rotation(0, 0, 0),
-  new Rotation(0, 0, 1),
-  new Rotation(0, 0, 2),
-  new Rotation(0, 0, 3),
+  [Rotation.z(0)],
+  [Rotation.z(1)],
+  [Rotation.z(2)],
+  [Rotation.z(3)],
 
-  new Rotation(0, 1, 0),
-  new Rotation(1, 1, 0),
-  new Rotation(2, 1, 0),
-  new Rotation(3, 1, 0),
+  [Rotation.y(1), Rotation.x(0)],
+  [Rotation.y(1), Rotation.x(1)],
+  [Rotation.y(1), Rotation.x(2)],
+  [Rotation.y(1), Rotation.x(3)],
 
-  new Rotation(0, 2, 0),
-  new Rotation(0, 2, 1),
-  new Rotation(0, 2, 2),
-  new Rotation(0, 2, 3),
+  [Rotation.y(2), Rotation.z(0)],
+  [Rotation.y(2), Rotation.z(1)],
+  [Rotation.y(2), Rotation.z(2)],
+  [Rotation.y(2), Rotation.z(3)],
 
-  new Rotation(0, 3, 0),
-  new Rotation(1, 3, 0),
-  new Rotation(2, 3, 0),
-  new Rotation(3, 3, 0),
+  [Rotation.y(0), Rotation.x(3)],
+  [Rotation.y(1), Rotation.x(3)],
+  [Rotation.y(2), Rotation.x(3)],
+  [Rotation.y(3), Rotation.x(3)],
 
-  new Rotation(1, 0, 0),
-  new Rotation(1, 1, 0),
-  new Rotation(1, 2, 0),
-  new Rotation(1, 3, 0),
+  [Rotation.x(1), Rotation.y(0)],
+  [Rotation.x(1), Rotation.y(1)],
+  [Rotation.x(1), Rotation.y(2)],
+  [Rotation.x(1), Rotation.y(3)],
 
-  new Rotation(3, 0, 0),
-  new Rotation(3, 1, 0),
-  new Rotation(3, 2, 0),
-  new Rotation(3, 3, 0),
+  [Rotation.x(3), Rotation.y(0)],
+  [Rotation.x(3), Rotation.y(1)],
+  [Rotation.x(3), Rotation.y(2)],
+  [Rotation.x(3), Rotation.y(3)],
 ];
 
 class Scanner {
@@ -71,70 +71,105 @@ class RotationId implements HashKey {
 
 class Day19 extends Solution {
   rotations: HashMap<RotationId, Point[]>;
-  basePoints: Map<number, Point[]>;
-  compared: Map<number, number[]>;
+
 
   constructor(example?: number) {
     super(19, 2021, example);
     this.rotations = new HashMap<RotationId, Point[]>();
-    this.basePoints = new Map<number, Point[]>();
-    this.compared = new Map<number, number[]>();
   }
 
   part1(): number | string | undefined {
     const scanners = this.readScanners();
 
-    this.basePoints.set(0, scanners[0].points);
+    // const overlaps2 = this.calcOverlapPoints(scanners[3].points, scanners[8]);
+    // const overlaps = this.calcOverlapPoints(scanners[8].points, scanners[3]);
+    // return overlaps.length;
+    return this.runPart1(scanners);
+  }
+
+  runPart1b(scanners: Scanner[]) {
+    const matchedScanners = new Set<number>();
+
+    for (let i = 0; i < scanners.length; i++) {
+      for (let j = i + 1; j < scanners.length; j++) {
+        const iPoints = scanners[i].points;
+        const overlaps = this.calcOverlapPoints(iPoints, scanners[j]);
+        if (overlaps.length >= 12) {
+          matchedScanners.add(i);
+          matchedScanners.add(j);
+        }
+      }
+    }
+
+    print(Array.from([...matchedScanners.values()]));
+    print(range(scanners.length).filter(r => !matchedScanners.has(r)));
+
+    return matchedScanners.size;
+  }
+
+  runPart1(scanners: Scanner[]) {
+    const basePoints = new Map<number, Point[]>();
+    basePoints.set(scanners[0].id, scanners[0].points);
+
     let toMerge = range(scanners.length, 1);
+
+    const compared = new Map<number, number[]>();
 
     while (toMerge.length > 0) {
       const thisRound = [...toMerge];
       toMerge = [];
       for (const i of thisRound) {
-        print(`Searching scanner=${i} left=${toMerge.length} base size=${this.basePoints.size} cached size=${this.rotations.size()}`);
+        print(`Searching scanner=${i} left=${toMerge.length} base size=${basePoints.size} cached size=${this.rotations.size()}`);
         const scanner = scanners[i];
-        const points = this.mergePoints(scanner);
-        if (points.length > 0) {
-          this.basePoints.set(i, points);
-          print(`merged ${i}`);
-        } else {
+        const merged = this.merge(basePoints, compared, scanner);
+        if (!merged) {
           toMerge.push(i);
         }
       }
 
       if (toMerge.length === thisRound.length) {
-        print("Nothing got merged");
-        return 0;
+        print(`Nothing got merged: ${toMerge}`);
+        return toMerge.length;
       }
     }
 
     const allPoints = new HashSet<Point>();
-    Array.from(this.basePoints.values()).forEach(p => allPoints.add(...p));
+    Array.from(basePoints.values()).forEach(p => allPoints.add(...p));
     return allPoints.size();
   }
 
-  private mergePoints(scanner: Scanner): Point[] {
+  private merge(basePoints: Map<number, Point[]>, compared: Map<number, number[]>, scanner: Scanner): boolean {
+    for (const baseNum of basePoints.keys()) {
+      const hasCompared = compared.get(baseNum) || [];
+      if (hasCompared.indexOf(scanner.id) === -1) {
+        hasCompared.push(scanner.id);
+        compared.set(baseNum, hasCompared);
+
+        const points = this.calcOverlapPoints(basePoints.get(baseNum)!, scanner);
+        if (points.length > 0) {
+          basePoints.set(scanner.id, points);
+          print(`merged ${scanner.id}`);
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  private calcOverlapPoints(basePoints: Point[], scanner: Scanner): Point[] {
     const start = Date.now();
     let numCompare = 0;
-    for (const i of this.basePoints.keys()) {
-      const compared = this.compared.get(i) || [];
-      if (compared.indexOf(scanner.id) === -1) {
-        compared.push(scanner.id);
-        this.compared.set(i, compared);
-
-        const basePoints = this.basePoints.get(i)!;
-        for (const basePoint of basePoints) {
-          for (const rotMatrix of ROTATIONS) {
-            const rotation = this.rotate(scanner, rotMatrix);
-            for (const rotationPoint of rotation) {
-              const rotationTranslated = this.translate(basePoint, rotationPoint, rotation);
-              numCompare++;
-              const numMatch = this.numMatch(basePoints, rotationTranslated);
-              if (numMatch >= 12) {
-                print(`Successful merged ${Date.now() - start}`);
-                return rotationTranslated;
-              }
-            }
+    for (const basePoint of basePoints) {
+      for (const rotMatrix of ROTATIONS) {
+        const rotation = this.rotate(scanner, rotMatrix);
+        for (const rotationPoint of rotation) {
+          const rotationTranslated = this.translate(basePoint, rotationPoint, rotation);
+          numCompare++;
+          const numMatch = this.numMatch(basePoints, rotationTranslated);
+          if (numMatch >= 12) {
+            print(`Successful merged ${Date.now() - start}`);
+            return rotationTranslated;
           }
         }
       }
@@ -169,17 +204,12 @@ class Day19 extends Solution {
     return scanners;
   }
 
-  private rotate(scanner: Scanner, rotation: Rotation): Point[] {
-    const rotationId = new RotationId(scanner.id, rotation);
-    const cached = this.rotations.get(rotationId);
-    if (cached) {
-      return cached;
+  private rotate(scanner: Scanner, rotations: Rotation[]): Point[] {
+    let {points} = scanner;
+    for (const rotation of rotations) {
+      points = points.map(p => this.rotatePoint(p, rotation));
     }
-
-    const {points} = scanner;
-    const newPoints = points.map(p => this.rotatePoint(p, rotation));
-    this.rotations.set(rotationId, newPoints);
-    return newPoints;
+    return points;
   }
 
   private rotatePoint(point: Point, rotation: Rotation): Point {
@@ -220,7 +250,7 @@ class Day19 extends Solution {
     return newPoints;
   }
 
-  private sort(points: Point[]) {
+  private sort(points: Point[]): Point[] {
     points.sort((p1, p2) => {
       let result = p1.x - p2.x;
       if (result === 0) {
@@ -231,6 +261,7 @@ class Day19 extends Solution {
       }
       return result;
     });
+    return points;
   }
 
   part2(): number | string | undefined {
