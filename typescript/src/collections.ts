@@ -145,6 +145,19 @@ class Point implements HashKey {
     return new Point(Math.round(nx), Math.round(ny), Math.round(nz));
   }
 
+  static x(value: number) {
+    return new Point(value, 0, 0);
+  }
+
+  static y(value: number) {
+    return new Point(0, value, 0);
+  }
+
+  static z(value: number) {
+    return new Point(0, 0, value);
+  }
+
+
   toString(): string {
     return `(${this.x},${this.y},${this.z})`;
   }
