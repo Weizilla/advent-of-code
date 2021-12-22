@@ -45,14 +45,13 @@ class Cube {
 }
 
 class Day22 extends Solution {
-  constructor(example?: number) {
-    super(22, 2021, example);
+  constructor(example?: number, forcePrint: boolean = false) {
+    super(22, 2021, example, forcePrint);
   }
 
   part1(): number | string | undefined {
     const inputs = this.readInput();
     const inputCubes = inputs.map(i => this.parseInput(i)).filter(c => c.allBounds.filter(p => Math.abs(p) <= 51).length === 6);
-    // this.print(cubes.join("\n"));
 
     // return this.brute(inputCubes);
     return this.smart(inputCubes);
@@ -65,22 +64,6 @@ class Day22 extends Solution {
     });
 
     return grid.values().filter(v => v === 1).length;
-  }
-
-  test() {
-    const c = new Cube(true, 0, 10, -1, 11, 0, 1);
-    const c2 = new Cube(true, 1, 9, 2, 14, 0, 1);
-    const sub = this.subtract(c, c2);
-
-    const numGrid = new NumGrid();
-    c.allPoints().forEach(p => numGrid.set(p, 1));
-    this.print(numGrid.toString());
-
-    c2.allPoints().forEach(p => numGrid.set(p, 2));
-    this.print(numGrid.toString());
-
-    sub.forEach(s => s.allPoints().forEach(p => numGrid.set(p, 3)));
-    this.print(numGrid.toString());
   }
 
   merge(cubes: Cube[]): Cube[] {
@@ -112,16 +95,6 @@ class Day22 extends Solution {
   add(cubes: Cube[], c2: Cube): Cube[] {
     const difference = cubes.flatMap(c => this.subtract(c, c2));
     difference.push(c2);
-
-    const stateSize = this.sumSize(difference);
-    const uniqueSize = this.uniqueSize(difference);
-
-    if (stateSize !== uniqueSize) {
-      this.print(`difference STATE NOT UNIQUE state=${stateSize} unique=${uniqueSize}`, 3, "red");
-    } else {
-      this.print(`difference state is unique state=${stateSize} unique=${uniqueSize}`, 3, "green");
-    }
-
     return difference;
   }
 
@@ -209,7 +182,7 @@ class Day22 extends Solution {
   private smart(inputCubes: Cube[]): number {
     let state: Cube[] = [];
 
-    inputCubes.forEach(inputCube => {
+    inputCubes.forEach((inputCube, i) => {
       if (state.length === 0) {
         state.push(inputCube);
       } else if (inputCube.on) {
@@ -220,28 +193,30 @@ class Day22 extends Solution {
         state = newState;
       }
 
-      const stateSize = this.sumSize(state);
-      const uniqueSize = this.uniqueSize(state);
-
-      if (stateSize !== uniqueSize) {
-        this.print(`difference STATE NOT UNIQUE state=${stateSize} unique=${uniqueSize}`, 1, "red");
-      } else {
-        this.print(`difference state is unique state=${stateSize} unique=${uniqueSize}`, 1, "green");
-      }
+      // const stateSize = this.sumSize(state);
+      // const uniqueSize = this.uniqueSize(state);
+      //
+      // if (stateSize !== uniqueSize) {
+      //   this.print(`difference STATE NOT UNIQUE state=${stateSize} unique=${uniqueSize}`, 1, "red");
+      // } else {
+      //   this.print(`difference state is unique state=${stateSize} unique=${uniqueSize}`, 1, "green");
+      // }
 
       state = this.merge(state);
 
+      this.print(`${i}/${inputCubes.length} states=${state.length}`);
+
     });
-
+    //
     const stateSize = this.sumSize(state);
-    const uniqueSize = this.uniqueSize(state);
-
-    if (stateSize !== uniqueSize) {
-      this.print(`difference STATE NOT UNIQUE state=${stateSize} unique=${uniqueSize}`, 0, "red");
-    } else {
-      this.print(`difference state is unique state=${stateSize} unique=${uniqueSize}`, 0, "green");
-    }
-
+    // const uniqueSize = this.uniqueSize(state);
+    //
+    // if (stateSize !== uniqueSize) {
+    //   this.print(`difference STATE NOT UNIQUE state=${stateSize} unique=${uniqueSize}`, 0, "red");
+    // } else {
+    //   this.print(`difference state is unique state=${stateSize} unique=${uniqueSize}`, 0, "green");
+    // }
+    //
     return stateSize;
   }
 
@@ -257,4 +232,4 @@ class Day22 extends Solution {
 
 }
 
-(new Day22()).run();
+(new Day22(undefined, true)).run();
