@@ -84,7 +84,8 @@ class Day19 extends Solution {
     // const overlaps2 = this.calcOverlapPoints(scanners[3].points, scanners[8]);
     // const overlaps = this.calcOverlapPoints(scanners[8].points, scanners[3]);
     // return overlaps.length;
-    return this.runPart1(scanners);
+    return this.runPart1c(scanners);
+    // return this.runPart1b(scanners);
   }
 
   runPart1b(scanners: Scanner[]) {
@@ -95,6 +96,7 @@ class Day19 extends Solution {
         const iPoints = scanners[i].points;
         const overlaps = this.calcOverlapPoints(iPoints, scanners[j]);
         if (overlaps.length >= 12) {
+          print(`matched ${i} ${j}`);
           matchedScanners.add(i);
           matchedScanners.add(j);
         }
@@ -105,6 +107,71 @@ class Day19 extends Solution {
     print(range(scanners.length).filter(r => !matchedScanners.has(r)));
 
     return matchedScanners.size;
+  }
+
+  runPart1c(scanners: Scanner[]): number {
+    const merged = new Map<number, Point[]>();
+    merged.set(scanners[0].id, scanners[0].points);
+
+    let toMerge = range(scanners.length, 1);
+
+    const compared = new HashSet<string>();
+
+    let numCompared = 0;
+
+    while (toMerge.length > 0) {
+      const thisRound = [...toMerge];
+      toMerge = [];
+
+      for (const toMergeId of thisRound) {
+        const scanner = scanners[toMergeId];
+
+        let didMerge = false;
+        for (const mergedId of merged.keys()) {
+          numCompared++;
+
+          const comparedKey = `${mergedId}:${scanner.id}`;
+          if (!compared.has(comparedKey)) {
+            compared.add(comparedKey);
+            const mergedPoints = merged.get(mergedId)!;
+            const points = this.calcOverlapPoints(mergedPoints, scanner);
+
+            print(`Comparing merged=${mergedId} toMerge=${scanner.id} skipped=f merged=${points.length > 0} numMerged=${merged.size} comparedCache=${compared.size()} numCompared=${numCompared}`);
+
+            if (mergedId === 8 && scanner.id === 3) {
+              print(`${mergedId} ${mergedPoints}`);
+              print(`${scanner.id} ${scanner.points}`);
+            }
+
+            if (points.length > 0) {
+              merged.set(toMergeId, points);
+              didMerge = true;
+              break;
+            }
+          } else {
+            print(`Comparing merged=${mergedId} toMerge=${scanner.id} skipped=t numMerged=${merged.size} comparedCache=${compared.size()} numCompared=${numCompared}`);
+          }
+        }
+
+        if (!didMerge) {
+          toMerge.push(toMergeId);
+        }
+      }
+
+      if (toMerge.length === thisRound.length) {
+        print(`Didn't do any merging ${toMerge}`, 0, "red");
+        break;
+      }
+    }
+
+    if (merged.size === scanners.length) {
+      const allPoints = new HashSet<Point>();
+      Array.from(merged.values()).forEach(p => allPoints.add(...p));
+      return allPoints.size();
+    } else {
+      print(`Didn't merge all scanners ${merged.size} ${scanners.length}`, 0, "red");
+      return 0;
+    }
   }
 
   runPart1(scanners: Scanner[]) {
@@ -158,24 +225,18 @@ class Day19 extends Solution {
   }
 
   private calcOverlapPoints(basePoints: Point[], scanner: Scanner): Point[] {
-    const start = Date.now();
-    let numCompare = 0;
     for (const basePoint of basePoints) {
       for (const rotMatrix of ROTATIONS) {
         const rotation = this.rotate(scanner, rotMatrix);
         for (const rotationPoint of rotation) {
           const rotationTranslated = this.translate(basePoint, rotationPoint, rotation);
-          numCompare++;
           const numMatch = this.numMatch(basePoints, rotationTranslated);
           if (numMatch >= 12) {
-            print(`Successful merged ${Date.now() - start}`);
             return rotationTranslated;
           }
         }
       }
     }
-    print(`No merge took ${Date.now() - start} num compare=${numCompare}`, 0, "red");
-
     return [];
   }
 
