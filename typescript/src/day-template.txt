@@ -1,16 +1,16 @@
 import { Solution } from "../solution";
 
 class DayDAY extends Solution {
-  constructor(example?: number) {
-    super(DAY, YEAR, example);
+  constructor(example?: number, forcePrint: boolean = false) {
+    super(DAY, YEAR, example, forcePrint);
   }
 
-  part1(): number | string | undefined {
-    return undefined;
+  part1(): number | string {
+    return 0;
   }
 
-  part2(): number | string | undefined {
-    return undefined;
+  part2(): number | string {
+    return 0;
   }
 }
 

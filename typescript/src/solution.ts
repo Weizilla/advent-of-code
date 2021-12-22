@@ -6,19 +6,21 @@ class Solution {
   day: number;
   year: number;
   example?: number;
+  forcePrint: boolean;
 
-  constructor(day: number, year: number, example?: number) {
+  constructor(day: number, year: number, example?: number, forcePrint: boolean = false) {
     this.day = day;
     this.year = year;
     this.example = example;
+    this.forcePrint = forcePrint;
   }
 
-  part1(): number | string | undefined {
-    return undefined;
+  part1(): number | string {
+    return 0;
   }
 
-  part2(): number | string | undefined {
-    return undefined;
+  part2(): number | string {
+    return 0;
   }
 
   readInput(): string[] {
@@ -39,7 +41,7 @@ class Solution {
   }
 
   print(input: any, padding: number = 0, color: string = "black") {
-    if (this.example !== undefined) {
+    if (this.example !== undefined || this.forcePrint) {
       print(input, padding, color);
     }
   }
@@ -47,14 +49,14 @@ class Solution {
   run() {
     let start = Date.now();
     let result = this.part2();
-    if (result !== undefined) {
+    if (result) {
       const duration = Math.ceil((Date.now() - start) / 1000);
       print(`Day ${this.day} Part 2 in ${duration} s`, 0, "blue");
       print(result, 0, "red");
     } else {
       start = Date.now();
       result = this.part1();
-      if (result !== undefined) {
+      if (result) {
         const duration = Math.ceil((Date.now() - start) / 1000);
         print(`Day ${this.day} Part 1 ${duration} s`, 0, "blue");
         print(result, 0, "red");
