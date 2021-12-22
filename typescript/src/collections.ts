@@ -169,6 +169,8 @@ class Grid<V> {
   maxX: number = 0;
   minY: number = 0;
   maxY: number = 0;
+  minZ: number = 0;
+  maxZ: number = 0;
 
   constructor(fn: (a: string) => V, input?: string[] | null) {
     this._values = new HashMap<Point, V>();
@@ -245,6 +247,8 @@ class Grid<V> {
     this.maxX = Math.max(this.maxX, point.x + 1);
     this.minY = Math.min(this.minY, point.y);
     this.maxY = Math.max(this.maxY, point.y + 1);
+    this.minZ = Math.min(this.minZ, point.z);
+    this.maxZ = Math.max(this.maxZ, point.z + 1);
     this._values.set(point, value);
   }
 
