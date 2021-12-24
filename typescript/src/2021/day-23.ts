@@ -216,7 +216,7 @@ class Day23 extends Solution {
   private availableNode(nodeId: number, pod: Pod, state: State): [number, number][] {
     /*
     #############
-    #...........#   0 1  2 3  4  5 6
+    #...........#   0 1. 2.3 .4 .5 6
     ###.#.#.#.###      7  9 11 13
       #.#.#.#.#        8 10 12 14
       #########
@@ -225,7 +225,13 @@ class Day23 extends Solution {
     const results: [number, number][] = [];
     switch (nodeId) {
       case 0:
-        results.push([1, 1]);
+        if (state.isEmpty(1)) {
+          if (pod === Pod.A && state.isEmpty(7) && state.isEmpty(8)) {
+            results.push([8, 4]);
+          } else if (pod === Pod.A && state.isEmpty(7) && state.hasPod(8) === pod) {
+            results.push([7, 3]);
+          }
+        }
         break;
       case 1:
         results.push([0, 1], [2, 2]);
@@ -337,20 +343,7 @@ class Day23 extends Solution {
     dist.set(Pod.D, [9, 8, 6, 4, 3, 3, 4, 9, 10, 7, 8, 5, 6, 1, 0]);
 
     const d = dist.get(pod)![curr];
-
-    switch (pod) {
-      case Pod.A:
-        return d * 1000;
-      case Pod.B:
-        return d * 10;
-      case Pod.C:
-        return d * 100;
-      case Pod.D:
-        return d;
-      default:
-        throw new Error();
-    }
-
+    return d;
   }
 
   private stateDistance(state: State): number {
