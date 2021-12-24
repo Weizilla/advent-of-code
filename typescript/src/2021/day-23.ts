@@ -1,5 +1,6 @@
 import { Solution } from "../solution";
 import { HashMap, HashSet } from "../collections";
+import { sum } from "../utils";
 
 class Node {
   id: number;
@@ -19,44 +20,116 @@ class Node {
   }
 }
 
-class State {
-  private _podA: [number, number];
-  private _podB: [number, number];
-  private _podC: [number, number];
-  private _podD: [number, number];
+enum Pod {
+  A = "a",
+  B = "b",
+  C = "c",
+  D = "d",
 
-  constructor(podA1: number, podA2: number, podB1: number, podB2: number, podC1: number, podC2: number, podD1: number, podD2: number) {
-    this._podA = [podA1, podA2];
-    this._podB = [podB1, podB2];
-    this._podC = [podC1, podC2];
-    this._podD = [podD1, podD2];
+}
+
+function costs(pod: Pod): number {
+  switch (pod) {
+    case Pod.A:
+      return 1;
+    case Pod.B:
+      return 10;
+    case Pod.C:
+      return 100;
+    case Pod.D:
+      return 1000;
+    default:
+      throw Error();
+  }
+}
+
+class State {
+  private _pods: Map<Pod, [number, number]>;
+  cost: number = 0;
+
+  constructor(podA1: number, podA2: number, podB1: number, podB2: number, podC1: number, podC2: number, podD1: number, podD2: number, cost: number = 0) {
+    this._pods = new Map<Pod, [number, number]>();
+    this._pods.set(Pod.A, [podA1, podA2]);
+    this._pods.set(Pod.B, [podB1, podB2]);
+    this._pods.set(Pod.C, [podC1, podC2]);
+    this._pods.set(Pod.D, [podD1, podD2]);
+    this.cost = cost;
   }
 
   clone(): State {
-    return new State(this.podA[0], this.podA[1], this.podB[0], this.podB[1], this.podC[0], this.podC[1], this.podD[0], this.podD[1]);
+    return new State(this.podA[0], this.podA[1], this.podB[0], this.podB[1], this.podC[0], this.podC[1], this.podD[0], this.podD[1], this.cost);
+  }
+
+  getPod(pod: Pod): [number, number] {
+    return this._pods.get(pod)!;
+  }
+
+  setPod(pod: Pod, old: number, value: number) {
+    const [c1, c2] = this.getPod(pod);
+    if (c1 === old) {
+      this._pods.set(pod, [value, c2]);
+    } else if (c2 === old) {
+      this._pods.set(pod, [c1, value]);
+    } else {
+      throw new Error("old not found");
+    }
   }
 
   get podA(): [number, number] {
-    return this._podA;
+    return this.getPod(Pod.A);
   }
 
   get podB(): [number, number] {
-    return this._podB;
+    return this.getPod(Pod.B);
   }
 
   get podC(): [number, number] {
-    return this._podC;
+    return this.getPod(Pod.C);
   }
 
   get podD(): [number, number] {
-    return this._podD;
+    return this.getPod(Pod.D);
+  }
+
+  isEmpty(node: number): boolean {
+    return this.allLoc.indexOf(node) === -1;
+  }
+
+  allEmpty(...nodes: number[]): boolean {
+    return nodes.every(n => this.isEmpty(n));
+  }
+
+  isEnterable(allowedPod: Pod, numA: number, numB: number): boolean {
+    if (this.allEmpty(numA, numB)) {
+      return true;
+    }
+
+    if (this.isEmpty(numA) && this.hasPod(numB) === allowedPod) {
+      return true;
+    }
+
+    if (this.isEmpty(numB) && this.hasPod(numA) === allowedPod) {
+      return true;
+    }
+
+    return false;
+  }
+
+  hasPod(node: number): Pod | null {
+    for (const p of Object.values(Pod)) {
+      if (this._pods.get(p)!.some(n => n === node)) {
+        return p;
+      }
+    }
+    return null;
   }
 
   get allLoc(): number[] {
     const all = this.podA.sort((a, b) => (a - b)).concat(
       this.podB.sort((a, b) => (a - b)),
       this.podC.sort((a, b) => (a - b)),
-      this.podD.sort((a, b) => (a - b)));
+      this.podD.sort((a, b) => (a - b)),
+    );
     return all;
   }
 
@@ -66,7 +139,34 @@ class State {
   }
 
   toString() {
-    return `{a=[${this.podA}] b=[${this.podB}] c=[${this.podC}] d=[${this.podD}]}`;
+    return `{cost=${this.cost} a=[${this.podA.sort((a, b) => (a - b))}] b=[${this.podB.sort((a, b) => (a - b))}] c=[${this.podC.sort((a, b) => (a - b))}] d=[${this.podD.sort((a, b) => (a - b))}]}`;
+  }
+
+  toPrettyString() {
+    let output = `\n-------------\n|`;
+    output += this.hasPod(0) || ".";
+    output += this.hasPod(1) || ".";
+    output += " ";
+    output += this.hasPod(2) || ".";
+    output += " ";
+    output += this.hasPod(3) || ".";
+    output += " ";
+    output += this.hasPod(4) || ".";
+    output += " ";
+    output += this.hasPod(5) || ".";
+    output += this.hasPod(6) || ".";
+    output += "|\n";
+    output += `--|${this.hasPod(7) || "."}`;
+    output += `|${this.hasPod(9) || "."}`;
+    output += `|${this.hasPod(11) || "."}`;
+    output += `|${this.hasPod(13) || "."}|--\n`;
+    output += `  |${this.hasPod(8) || "."}`;
+    output += `|${this.hasPod(10) || "."}`;
+    output += `|${this.hasPod(12) || "."}`;
+    output += `|${this.hasPod(14) || "."}|  \n`;
+    output += `  ---------`;
+
+    return output.toUpperCase();
   }
 }
 
@@ -98,20 +198,29 @@ class Day23 extends Solution {
     */
 
     const start = new State(8, 14, 7, 11, 9, 12, 10, 13);
-    this.print(`start ${start}`);
+    this.print(`start ${start.toPrettyString()}`);
 
     const goal = new State(7, 8, 9, 10, 11, 12, 13, 14);
     // const goal = start.clone();
-    this.print(`goal ${goal}`, 0, "green");
+    // goal.podB[0] = 6;
+    // goal.podC[0] = 0;
+    this.print(`goal ${goal.toPrettyString()}`, 0, "green");
 
     // this.print(`goal ${goal}`, 0, "green");
 
-    const cost = this.runPart1(start, goal);
+    const final = this.runPart1(start, goal);
 
-    return cost;
+    return final.cost;
   }
 
-  private availableNode(nodeId: number, pod: string, state: State): [number, number][] {
+  private availableNode(nodeId: number, pod: Pod, state: State): [number, number][] {
+    /*
+    #############
+    #...........#   0 1  2 3  4  5 6
+    ###.#.#.#.###      7  9 11 13
+      #.#.#.#.#        8 10 12 14
+      #########
+    */
     // returns [node id, multiplier]
     const results: [number, number][] = [];
     switch (nodeId) {
@@ -119,50 +228,91 @@ class Day23 extends Solution {
         results.push([1, 1]);
         break;
       case 1:
-        results.push([0, 1], [2, 2], [7, 2]);
+        results.push([0, 1], [2, 2]);
+        if (pod === Pod.A && state.isEnterable(pod, 7, 8)) {
+          results.push([7, 2]);
+        }
         break;
       case 2:
-        results.push([1, 2], [3, 2], [7, 2], [9, 2]);
+        results.push([1, 2], [3, 2]);
+        if (pod === Pod.A && state.isEnterable(pod, 7, 8)) {
+          results.push([7, 2]);
+        }
+        if (pod === Pod.B && state.isEnterable(pod, 9, 10)) {
+          results.push([9, 2]);
+        }
         break;
       case 3:
-        results.push([2, 2], [9, 2], [11, 2], [4, 2]);
+        results.push([2, 2], [4, 2]);
+        if (pod === Pod.B && state.isEnterable(pod, 9, 10)) {
+          results.push([9, 2]);
+        }
+        if (pod === Pod.C && state.isEnterable(pod, 11, 12)) {
+          results.push([11, 2]);
+        }
         break;
       case 4:
-        results.push([3, 2], [11, 2], [13, 2], [5, 2]);
+        results.push([3, 2], [5, 2]);
+        if (pod === Pod.C && state.isEnterable(pod, 11, 12)) {
+          results.push([11, 2]);
+        }
+        if (pod === Pod.D && state.isEnterable(pod, 13, 14)) {
+          results.push([13, 2]);
+        }
         break;
       case 5:
-        results.push([4, 2], [13, 2], [6, 1]);
+        results.push([4, 2], [6, 1]);
+        if (pod === Pod.D && state.isEnterable(pod, 13, 14)) {
+          results.push([13, 2]);
+        }
         break;
       case 6:
         results.push([5, 6]);
         break;
       case 7:
-        results.push([1, 2], [2, 2], [8, 1]);
+        results.push([8, 1]);
+        if (pod !== Pod.A) {
+          results.push([1, 2], [2, 2]);
+        }
         break;
       case 8:
-        results.push([7, 1]);
+        if (pod !== Pod.A) {
+          results.push([7, 1]);
+        }
         break;
       case 9:
-        results.push([2, 2], [3, 2], [10, 1]);
+        results.push([10, 1]);
+        if (pod !== Pod.B) {
+          results.push([2, 2], [3, 2]);
+        }
         break;
       case 10:
-        results.push([9, 1]);
+        if (pod !== Pod.B) {
+          results.push([9, 1]);
+        }
         break;
       case 11:
-        results.push([3, 2], [4, 2], [12, 1]);
+        results.push([12, 1]);
+        if (pod !== Pod.C) {
+          results.push([3, 2], [4, 2]);
+        }
         break;
       case 12:
-        results.push([11, 1]);
+        if (pod !== Pod.C) {
+          results.push([11, 1]);
+        }
         break;
       case 13:
-        results.push([4, 2], [5, 2], [14, 1]);
+        results.push([14, 1]);
+        if (pod !== Pod.D) {
+          results.push([4, 2], [5, 2], [14, 1]);
+        }
         break;
       case 14:
-        results.push([13, 1]);
+        if (pod !== Pod.D) {
+          results.push([13, 1]);
+        }
         break;
-
-      //TODO don't let pod go into
-
       default:
         throw Error(`Unknown id ${nodeId}`);
     }
@@ -171,45 +321,65 @@ class Day23 extends Solution {
     return avail;
   }
 
+  private distance(pod: Pod, curr: number): number {
+    /*
+    #############
+    #...........#   0 1  2 3  4  5 6
+    ###.#.#.#.###      7  9 11 13
+      #.#.#.#.#        8 10 12 14
+      #########
+    */
+
+    const dist = new Map<Pod, number[]>();
+    dist.set(Pod.A, [4, 3, 3, 4, 6, 8, 9, 1, 0, 5, 6, 7, 8, 9, 10]);
+    dist.set(Pod.B, [6, 5, 3, 3, 5, 7, 8, 5, 6, 1, 0, 5, 6, 7, 8]);
+    dist.set(Pod.C, [8, 7, 5, 3, 3, 5, 6, 7, 8, 5, 6, 1, 0, 5, 6]);
+    dist.set(Pod.D, [9, 8, 6, 4, 3, 3, 4, 9, 10, 7, 8, 5, 6, 1, 0]);
+
+    const d = dist.get(pod)![curr];
+
+    switch (pod) {
+      case Pod.A:
+        return d * 1000;
+      case Pod.B:
+        return d * 10;
+      case Pod.C:
+        return d * 100;
+      case Pod.D:
+        return d;
+      default:
+        throw new Error();
+    }
+
+  }
+
+  private stateDistance(state: State): number {
+    let dist = 0;
+    for (const p of Object.values(Pod)) {
+      dist += sum(state.getPod(p).map(n => this.distance(p, n)));
+    }
+    return dist;
+  }
 
   private availableStates(state: State): HashMap<State, number> {
     const results = new HashMap<State, number>(s => s.toString());
 
-    state.podA.forEach((currNode, podIndex) => {
-      this.availableNode(currNode, "a", state).forEach(([nextNode, multiplier]) => {
-        const newState = state.clone();
-        newState.podA[podIndex] = nextNode;
-        results.set(newState, multiplier);
+    for (const p of Object.values(Pod)) {
+      state.getPod(p).forEach(currNode => {
+        this.availableNode(currNode, p, state).forEach(([nextNode, multiplier]) => {
+          const newState = state.clone();
+          newState.setPod(p, currNode, nextNode);
+          newState.cost += multiplier * costs(p);
+          results.set(newState, multiplier * costs(p));
+        });
       });
-    });
-    state.podB.forEach((currNode, podIndex) => {
-      this.availableNode(currNode, "b", state).forEach(([nextNode, multiplier]) => {
-        const newState = state.clone();
-        newState.podB[podIndex] = nextNode;
-        results.set(newState, multiplier * 10);
-      });
-    });
-    state.podC.forEach((currNode, podIndex) => {
-      this.availableNode(currNode, "c", state).forEach(([nextNode, multiplier]) => {
-        const newState = state.clone();
-        newState.podC[podIndex] = nextNode;
-        results.set(newState, multiplier * 100);
-      });
-    });
-    state.podD.forEach((currNode, podIndex) => {
-      this.availableNode(currNode, "d", state).forEach(([nextNode, multiplier]) => {
-        const newState = state.clone();
-        newState.podD[podIndex] = nextNode;
-        results.set(newState, multiplier * 1000);
-      });
-    });
-
+    }
     // this.print(results.entries().join("\n"));
 
     return results;
   }
 
-  private runPart1(start: State, goal: State): number {
+  private runPart1(start: State, goal: State): State {
     const allNextStates = new HashMap<State, number>(s => s.toString());
     const allCosts = new HashMap<State, number>(s => s.toString());
 
@@ -220,27 +390,29 @@ class Day23 extends Solution {
       const sorted = allNextStates.entries().sort(([_1, n1], [_2, n2]) => n2 - n1);
       const [currState, cost] = sorted.pop()!;
       allNextStates.delete(currState);
-      allCosts.set(currState, cost);
+      // allCosts.set(currState, cost);
 
-      this.print(`step=${step} currCost=${cost} costs=${allCosts.size()} next=${allNextStates.size()}`);
+      if (step % 1000 === 0) {
+        this.print(`step=${step} currCost=${cost} costs=${allCosts.size()} next=${allNextStates.size()}`);
+        this.print(currState.toPrettyString());
+      }
 
       if (currState.equals(goal)) {
         this.print(`DONE ${cost}`);
-        return cost;
+        return currState;
       }
 
       const newAvail = this.availableStates(currState).entries();
-      if (newAvail.length > 0) {
-        for (const [a, c2] of newAvail) {
+      for (const [a, c2] of newAvail) {
+        if (a.equals(goal)) {
+          this.print(`DONE ${cost + c2}`);
+          return a;
+        }
 
-          if (a.equals(goal)) {
-            this.print(`DONE ${cost + c2}`);
-            return cost + c2;
-          }
-
-          if (!allCosts.has(a)) {
-            allNextStates.set(a, cost + c2);
-          }
+        if (!allCosts.has(a)) {
+          allNextStates.set(a, cost + c2);
+          allCosts.set(a, cost + c2);
+        } else if (allCosts.get(a)! > cost + c2) {
           allCosts.set(a, cost + c2);
         }
       }
@@ -248,7 +420,7 @@ class Day23 extends Solution {
     }
 
     this.print(`Not found`);
-    return 0;
+    return new State(0, 0, 0, 0, 0, 0, 0, 0);
   }
 
   private example1() {
