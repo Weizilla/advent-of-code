@@ -150,6 +150,10 @@ class Tuple {
     return this.x * value.x + this.y * value.y + this.z * value.z;
   }
 
+  distance(value: Tuple): number {
+    return Math.abs(this.x - value.x) + Math.abs(this.y - value.y) + Math.abs(this.z - value.z);
+  }
+
   matrixProduct(values: [Tuple, Tuple, Tuple]): Tuple {
     const nx = this.product(values[0]);
     const ny = this.product(values[1]);
