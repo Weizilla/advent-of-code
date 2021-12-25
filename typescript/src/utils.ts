@@ -44,4 +44,8 @@ function binToDec(input: string): number {
   return parseInt(input, 2);
 }
 
-export { print, sum, range, hexToBin, hexToDec, binToDec };
+function sortNums(nums: number[]) {
+  nums.sort((a, b) => a - b);
+}
+
+export { print, sum, range, hexToBin, hexToDec, binToDec, sortNums };
