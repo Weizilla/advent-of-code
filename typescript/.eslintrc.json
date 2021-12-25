@@ -44,6 +44,14 @@
       "ForInStatement",
       "LabeledStatement",
       "WithStatement"
+    ],
+    "object-curly-newline" : [
+      "error", {
+        "ObjectExpression" : "always",
+        "ObjectPattern" : { "multiline" : true },
+        "ImportDeclaration" : "never",
+        "ExportDeclaration" : "never"
+      }
     ]
   }
 }
