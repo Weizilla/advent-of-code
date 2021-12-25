@@ -66,25 +66,23 @@ class Day19 extends Solution {
   rotations: HashMap<TupleId, Tuple[]>;
 
 
-  constructor(example?: number) {
-    super(19, 2021, example);
+  constructor(example?: number, forcePrint: boolean = false) {
+    super(19, 2021, example, forcePrint);
     this.rotations = new HashMap<TupleId, Tuple[]>(t => t.toString());
   }
 
   part1(): number | string {
     const scanners = this.readScanners();
-    return this.runPart1c(scanners);
+    return this.runPart1c(scanners)[0];
   }
 
-  runPart1c(scanners: Scanner[]): number {
+  runPart1c(scanners: Scanner[]): [number, Tuple[]] {
     const merged = new Map<number, Tuple[]>();
     merged.set(scanners[0].id, scanners[0].points);
-
     let toMerge = range(scanners.length, 1);
 
+    const translations: Tuple[] = [];
     const compared = new HashSet<string>(s => s);
-
-    let numCompared = 0;
 
     while (toMerge.length > 0) {
       const thisRound = [...toMerge];
@@ -95,25 +93,21 @@ class Day19 extends Solution {
 
         let didMerge = false;
         for (const mergedId of merged.keys()) {
-          numCompared++;
 
           const comparedKey = `${mergedId}:${scanner.id}`;
           if (!compared.has(comparedKey)) {
             compared.add(comparedKey);
             const mergedTuples = merged.get(mergedId)!;
-            const points = this.calcOverlapTuples(mergedTuples, scanner);
-
-            // print(`Comparing merged=${mergedId} toMerge=${scanner.id} skipped=f merged=${points.length > 0}
-            // numMerged=${merged.size} comparedCache=${compared.size()} numCompared=${numCompared}`);
+            const [points, translation] = this.calcOverlapTuples(mergedTuples, scanner);
 
             if (points.length > 0) {
               merged.set(toMergeId, points);
               didMerge = true;
+              if (translation) {
+                translations.push(translation);
+              }
               break;
             }
-          } else {
-            // print(`Comparing merged=${mergedId} toMerge=${scanner.id} skipped=t numMerged=${merged.size}
-            // comparedCache=${compared.size()} numCompared=${numCompared}`);
           }
         }
 
@@ -131,27 +125,27 @@ class Day19 extends Solution {
     if (merged.size === scanners.length) {
       const allTuples = new HashSet<Tuple>(t => t.toString());
       Array.from(merged.values()).forEach(p => allTuples.add(...p));
-      return allTuples.size();
+      return [allTuples.size(), translations];
     } else {
       print(`Didn't merge all scanners ${merged.size} ${scanners.length}`, 0, "red");
-      return 0;
+      return [0, translations];
     }
   }
 
-  private calcOverlapTuples(baseTuples: Tuple[], scanner: Scanner): Tuple[] {
+  private calcOverlapTuples(baseTuples: Tuple[], scanner: Scanner): [Tuple[], Tuple | null] {
     for (const baseTuple of baseTuples) {
       for (const rotMatrix of ROTATIONS) {
         const rotation = this.rotate(scanner, rotMatrix);
         for (const rotationTuple of rotation) {
-          const rotationTranslated = this.translate(baseTuple, rotationTuple, rotation);
+          const [rotationTranslated, translation] = this.translate(baseTuple, rotationTuple, rotation);
           const numMatch = this.numMatch(baseTuples, rotationTranslated);
           if (numMatch >= 12) {
-            return rotationTranslated;
+            return [rotationTranslated, translation];
           }
         }
       }
     }
-    return [];
+    return [[], null];
   }
 
   private numMatch(pointsA: Iterable<Tuple>, pointsB: Iterable<Tuple>): number {
@@ -219,15 +213,25 @@ class Day19 extends Solution {
     return np;
   }
 
-  private translate(base: Tuple, reference: Tuple, points: Tuple[]): Tuple[] {
+  private translate(base: Tuple, reference: Tuple, points: Tuple[]): [Tuple[], Tuple] {
     const t = base.sum(reference.scale(-1));
     const newTuples = points.map(p => p.sum(t));
-    return newTuples;
+    return [newTuples, t];
   }
 
   part2(): number | string {
-    return 0;
+    const scanners = this.readScanners();
+    const translations = this.runPart1c(scanners)[1];
+
+    let maxDistance = 0;
+
+    for (let i = 0; i < translations.length; i++) {
+      for (let j = i + 1; j < translations.length; j++) {
+        maxDistance = Math.max(maxDistance, translations[i].distance(translations[j]));
+      }
+    }
+    return maxDistance;
   }
 }
 
-(new Day19()).run();
+(new Day19(undefined, true)).run();
