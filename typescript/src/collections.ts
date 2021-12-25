@@ -2,27 +2,29 @@ interface HashKey {
   toString(): string;
 }
 
-class HashSet<K extends HashKey> implements Iterable<K> {
+class HashSet<K> implements Iterable<K> {
   private _values: Map<string, K>;
+  private strFn: (k: K) => string;
 
-  constructor();
-  constructor(values?: Iterable<K>);
-  constructor(values?: Array<K>) {
+  constructor(strFn: (k: K) => string);
+  constructor(strFn: (k: K) => string, values?: Iterable<K>);
+  constructor(strFn: (k: K) => string, values?: Array<K>) {
     this._values = new Map<string, K>();
+    this.strFn = strFn;
     if (values) {
       for (const value of values) {
-        this._values.set(value.toString(), value);
+        this._values.set(strFn(value), value);
       }
     }
   }
 
   has(value: K): boolean {
-    return this._values.has(value.toString());
+    return this._values.has(this.strFn(value));
   }
 
   add(...values: K[]) {
     values.forEach(value => {
-      this._values.set(value.toString(), value);
+      this._values.set(this.strFn(value), value);
     });
   }
 
@@ -31,7 +33,7 @@ class HashSet<K extends HashKey> implements Iterable<K> {
   }
 
   delete(value: K) {
-    this._values.delete(value.toString());
+    this._values.delete(this.strFn(value));
   }
 
   size() {
@@ -51,13 +53,15 @@ class HashSet<K extends HashKey> implements Iterable<K> {
   }
 }
 
-class HashMap<K extends HashKey, V> {
+class HashMap<K, V> {
   private _map: Map<string, V>;
   private _keys: Map<string, K>;
+  private strFn: (k: K) => string;
 
-  constructor() {
+  constructor(strFn: (k: K) => string) {
     this._map = new Map<string, V>();
     this._keys = new Map<string, K>();
+    this.strFn = strFn;
   }
 
   entries(): Array<[K, V]> {
@@ -73,12 +77,24 @@ class HashMap<K extends HashKey, V> {
   }
 
   get(key: K): V | undefined {
-    return this._map.get(key.toString());
+    return this._map.get(this.strFn(key));
   }
 
   set(key: K, value: V) {
-    this._map.set(key.toString(), value);
-    this._keys.set(key.toString(), key);
+    this._map.set(this.strFn(key), value);
+    this._keys.set(this.strFn(key), key);
+  }
+
+  has(key: K): boolean {
+    if (key === undefined) {
+      throw Error("undefined key");
+    }
+    return this._keys.has(this.strFn(key));
+  }
+
+  delete(key: K) {
+    this._map.delete(this.strFn(key));
+    this._keys.delete(this.strFn(key));
   }
 
   size() {
@@ -173,7 +189,7 @@ class Grid<V> {
   maxZ: number = 0;
 
   constructor(fn: (a: string) => V, input?: string[] | null) {
-    this._values = new HashMap<Point, V>();
+    this._values = new HashMap<Point, V>(p => p.toString());
     if (input) {
       this.minX = 0;
       this.maxY = input.length;
@@ -232,11 +248,13 @@ class Grid<V> {
     return this._values.get(point) || null;
   }
 
-  surroundValues(point: Point,
-                 diagonal: boolean = false,
-                 defaultValue: V | null = null,
-                 infinite: boolean = false,
-                 includeOrg: boolean = false,
+
+  surroundValues(
+    point: Point,
+    diagonal: boolean = false,
+    defaultValue: V | null = null,
+    infinite: boolean = false,
+    includeOrg: boolean = false,
   ): (V | null)[] {
     const s = this.surround(point, diagonal, infinite, includeOrg);
     return s.map(p => this.value(p) || defaultValue).filter(v => v !== null);
@@ -270,4 +288,6 @@ class StringGrid extends Grid<string> {
   }
 }
 
-export { HashMap, HashKey, HashSet, Counter, NumGrid, StringGrid, Point };
+export {
+  HashMap, HashKey, HashSet, Counter, NumGrid, StringGrid, Point,
+};
