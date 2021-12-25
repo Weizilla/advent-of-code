@@ -1,4 +1,5 @@
 import { Solution } from "../solution";
+import { range } from "../utils";
 
 class State {
   w: number;
@@ -87,6 +88,10 @@ class State {
   hasNext(): boolean {
     return this.commandIndex < this.commandLength;
   }
+
+  toString(): string {
+    return `${this.commandIndex} inputIndex=${this.inputIndex} w=${this.w} x=${this.x} y=${this.y} z=${this.z}`;
+  }
 }
 
 class Day24 extends Solution {
@@ -98,35 +103,70 @@ class Day24 extends Solution {
     const commands = this.readInput();
     const result = this.runPart1(commands);
     return result;
+    // this.findDups(commands);
+    return 0;
+  }
+
+  private findDups(commands: string[]) {
+    let i = 0;
+    let output: string[][] = range(commands.length).map(_ => []);
+
+    commands.forEach(c => {
+      if (c.indexOf("inp") !== -1) {
+        i = 0;
+      }
+      if (output[i].indexOf(`|${c.padStart(10)}`) === -1) {
+        output[i].push(`|${c.padStart(10)}`);
+      }
+      i++;
+    });
+
+    this.print(output.filter(o => o.length > 0).join("\n"));
   }
 
   private runPart1(commands: string[]): number | string {
-    const curr = "9".repeat(14).split("").map(n => parseInt(n, 10));
-    const end = "1".repeat(14).split("").map(n => parseInt(n, 10));
-    // end[end.length - 1] = 1;
+    const curr = "11161151131128".split("").map(n => parseInt(n, 10));
+    const result = this.runProgram(curr, commands, new Map());
+    this.print(`Result ${result} Input ${curr.join("")}`);
+    // const curr = range(14).fill(1);
+    // const end = "1".repeat(14).split("").map(n => parseInt(n, 10));
     // end[end.length - 2] = 1;
+    // for (let i = 13; i >= 0; i--) {
+    //   let minJ = 0;
+    //   let minResult = Infinity;
+    //   for (let j = 1; j <= 9; j++) {
+    //     curr[i] = j;
+    //     const result = this.runProgram(curr, commands, new Map());
+    //     this.print(`Result ${result} Input ${curr.join("")}`);
+    //     if (result < minResult) {
+    //       minResult = result;
+    //       minJ = j;
+    //     }
+    //   }
+    //   curr[i] = minJ;
+    // }
 
+    // const cache = new Map<string, State>();
+    //
+    // let i = 0;
+    // while (!this.equals(curr, end)) {
+    //   // this.print(curr.join(""));
+    //
+    //   // const result = this.runProgram(curr, commands, cache);
+    //   // if (result === 0) {
+    //   //   return curr.join("");
+    //   // }
+    //
+    //   const result = 0;
+    //   if (i % 100000 === 0) {
+    //     this.print(`i=${i} curr=${curr.join("")} result=${result}`);
+    //   }
+    //
+    //   this.decrease(curr);
+    //   i++;
+    //
+    // }
 
-    const cache = new Map<string, State>();
-
-    let i = 0;
-    while (!this.equals(curr, end)) {
-      // this.print(curr.join(""));
-
-      // const result = this.runProgram(curr, commands, cache);
-      // if (result === 0) {
-      //   return curr.join("");
-      // }
-
-      const result = 0;
-      if (i % 100000 === 0) {
-        this.print(`i=${i} curr=${curr.join("")} result=${result}`);
-      }
-
-      this.decrease(curr);
-      i++;
-
-    }
 
     return 0;
   }
@@ -171,15 +211,18 @@ class Day24 extends Solution {
     const state = this.loadState(input, commands.length, cache);
 
     while (state.hasNext()) {
-      const splits = commands[state.getAndIncCommandIndex()].split(" ");
+      const command = commands[state.getAndIncCommandIndex()];
+      const splits = command.split(" ");
       const [var1Name, var2] = [...splits.slice(1)];
       const var1Value = state.get(var1Name)!;
       let var2Value: number;
 
       switch (splits[0]) {
         case "inp":
-          cache.set(state.key(), state.clone());
-          state.set(var1Name, state.getInput());
+          // cache.set(state.key(), state.clone());
+          const inputDigit = state.getInput();
+          // this.print(`input=${state.inputIndex - 1} inputDigit=${inputDigit} z=${state.get("z")}`);
+          state.set(var1Name, inputDigit);
           break;
         case "add":
           var2Value = state.getOrParse(var2);
@@ -205,6 +248,8 @@ class Day24 extends Solution {
         default:
           throw Error(`unknown command ${splits[0]}`);
       }
+
+      this.print(`${command.padStart(10)} | ${state}`, 0, command.indexOf("inp") !== -1 ? "blue" : "black");
     }
     const result = state.get("z")!;
 
