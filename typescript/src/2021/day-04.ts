@@ -75,7 +75,7 @@ class Day4 extends Solution {
     super(4, 2021, example);
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const inputs = this.readInput();
     const bingoNums = inputs[0].split(",").map(n => parseInt(n, 10));
 
@@ -94,7 +94,7 @@ class Day4 extends Solution {
     return 0;
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const inputs = this.readInput();
     const bingoNums = inputs[0].split(",").map(n => parseInt(n, 10));
 

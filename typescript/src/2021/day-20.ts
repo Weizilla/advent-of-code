@@ -7,7 +7,7 @@ class Day20 extends Solution {
     super(20, 2021, example);
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const inputs = this.readInput();
     const algo = inputs[0].split("");
     let grid = new StringGrid(inputs.slice(1));
@@ -35,7 +35,7 @@ class Day20 extends Solution {
     return newGrid;
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const inputs = this.readInput();
     const algo = inputs[0].split("");
     let grid = new StringGrid(inputs.slice(1));

@@ -30,7 +30,7 @@ class Day21 extends Solution {
     super(21, 2021, example);
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const inputs = this.readInput().map(i => i.split(" ").slice(-1)[0]).map(i => parseInt(i, 10));
     let [p1Spot, p2Spot] = [...inputs];
     let p1Score = 0;
@@ -70,7 +70,7 @@ class Day21 extends Solution {
     return Math.min(p1Score, p2Score) * step;
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const inputs = this.readInput().map(i => i.split(" ").slice(-1)[0]).map(i => parseInt(i, 10));
     const [p1Spot, p2Spot] = [...inputs];
     const p1Score = 0;

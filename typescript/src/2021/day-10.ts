@@ -32,7 +32,7 @@ class Day10 extends Solution {
     super(10, 2021, example);
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const lines = this.readInput();
     const p = lines
       .map(this.checkLine)
@@ -79,7 +79,7 @@ class Day10 extends Solution {
     return [Status.OK, null];
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const lines = this.readInput();
     const points = lines
       .map(this.checkLine)

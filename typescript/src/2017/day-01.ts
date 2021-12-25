@@ -5,7 +5,7 @@ class Day1 extends Solution {
     super(1, 2017, example);
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const inputs = this.readInput()[0].split("").map((i) => parseInt(i, 10));
     let totalSum = 0;
     for (let i = 0; i < inputs.length; i++) {
@@ -21,7 +21,7 @@ class Day1 extends Solution {
     return totalSum;
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const inputs = this.readInput()[0].split("").map((i) => parseInt(i, 10));
     let totalSum = 0;
     for (let i = 0; i < inputs.length; i++) {

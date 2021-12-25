@@ -6,7 +6,7 @@ class Day3 extends Solution {
     super(3, 2021, example);
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const inputs = this.readInput();
     const sums = new Array(inputs[0].length).fill(0);
     for (const line of inputs) {
@@ -33,7 +33,7 @@ class Day3 extends Solution {
     return gamma * epsilon;
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const inputs = this.readInput();
     const o2 = this.part2Helper(inputs, ["1", "1", "0"]);
     const co2 = this.part2Helper(inputs, ["0", "0", "1"]);

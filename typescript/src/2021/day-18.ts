@@ -101,7 +101,7 @@ class Day18 extends Solution {
     super(18, 2021, example);
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const inputs = this.readInput();
     const nodes = inputs.map(i => this.parseInput(i));
     let curr = nodes[0];
@@ -281,7 +281,7 @@ class Day18 extends Solution {
     return head!;
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const inputs = this.readInput();
 
     let maxSum = 0;

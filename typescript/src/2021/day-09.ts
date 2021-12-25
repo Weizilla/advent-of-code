@@ -6,7 +6,7 @@ class Day9 extends Solution {
     super(9, 2021, example);
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const grid = this.readInput().map(i => i.split("").map(n => parseInt(n, 10)));
     const maxY = grid.length;
     const maxX = grid[0].length;
@@ -37,7 +37,7 @@ class Day9 extends Solution {
     ].filter(([nX, nY]) => nX >= 0 && nX < maxX && nY >= 0 && nY < maxY);
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const grid = this.readInput().map(i => i.split("").map(n => parseInt(n, 10)));
     const maxY = grid.length;
     const maxX = grid[0].length;

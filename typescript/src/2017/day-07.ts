@@ -50,7 +50,7 @@ class Day7 extends Solution {
     super(7, 2017, example);
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const programs = this.readPrograms();
     const hasPointer = new Set<string>();
     programs.values().flatMap(n => n.aboveIds).forEach(n => hasPointer.add(n));
@@ -61,7 +61,7 @@ class Day7 extends Solution {
     return noPointers[0];
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const programs = this.readPrograms();
     const hasPointer = new Set<string>();
     programs.values().flatMap(n => n.aboveIds).forEach(n => hasPointer.add(n));

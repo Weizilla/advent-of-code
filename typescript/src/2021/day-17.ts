@@ -9,7 +9,7 @@ class Day17 extends Solution {
     super(17, 2021, example);
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const input = this.readInput()[0];
     const regex = /target area: x=([\d-]+)..([\d-]+), y=([0-9-]+)..([\d-]+)/;
     const matches = input.match(regex)!;
@@ -42,7 +42,13 @@ class Day17 extends Solution {
     return allMaxHeight;
   }
 
-  runSteps(vX: number, vY: number, minX: number, minY: number, maxX: number, maxY: number, maxSteps: number): number | null {
+  runSteps(vX: number,
+    vY: number,
+    minX: number,
+    minY: number,
+    maxX: number,
+    maxY: number,
+    maxSteps: number): number | null {
     let currX = 0;
     let currY = 0;
     let currVx = vX;
@@ -66,7 +72,7 @@ class Day17 extends Solution {
     return null;
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const input = this.readInput()[0];
     const regex = /target area: x=([\d-]+)..([\d-]+), y=([0-9-]+)..([\d-]+)/;
     const matches = input.match(regex)!;

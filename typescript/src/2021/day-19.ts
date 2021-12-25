@@ -78,7 +78,7 @@ class Day19 extends Solution {
     this.rotations = new HashMap<RotationId, Point[]>();
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const scanners = this.readScanners();
 
     // const overlaps2 = this.calcOverlapPoints(scanners[3].points, scanners[8]);
@@ -325,8 +325,8 @@ class Day19 extends Solution {
     return points;
   }
 
-  part2(): number | string | undefined {
-    return undefined;
+  part2(): number | string {
+    return 0;
   }
 }
 

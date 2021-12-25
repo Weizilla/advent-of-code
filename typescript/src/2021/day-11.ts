@@ -6,7 +6,7 @@ class Day11 extends Solution {
     super(11, 2021, example);
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const grid = this.readInput().map(n => n.split("").map(i => parseInt(i, 10)));
     let flashed = 0;
     const numSteps = 100;
@@ -89,7 +89,7 @@ class Day11 extends Solution {
     ].filter(([nX, nY]) => nX >= 0 && nX < maxX && nY >= 0 && nY < maxY);
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const grid = this.readInput().map(n => n.split("").map(i => parseInt(i, 10)));
     let numSteps = 0;
     let all = this.allFlashed(grid);

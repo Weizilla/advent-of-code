@@ -21,7 +21,7 @@ class Day2 extends Solution {
     super(2, 2021, example);
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const inputs = this.readInput();
     const actions = inputs.map(i => this.parseInput(i));
     const [hor, depth] = actions.reduce(this.reducePart1, [0, 0]);
@@ -48,7 +48,7 @@ class Day2 extends Solution {
     return [hor, depth];
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const inputs = this.readInput();
     const actions = inputs.map(i => this.parseInput(i));
     const [hor, depth] = actions.reduce(this.reducePart2, [0, 0, 0]);

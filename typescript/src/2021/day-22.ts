@@ -49,9 +49,10 @@ class Day22 extends Solution {
     super(22, 2021, example, forcePrint);
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const inputs = this.readInput();
-    const inputCubes = inputs.map(i => this.parseInput(i)).filter(c => c.allBounds.filter(p => Math.abs(p) <= 51).length === 6);
+    const inputCubes = inputs.map(i => this.parseInput(i))
+      .filter(c => c.allBounds.filter(p => Math.abs(p) <= 51).length === 6);
 
     // return this.brute(inputCubes);
     return this.smart(inputCubes);
@@ -172,7 +173,7 @@ class Day22 extends Solution {
     return new Cube(on, minX, maxX + 1, minY, maxY + 1, minZ, maxZ + 1);
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const inputs = this.readInput();
     const inputCubes = inputs.map(i => this.parseInput(i));
     // this.print(cubes.join("\n"));

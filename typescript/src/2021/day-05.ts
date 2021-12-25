@@ -43,7 +43,7 @@ class Day5 extends Solution {
     super(5, 2021, example);
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const lines = this.readInput().map(this.parseLine);
     const hvLines = lines.filter(l => l.isHorizontal() || l.isVertical());
 
@@ -81,7 +81,7 @@ class Day5 extends Solution {
     return new Line(new Point(x, y), new Point(x2, y2));
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const lines = this.readInput().map(this.parseLine);
 
     const overlaps = new HashMap<Point, number>();

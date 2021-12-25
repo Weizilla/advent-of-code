@@ -5,7 +5,7 @@ class Day4 extends Solution {
     super(4, 2017, example);
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const input = this.readInput();
     const numValid = input.filter(l => this.isValid1(l)).length;
     return numValid;
@@ -17,7 +17,7 @@ class Day4 extends Solution {
     return allWords.length === uniqueWords.size;
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const input = this.readInput();
     const numValid = input.filter(l => this.isValid2(l)).length;
     return numValid;

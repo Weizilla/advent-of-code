@@ -6,7 +6,7 @@ class Day8 extends Solution {
     super(8, 2021, example);
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const input = this.readInput();
     const allOutputs = input
       .map(this.parseInput)
@@ -22,7 +22,7 @@ class Day8 extends Solution {
     return [inputs, outputs];
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const input = this.readInput();
     const allSum = sum(input
       .map(this.parseInput)

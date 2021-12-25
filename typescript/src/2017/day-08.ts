@@ -8,7 +8,12 @@ class Instruction {
   condCompare: Compare;
   condValue: number;
 
-  constructor(register: string, action: Action, actionValue: number, condRegister: string, condCompare: Compare, condValue: number) {
+  constructor(register: string,
+    action: Action,
+    actionValue: number,
+    condRegister: string,
+    condCompare: Compare,
+    condValue: number) {
     this.register = register;
     this.action = action;
     this.actionValue = actionValue;
@@ -37,7 +42,7 @@ class Day8 extends Solution {
     super(8, 2017, example);
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const instructions = this.readInput().map(n => this.parseInput(n));
     const registers = new Map<string, number>();
 
@@ -100,7 +105,7 @@ class Day8 extends Solution {
     return new Instruction(register, action, actionValue, condReg, condCompare, condValue);
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const instructions = this.readInput().map(n => this.parseInput(n));
     const registers = new Map<string, number>();
 

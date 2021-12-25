@@ -6,7 +6,7 @@ class Day14 extends Solution {
     super(14, 2021, example);
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const inputs = this.readInput();
     const rules = this.readRules(inputs);
 
@@ -64,7 +64,7 @@ class Day14 extends Solution {
     return output;
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const inputs = this.readInput();
     const rules = this.readRules(inputs);
     const polymer = inputs[0].split("");

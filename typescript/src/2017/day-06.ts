@@ -6,7 +6,7 @@ class Day6 extends Solution {
     super(6, 2017, example);
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const banks = this.readInput()[0].split(/[\s]/).map(s => parseInt(s, 10));
     const seen = new HashMap<number[], number[]>();
 
@@ -39,7 +39,7 @@ class Day6 extends Solution {
     return seen.size();
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const banks = this.readInput()[0].split(/[\s]/).map(s => parseInt(s, 10));
     const seen = new HashMap<number[], number>();
 

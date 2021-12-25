@@ -9,7 +9,7 @@ class Day6 extends Solution {
     this.fishOutput = new Map<number, number>();
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const endDay = 80;
     const initial = this.readInput()[0].split(",").map(n => parseInt(n, 10));
     const num = sum(initial.map(n => n - 8).map(n => this.countFish(n, endDay)));
@@ -44,7 +44,7 @@ class Day6 extends Solution {
     return result;
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const endDay = 256;
     const initial = this.readInput()[0].split(",").map(n => parseInt(n, 10));
     const num = sum(initial.map(n => n - 8).map(n => this.countFish(n, endDay)));

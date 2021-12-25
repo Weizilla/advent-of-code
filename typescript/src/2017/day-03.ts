@@ -21,7 +21,7 @@ class Day3 extends Solution {
     super(3, 2017, example);
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const inputs = this.readInputInts();
     const solutions = inputs.map(n => this.solvePart1(n));
     print(solutions);
@@ -46,7 +46,7 @@ class Day3 extends Solution {
     return dist;
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const limit = this.readInputInts()[0];
     const values = new HashMap<Point, number>();
     values.set(new Point(0, 0), 1);

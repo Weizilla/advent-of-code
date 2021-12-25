@@ -6,7 +6,7 @@ class Day15 extends Solution {
     super(15, 2021, example);
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const grid = new Grid(this.readInput());
     this.print(grid);
 
@@ -46,7 +46,7 @@ class Day15 extends Solution {
     return 0;
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const grid = new Grid(this.readInput());
     this.print(grid);
     this.expandGrid(grid);

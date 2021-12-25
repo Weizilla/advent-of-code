@@ -21,7 +21,7 @@ class Day13 extends Solution {
     super(13, 2021, example);
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const lines = this.readInput();
     const points = this.readPoints(lines);
 
@@ -94,7 +94,7 @@ class Day13 extends Solution {
     }
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const lines = this.readInput();
     const points = this.readPoints(lines);
 

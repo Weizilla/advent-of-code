@@ -5,7 +5,7 @@ class Day2 extends Solution {
     super(2, 2017, example);
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const inputs = this.readInput();
     const allDiffs = inputs.map(line => {
       const nums = line.split(/[\s]/).map(n => parseInt(n, 10));
@@ -14,7 +14,7 @@ class Day2 extends Solution {
     return allDiffs.reduce((prev, curr) => prev + curr);
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const inputs = this.readInput();
     const allDiffs = inputs.map(line => {
       const nums = line.split(/[\s]/).map(n => parseInt(n, 10));

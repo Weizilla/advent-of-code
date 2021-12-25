@@ -5,7 +5,7 @@ class Day5 extends Solution {
     super(5, 2017, example);
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const inputs = this.readInputInts();
     let currIndex = 0;
     let numSteps = 0;
@@ -18,7 +18,7 @@ class Day5 extends Solution {
     return numSteps;
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const inputs = this.readInputInts();
     let currIndex = 0;
     let numSteps = 0;

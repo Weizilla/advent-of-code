@@ -83,7 +83,7 @@ class Day16 extends Solution {
     super(16, 2021, example);
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const inputs = this.readInput();
     const sumVers = inputs.map(i => {
       const sumVer = this.runPart1(i);
@@ -181,7 +181,7 @@ class Day16 extends Solution {
     return head.version + sum(head.subpackets.map(p => this.sumVersions(p)));
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const inputs = this.readInput();
     const sumVers = inputs.map(i => {
       const sumVer = this.runPart2(i);

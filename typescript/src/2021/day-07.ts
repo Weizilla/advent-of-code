@@ -6,7 +6,7 @@ class Day7 extends Solution {
     super(7, 2021, example);
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const locs = this.readInput()[0].split(",").map(n => parseInt(n, 10));
     const minLoc = Math.min(...locs);
     const maxLoc = Math.max(...locs);
@@ -23,7 +23,7 @@ class Day7 extends Solution {
     return sum(locs.map(n => Math.abs(final - n)));
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const locs = this.readInput()[0].split(",").map(n => parseInt(n, 10));
     const minLoc = Math.min(...locs);
     const maxLoc = Math.max(...locs);

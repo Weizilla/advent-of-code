@@ -96,7 +96,7 @@ class Day12 extends Solution {
     super(12, 2021, example);
   }
 
-  part1(): number | string | undefined {
+  part1(): number | string {
     const caves = this.parseCaves();
 
     let routes = [new Route(caves, ["start"])];
@@ -143,7 +143,7 @@ class Day12 extends Solution {
     return <T[]>newRoutes;
   }
 
-  part2(): number | string | undefined {
+  part2(): number | string {
     const caves = this.parseCaves();
 
     let routes = [new Route2(caves, ["start"], null)];
