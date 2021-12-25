@@ -1,10 +1,6 @@
-interface HashKey {
-  toString(): string;
-}
-
 class HashSet<K> implements Iterable<K> {
   private _values: Map<string, K>;
-  private strFn: (k: K) => string;
+  private readonly strFn: (k: K) => string;
 
   constructor(strFn: (k: K) => string);
   constructor(strFn: (k: K) => string, values?: Iterable<K>);
@@ -56,7 +52,7 @@ class HashSet<K> implements Iterable<K> {
 class HashMap<K, V> {
   private _map: Map<string, V>;
   private _keys: Map<string, K>;
-  private strFn: (k: K) => string;
+  private readonly strFn: (k: K) => string;
 
   constructor(strFn: (k: K) => string) {
     this._map = new Map<string, V>();
@@ -131,7 +127,7 @@ class Counter {
   }
 }
 
-class Point implements HashKey {
+class Tuple {
   x: number;
   y: number;
   z: number;
@@ -142,37 +138,36 @@ class Point implements HashKey {
     this.z = z;
   }
 
-  scale(value: number): Point {
-    return new Point(this.x * value, this.y * value, this.z * value);
+  scale(value: number): Tuple {
+    return new Tuple(this.x * value, this.y * value, this.z * value);
   }
 
-  sum(value: Point): Point {
-    return new Point(this.x + value.x, this.y + value.y, this.z + value.z);
+  sum(value: Tuple): Tuple {
+    return new Tuple(this.x + value.x, this.y + value.y, this.z + value.z);
   }
 
-  product(value: Point): number {
+  product(value: Tuple): number {
     return this.x * value.x + this.y * value.y + this.z * value.z;
   }
 
-  matrixProduct(values: [Point, Point, Point]): Point {
+  matrixProduct(values: [Tuple, Tuple, Tuple]): Tuple {
     const nx = this.product(values[0]);
     const ny = this.product(values[1]);
     const nz = this.product(values[2]);
-    return new Point(Math.round(nx), Math.round(ny), Math.round(nz));
+    return new Tuple(Math.round(nx), Math.round(ny), Math.round(nz));
   }
 
   static x(value: number) {
-    return new Point(value, 0, 0);
+    return new Tuple(value, 0, 0);
   }
 
   static y(value: number) {
-    return new Point(0, value, 0);
+    return new Tuple(0, value, 0);
   }
 
   static z(value: number) {
-    return new Point(0, 0, value);
+    return new Tuple(0, 0, value);
   }
-
 
   toString(): string {
     return `(${this.x},${this.y},${this.z})`;
@@ -180,7 +175,7 @@ class Point implements HashKey {
 }
 
 class Grid<V> {
-  private _values: HashMap<Point, V>;
+  private _values: HashMap<Tuple, V>;
   minX: number = 0;
   maxX: number = 0;
   minY: number = 0;
@@ -189,7 +184,7 @@ class Grid<V> {
   maxZ: number = 0;
 
   constructor(fn: (a: string) => V, input?: string[] | null) {
-    this._values = new HashMap<Point, V>(p => p.toString());
+    this._values = new HashMap<Tuple, V>(p => p.toString());
     if (input) {
       this.minX = 0;
       this.maxY = input.length;
@@ -200,7 +195,7 @@ class Grid<V> {
         const row = input[y].split("");
         for (let x = 0; x < this.maxX; x++) {
           const value = fn(row[x]);
-          this._values.set(new Point(x, y), value);
+          this._values.set(new Tuple(x, y), value);
         }
       }
     }
@@ -210,7 +205,7 @@ class Grid<V> {
     let output = "";
     for (let y = this.minY - padding; y < this.maxY + padding; y++) {
       for (let x = this.minX - padding; x < this.maxX + padding; x++) {
-        const value = this._values.get(new Point(x, y)) ?? (defaultValue || " ");
+        const value = this._values.get(new Tuple(x, y)) ?? (defaultValue || " ");
         output += `${value}`;
       }
       output += "\n";
@@ -218,7 +213,7 @@ class Grid<V> {
     return output;
   }
 
-  surround(point: Point, diagonal: boolean = false, infinite: boolean = false, includeOrg: boolean = false): Point[] {
+  surround(point: Tuple, diagonal: boolean = false, infinite: boolean = false, includeOrg: boolean = false): Tuple[] {
     const {x, y} = point;
     const s = [
       [x - 1, y],
@@ -241,16 +236,15 @@ class Grid<V> {
     s.sort(([x1, y1], [x2, y2]) => (y1 === y2 ? x1 - x2 : y1 - y2));
 
     return s.filter(([nX, nY]) => infinite || (nX >= this.minX && nX < this.maxX && nY >= this.minY && nY < this.maxY))
-      .map(([nX, nY]) => new Point(nX, nY));
+      .map(([nX, nY]) => new Tuple(nX, nY));
   }
 
-  value(point: Point): V | null {
+  value(point: Tuple): V | null {
     return this._values.get(point) || null;
   }
 
-
   surroundValues(
-    point: Point,
+    point: Tuple,
     diagonal: boolean = false,
     defaultValue: V | null = null,
     infinite: boolean = false,
@@ -260,7 +254,7 @@ class Grid<V> {
     return s.map(p => this.value(p) || defaultValue).filter(v => v !== null);
   }
 
-  set(point: Point, value: V) {
+  set(point: Tuple, value: V) {
     this.minX = Math.min(this.minX, point.x);
     this.maxX = Math.max(this.maxX, point.x + 1);
     this.minY = Math.min(this.minY, point.y);
@@ -275,7 +269,6 @@ class Grid<V> {
   }
 }
 
-
 class NumGrid extends Grid<number> {
   constructor(input?: string[]) {
     super(a => parseInt(a, 10), input);
@@ -288,6 +281,4 @@ class StringGrid extends Grid<string> {
   }
 }
 
-export {
-  HashMap, HashKey, HashSet, Counter, NumGrid, StringGrid, Point,
-};
+export { HashMap, HashSet, Counter, NumGrid, StringGrid, Tuple };
