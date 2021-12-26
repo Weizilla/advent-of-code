@@ -1,5 +1,6 @@
 import { Solution } from "../solution";
 import { range } from "../utils";
+import chalk from "chalk";
 
 class State {
   w: number;
@@ -11,7 +12,16 @@ class State {
   commandIndex: number;
   commandLength: number;
 
-  constructor(input: number[], commandLength: number, w: number = 0, x: number = 0, y: number = 0, z: number = 0, inputIndex = 0, commandIndex = 0) {
+  constructor(
+    input: number[],
+    commandLength: number,
+    w: number = 0,
+    x: number = 0,
+    y: number = 0,
+    z: number = 0,
+    inputIndex = 0,
+    commandIndex = 0,
+  ) {
     this.w = w;
     this.x = x;
     this.y = y;
@@ -24,7 +34,16 @@ class State {
   }
 
   clone(): State {
-    return new State(this.input, this.commandLength, this.w, this.x, this.y, this.z, this.inputIndex, this.commandIndex);
+    return new State(
+      this.input,
+      this.commandLength,
+      this.w,
+      this.x,
+      this.y,
+      this.z,
+      this.inputIndex,
+      this.commandIndex,
+    );
   }
 
   key(): string {
@@ -125,50 +144,22 @@ class Day24 extends Solution {
   }
 
   private runPart1(commands: string[]): number | string {
-    const curr = "11161151131128".split("").map(n => parseInt(n, 10));
-    const result = this.runProgram(curr, commands, new Map());
-    this.print(`Result ${result} Input ${curr.join("")}`);
-    // const curr = range(14).fill(1);
-    // const end = "1".repeat(14).split("").map(n => parseInt(n, 10));
-    // end[end.length - 2] = 1;
-    // for (let i = 13; i >= 0; i--) {
-    //   let minJ = 0;
-    //   let minResult = Infinity;
-    //   for (let j = 1; j <= 9; j++) {
-    //     curr[i] = j;
-    //     const result = this.runProgram(curr, commands, new Map());
-    //     this.print(`Result ${result} Input ${curr.join("")}`);
-    //     if (result < minResult) {
-    //       minResult = result;
-    //       minJ = j;
-    //     }
-    //   }
-    //   curr[i] = minJ;
-    // }
+    // const curr = "11161151131128".split("").map(n => parseInt(n, 10));
+    const step = 1;
+    const dupResults = new Set();
+    for (let i = 11161151131128 - (step * 200); i < 11161151131128 + step * 200; i += step) {
+      const curr = i.toString().split("").map(n => parseInt(n, 10));
+      const [result, states] = this.runProgram(curr, commands, new Map());
+      this.print(`${curr.join("")} | ${states.map((s,
+        c) => `${chalk.blue(curr[c - 1] === undefined ? "" : curr[c - 1])} ` +
+        `${s.x.toString().padStart(2)} ${s.y.toString().padStart(2)} ${s.z.toString()
+          .padStart(6)}`)
+        .join("|")}`);
 
-    // const cache = new Map<string, State>();
-    //
-    // let i = 0;
-    // while (!this.equals(curr, end)) {
-    //   // this.print(curr.join(""));
-    //
-    //   // const result = this.runProgram(curr, commands, cache);
-    //   // if (result === 0) {
-    //   //   return curr.join("");
-    //   // }
-    //
-    //   const result = 0;
-    //   if (i % 100000 === 0) {
-    //     this.print(`i=${i} curr=${curr.join("")} result=${result}`);
-    //   }
-    //
-    //   this.decrease(curr);
-    //   i++;
-    //
-    // }
+      dupResults.add(result);
+    }
 
-
-    return 0;
+    return dupResults.size;
   }
 
   private equals(n1: number[], n2: number[]): boolean {
@@ -207,22 +198,26 @@ class Day24 extends Solution {
     return new State(input, commandLength);
   }
 
-  private runProgram(input: number[], commands: string[], cache: Map<string, State>): number {
+  private runProgram(input: number[], commands: string[], cache: Map<string, State>): [number, State[]] {
     const state = this.loadState(input, commands.length, cache);
+    const historicalStates = [];
 
     while (state.hasNext()) {
-      const command = commands[state.getAndIncCommandIndex()];
+      let command = commands[state.getAndIncCommandIndex()];
       const splits = command.split(" ");
       const [var1Name, var2] = [...splits.slice(1)];
       const var1Value = state.get(var1Name)!;
       let var2Value: number;
+      let inputDigit = null;
 
       switch (splits[0]) {
         case "inp":
           // cache.set(state.key(), state.clone());
-          const inputDigit = state.getInput();
+          historicalStates.push(state.clone());
+          inputDigit = state.getInput();
           // this.print(`input=${state.inputIndex - 1} inputDigit=${inputDigit} z=${state.get("z")}`);
           state.set(var1Name, inputDigit);
+          command += ` [${inputDigit}]`;
           break;
         case "add":
           var2Value = state.getOrParse(var2);
@@ -249,11 +244,13 @@ class Day24 extends Solution {
           throw Error(`unknown command ${splits[0]}`);
       }
 
-      this.print(`${command.padStart(10)} | ${state}`, 0, command.indexOf("inp") !== -1 ? "blue" : "black");
+      // this.print(`${command.padStart(10)} \n            ${state}`, 0, command.indexOf("inp") !== -1 ? "blue" :
+      // "black");
     }
+    historicalStates.push(state);
     const result = state.get("z")!;
 
-    return result;
+    return [result, historicalStates];
 
   }
 
