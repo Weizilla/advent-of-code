@@ -241,15 +241,17 @@ class Day23 extends Solution {
     seen.set(start, 0);
 
     while (next.length > 0) {
-      const [curr, currCost] = next.pop()!;
+      next.sort(([_1, c1], [_2, c2]) => c2 - c1);
+      const [curr] = next.pop()!;
       const currNode = Graph[curr];
-      seen.set(curr, currCost);
+      const currCost = seen.get(curr)!;
 
       const newAvail = currNode.neighbors;
       for (const [newAvailId, newAvailCost] of newAvail) {
-        if (state.isEmpty(newAvailId) && !seen.has(newAvailId)) {
-          next.push([newAvailId, currCost + newAvailCost]);
-          seen.set(newAvailId, currCost + newAvailCost);
+        const newCost = currCost + newAvailCost;
+        if (state.isEmpty(newAvailId) && (!seen.has(newAvailId) || seen.get(newAvailId)! > currCost)) {
+          next.push([newAvailId, newCost]);
+          seen.set(newAvailId, newCost);
         }
       }
     }
@@ -320,16 +322,14 @@ class Day23 extends Solution {
 
     let step = 0;
     while (allNextStates.size() > 0) {
-      const startSort = Date.now();
       const sorted = allNextStates.entries().sort(([_1, n1], [_2, n2]) => n2 - n1);
       const [currState] = sorted.pop()!;
       allNextStates.delete(currState);
-      const sortDuration = Date.now() - startSort;
 
       const cost = allCosts.get(currState)!;
 
       if (step % 10000 === 0) {
-        this.print(`step=${step} currCost=${cost} costsSize=${allCosts.size()} nextSize=${allNextStates.size()} availableNodesCacheSize=${this.availableNodesCache.size} sortDuration=${sortDuration}`);
+        this.print(`step=${step} currCost=${cost} costsSize=${allCosts.size()} nextSize=${allNextStates.size()} availableNodesCacheSize=${this.availableNodesCache.size}`);
         this.print(currState.toPrettyString());
       }
 
