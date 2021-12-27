@@ -27,7 +27,7 @@
     "@typescript-eslint/lines-between-class-members" : "off",
     "class-methods-use-this" : "off",
     "no-unused-vars" : "off",
-    "@typescript-eslint/no-unused-vars" : ["error", { "argsIgnorePattern" : "_" }],
+    "@typescript-eslint/no-unused-vars" : ["warn", { "argsIgnorePattern" : "_" }],
     "no-trailing-spaces" : "off",
     "arrow-parens" : ["warn", "as-needed"],
     "max-len" : ["warn", 120],
