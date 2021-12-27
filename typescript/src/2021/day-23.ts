@@ -3,11 +3,31 @@ import { HashMap } from "../collections";
 
 class Node {
   id: number;
+  inner: boolean;
   neighbors: [number, number][];
+  _podRoom: Pod | null;
 
-  constructor(id: number, ...neighbors: [number, number][]) {
+  constructor(id: number, inner: boolean = false, ...neighbors: [number, number][]) {
     this.id = id;
+    this.inner = inner;
+    this._podRoom = null;
     this.neighbors = neighbors;
+  }
+
+  get isHall(): boolean {
+    return this._podRoom === null;
+  }
+
+  get isRoom(): boolean {
+    return this._podRoom !== null;
+  }
+
+  get podRoom(): Pod | null {
+    return this._podRoom;
+  }
+
+  set podRoom(value: Pod | null) {
+    this._podRoom = value;
   }
 
   neighborIds(): number[] {
@@ -15,15 +35,9 @@ class Node {
   }
 
   toString() {
-    return `{Node id=${this.id} neighbors=${this.neighborIds().join(",")}}`;
+    return `{Node id=${this.id} hall=${this.isHall} pdoRoom=${this.podRoom?.id || ""} neighbors=${this.neighborIds()
+      .join(",")}}`;
   }
-}
-
-enum Pod {
-  A = "a",
-  B = "b",
-  C = "c",
-  D = "d",
 }
 
 /*
@@ -34,111 +48,79 @@ enum Pod {
     #########
 */
 const Graph = [
-  new Node(0, [1, 1]),
-  new Node(1, [0, 1], [2, 2], [7, 2]),
-  new Node(2, [1, 2], [3, 2], [7, 2], [9, 2]),
-  new Node(3, [2, 2], [9, 2], [11, 2], [4, 2]),
-  new Node(4, [3, 2], [11, 2], [13, 2], [5, 2]),
-  new Node(5, [4, 2], [13, 2], [6, 1]),
-  new Node(6, [5, 1]),
-  new Node(7, [1, 2], [2, 2], [8, 1]),
-  new Node(8, [7, 1]),
-  new Node(9, [2, 2], [3, 2], [10, 1]),
-  new Node(10, [9, 1]),
-  new Node(11, [3, 2], [4, 2], [12, 1]),
-  new Node(12, [11, 1]),
-  new Node(13, [4, 2], [5, 2], [14, 1]),
-  new Node(14, [13, 1]),
+  new Node(0, false, [1, 1]),
+  new Node(1, false, [0, 1], [2, 2], [7, 2]),
+  new Node(2, false, [1, 2], [3, 2], [7, 2], [9, 2]),
+  new Node(3, false, [2, 2], [9, 2], [11, 2], [4, 2]),
+  new Node(4, false, [3, 2], [11, 2], [13, 2], [5, 2]),
+  new Node(5, false, [4, 2], [13, 2], [6, 1]),
+  new Node(6, false, [5, 1]),
+  new Node(7, false, [1, 2], [2, 2], [8, 1]),
+  new Node(8, true, [7, 1]),
+  new Node(9, false, [2, 2], [3, 2], [10, 1]),
+  new Node(10, true, [9, 1]),
+  new Node(11, false, [3, 2], [4, 2], [12, 1]),
+  new Node(12, true, [11, 1]),
+  new Node(13, false, [4, 2], [5, 2], [14, 1]),
+  new Node(14, true, [13, 1]),
 ];
 
-function costs(pod: Pod): number {
-  switch (pod) {
-    case Pod.A:
-      return 1;
-    case Pod.B:
-      return 10;
-    case Pod.C:
-      return 100;
-    case Pod.D:
-      return 1000;
-    default:
-      throw Error();
+class Pod {
+  id: string;
+  cost: number;
+  rooms: Node[];
+
+  constructor(id: string, cost: number, ...roomIds: number[]) {
+    this.id = id;
+    this.cost = cost;
+    this.rooms = roomIds.map(i => Graph[i]);
+    for (const n of this.rooms) {
+      n.podRoom = this;
+    }
+  }
+
+  toString(): string {
+    return this.id;
   }
 }
 
-const HallIds = new Set<number>([0, 1, 2, 3, 4, 5, 6]);
-const Rooms = new Map<Pod, [number, number]>([
-  [Pod.A, [7, 8]],
-  [Pod.B, [9, 10]],
-  [Pod.C, [11, 12]],
-  [Pod.D, [13, 14]],
-]);
-const OuterIds = new Set<number>([...Rooms.entries()].map(([_p, [n1, _2]]) => n1));
-const InnerIds = new Set<number>([...Rooms.entries()].map(([_p, [_1, n2]]) => n2));
-const RoomPods = new Map<number, Pod>([...Rooms.entries()].flatMap(([p, [n1, n2]]) => [[n1, p], [n2, p]]));
+const Pods = {
+  A: new Pod("a", 1, 7, 8),
+  B: new Pod("b", 10, 9, 10),
+  C: new Pod("c", 100, 11, 12),
+  D: new Pod("d", 1000, 13, 14),
+};
 
 class State {
-  private _pods: Map<Pod, [number, number]>;
+  private _pods: HashMap<Pod, number[]>;
+  private podNodes: Map<number, Pod>;
 
-  constructor(
-    podA1: number,
-    podA2: number,
-    podB1: number,
-    podB2: number,
-    podC1: number,
-    podC2: number,
-    podD1: number,
-    podD2: number,
-  ) {
-    this._pods = new Map<Pod, [number, number]>();
-    this._pods.set(Pod.A, [podA1, podA2]);
-    this._pods.set(Pod.B, [podB1, podB2]);
-    this._pods.set(Pod.C, [podC1, podC2]);
-    this._pods.set(Pod.D, [podD1, podD2]);
+  constructor(a: number[], b: number[], c: number[], d: number[]) {
+    this._pods = new HashMap<Pod, number[]>(p => p.id);
+    this._pods.set(Pods.A, a);
+    this._pods.set(Pods.B, b);
+    this._pods.set(Pods.C, c);
+    this._pods.set(Pods.D, d);
+    this.podNodes = new Map<number, Pod>(this._pods.entries().flatMap(([p, ns]) => ns.map(n => [n, p])));
   }
 
   clone(): State {
     return new State(
-      this.podA[0],
-      this.podA[1],
-      this.podB[0],
-      this.podB[1],
-      this.podC[0],
-      this.podC[1],
-      this.podD[0],
-      this.podD[1],
+      this.getPod(Pods.A),
+      this.getPod(Pods.B),
+      this.getPod(Pods.C),
+      this.getPod(Pods.D),
     );
   }
 
-  getPod(pod: Pod): [number, number] {
+  getPod(pod: Pod): number[] {
     return this._pods.get(pod)!;
   }
 
   setPod(pod: Pod, old: number, value: number) {
-    const [c1, c2] = this.getPod(pod);
-    if (c1 === old) {
-      this._pods.set(pod, [value, c2]);
-    } else if (c2 === old) {
-      this._pods.set(pod, [c1, value]);
-    } else {
-      throw new Error("old not found");
-    }
-  }
-
-  get podA(): [number, number] {
-    return this.getPod(Pod.A);
-  }
-
-  get podB(): [number, number] {
-    return this.getPod(Pod.B);
-  }
-
-  get podC(): [number, number] {
-    return this.getPod(Pod.C);
-  }
-
-  get podD(): [number, number] {
-    return this.getPod(Pod.D);
+    const newValues = this.getPod(pod).map(v => (v === old ? value : v));
+    this._pods.set(pod, newValues);
+    this.podNodes = new Map<number, Pod>(this._pods.entries().flatMap(([p, ns]) => ns.map(n => [n, p])));
   }
 
   isEmpty(node: number): boolean {
@@ -146,20 +128,16 @@ class State {
   }
 
   hasPod(node: number): Pod | null {
-    for (const p of Object.values(Pod)) {
-      if (this._pods.get(p)!.some(n => n === node)) {
-        return p;
-      }
-    }
-    return null;
+    return this.podNodes.get(node) || null;
   }
 
   get allLoc(): number[] {
-    return this.podA.sort((a, b) => (a - b)).concat(
-      this.podB.sort((a, b) => (a - b)),
-      this.podC.sort((a, b) => (a - b)),
-      this.podD.sort((a, b) => (a - b)),
-    );
+    const result: number[] = [];
+    Object.values(Pods)
+      .forEach(p => this.getPod(p)
+        .sort((a, b) => a - b)
+        .forEach(n => result.push(n)));
+    return result;
   }
 
   equals(other: State): boolean {
@@ -215,13 +193,13 @@ class Day23 extends Solution {
       #########
     */
 
-    const example = new State(8, 14, 7, 11, 9, 12, 10, 13);
-    const real = new State(11, 13, 12, 14, 8, 10, 7, 9);
+    const example = new State([8, 14], [7, 11], [9, 12], [10, 13]);
+    const real = new State([11, 13], [12, 14], [8, 10], [7, 9]);
 
     const start = this.example === 1 ? example : real;
     this.print(`start ${start.toPrettyString()}`);
 
-    const goal = new State(7, 8, 9, 10, 11, 12, 13, 14);
+    const goal = new State([7, 8], [9, 10], [11, 12], [13, 14]);
     this.print(`goal ${goal.toPrettyString()}`, 0, "green");
 
     const final = this.runPart1(start, goal);
@@ -273,26 +251,29 @@ class Day23 extends Solution {
     const results: [number, number][] = [];
     const allAvailable = this.availableNodes(nodeId, state);
     allAvailable.delete(nodeId);
+    const node = Graph[nodeId];
 
     // in hallway or in room it doesn't belong in
-    if (HallIds.has(nodeId) || (RoomPods.has(nodeId) && pod !== RoomPods.get(nodeId)!)) {
-      const [outerSpace, innerSpace] = Rooms.get(pod)!;
+    if (node.isHall || (node.isRoom && pod !== node.podRoom)) {
+      const spaces = pod.rooms.map(r => r.id);
+      const innerSpace = spaces[spaces.length - 1];
       if (allAvailable.get(innerSpace)) {
         // in hall and pod's room is empty, move to inner spot
         results.push([innerSpace, allAvailable.get(innerSpace)!]);
-      } else if (state.hasPod(innerSpace) === pod && allAvailable.get(outerSpace)) {
+      } else if (pod.rooms.every(n => state.isEmpty(n.id) || state.hasPod(n.id) === pod)) {
         // in hall and pod's room has same pod, move to outer spot
-        results.push([outerSpace, allAvailable.get(outerSpace)!]);
+        pod.rooms.filter(n => allAvailable.get(n.id)).forEach(n => results.push([n.id, allAvailable.get(n.id)!]));
       }
     }
-    if (OuterIds.has(nodeId) && (pod !== RoomPods.get(nodeId)! || state.hasPod(nodeId + 1) !== RoomPods.get(nodeId)!)) {
+
+    if (node.isRoom && (pod !== node.podRoom || pod.rooms.some(n => state.hasPod(n.id) && state.hasPod(n.id) !== node.podRoom))) {
       // in outer room, can move to hallway if it doesn't belong in room or other pod is in room
-      [...allAvailable.entries()].filter(([n, _]) => HallIds.has(n)).forEach(([n, c]) => results.push([n, c]));
+      [...allAvailable.entries()].filter(([n, _]) => Graph[n].isHall).forEach(([n, c]) => results.push([n, c]));
     }
-    if (InnerIds.has(nodeId) && pod !== RoomPods.get(nodeId)!) {
-      // in inner room, can move to hallway if it doesn't belong in room
-      [...allAvailable.entries()].filter(([n, _]) => HallIds.has(n)).forEach(([n, c]) => results.push([n, c]));
-    }
+    // if (node.inner && pod !== node.podRoom) {
+    //   // in inner room, can move to hallway if it doesn't belong in room
+    //   [...allAvailable.entries()].filter(([n, _]) => HallIds.has(n)).forEach(([n, c]) => results.push([n, c]));
+    // }
 
     return results;
   }
@@ -300,12 +281,12 @@ class Day23 extends Solution {
   private availableStates(state: State): HashMap<State, number> {
     const results = new HashMap<State, number>(s => s.toString());
 
-    for (const p of Object.values(Pod)) {
+    for (const p of Object.values(Pods)) {
       state.getPod(p).forEach(currNode => {
         this.availableNode(currNode, p, state).forEach(([nextNode, multiplier]) => {
           const newState = state.clone();
           newState.setPod(p, currNode, nextNode);
-          results.set(newState, multiplier * costs(p));
+          results.set(newState, multiplier * p.cost);
         });
       });
     }
@@ -358,4 +339,4 @@ class Day23 extends Solution {
   }
 }
 
-(new Day23(undefined, true)).run();
+(new Day23(1, true)).run();
