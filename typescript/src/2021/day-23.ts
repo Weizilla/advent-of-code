@@ -319,11 +319,13 @@ class Day23 extends Solution {
     const allCosts = new HashMap<State, number>(s => s.toString());
 
     allNextStates.set(start, 0);
+    allCosts.set(start, 0);
 
     let step = 0;
     while (allNextStates.size() > 0) {
       const sorted = allNextStates.entries().sort(([_1, n1], [_2, n2]) => n2 - n1);
-      const [currState, cost] = sorted.pop()!;
+      const [currState, _] = sorted.pop()!;
+      const cost = allCosts.get(currState)!;
       allNextStates.delete(currState);
       // allCosts.set(currState, cost);
 
@@ -355,8 +357,8 @@ class Day23 extends Solution {
         }
 
         if (a.equals(goal)) {
-          this.print(`DONE ${allCosts.get(currState)}`);
-          return allCosts.get(currState)!;
+          this.print(`Next DONE ${allCosts.get(a)}`);
+          return allCosts.get(a)!;
         }
       }
       step++;
@@ -376,3 +378,5 @@ class Day23 extends Solution {
 
 (new Day23(undefined, true)).run();
 
+
+// not right 10491, 18515, 18491, 18496
