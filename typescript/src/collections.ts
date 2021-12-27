@@ -76,6 +76,10 @@ class HashMap<K, V> {
     return this._map.get(this.strFn(key));
   }
 
+  getKey(key: K): K | undefined {
+    return this._keys.get(this.strFn(key));
+  }
+
   set(key: K, value: V) {
     this._map.set(this.strFn(key), value);
     this._keys.set(this.strFn(key), key);

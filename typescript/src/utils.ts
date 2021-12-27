@@ -1,7 +1,15 @@
 import chalk from "chalk";
 
 function print(input: any, padding: number = 0, color: string = "black") {
-  console.log("".padStart(padding * 2, " ") + chalk.keyword(color)(input));
+  let toPrint = input;
+  if (input instanceof Map) {
+    toPrint = "{";
+    for (const k of [...input.keys()].sort()) {
+      toPrint += `${k}: ${input.get(k)}, `;
+    }
+    toPrint += "}";
+  }
+  console.log("".padStart(padding * 2, " ") + chalk.keyword(color)(toPrint));
 }
 
 function sum(input: Iterable<number>) {
