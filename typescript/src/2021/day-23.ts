@@ -1,18 +1,17 @@
 import { Solution } from "../solution";
-import { HashMap, HashSet } from "../collections";
-import { sum } from "../utils";
+import { HashMap } from "../collections";
 
 class Node {
   id: number;
-  neighbors: [Node, number][];
+  neighbors: [number, number][];
 
-  constructor(id: number) {
+  constructor(id: number, ...neighbors: [number, number][]) {
     this.id = id;
-    this.neighbors = [];
+    this.neighbors = neighbors;
   }
 
   neighborIds(): number[] {
-    return this.neighbors.map(([n, _]) => n.id).sort((a, b) => a - b);
+    return this.neighbors.map(([n, _]) => n).sort((a, b) => a - b);
   }
 
   toString() {
@@ -25,8 +24,32 @@ enum Pod {
   B = "b",
   C = "c",
   D = "d",
-
 }
+
+/*
+  #############
+  #...........#   0 1  2 3  4  5 6
+  ###.#.#.#.###      7  9 11 13
+    #.#.#.#.#        8 10 12 14
+    #########
+*/
+const Graph = [
+  new Node(0, [1, 1]),
+  new Node(1, [0, 1], [2, 2], [7, 2]),
+  new Node(2, [1, 2], [3, 2], [7, 2], [9, 2]),
+  new Node(3, [2, 2], [9, 2], [11, 2], [4, 2]),
+  new Node(4, [3, 2], [11, 2], [13, 2], [5, 2]),
+  new Node(5, [4, 2], [13, 2], [6, 1]),
+  new Node(6, [5, 1]),
+  new Node(7, [1, 2], [2, 2], [8, 1]),
+  new Node(8, [7, 1]),
+  new Node(9, [2, 2], [3, 2], [10, 1]),
+  new Node(10, [9, 1]),
+  new Node(11, [3, 2], [4, 2], [12, 1]),
+  new Node(12, [11, 1]),
+  new Node(13, [4, 2], [5, 2], [14, 1]),
+  new Node(14, [13, 1]),
+];
 
 function costs(pod: Pod): number {
   switch (pod) {
@@ -43,26 +66,22 @@ function costs(pod: Pod): number {
   }
 }
 
-function room(pod: Pod): [number, number] {
-  switch (pod) {
-    case Pod.A:
-      return [7, 8];
-    case Pod.B:
-      return [9, 10];
-    case Pod.C:
-      return [11, 12];
-    case Pod.D:
-      return [13, 14];
-    default:
-      throw Error();
-  }
-}
+const HallIds = new Set<number>([0, 1, 2, 3, 4, 5, 6]);
+const Rooms = new Map<Pod, [number, number]>([
+  [Pod.A, [7, 8]],
+  [Pod.B, [9, 10]],
+  [Pod.C, [11, 12]],
+  [Pod.D, [13, 14]],
+]);
+const OuterIds = new Set<number>([...Rooms.entries()].map(([_p, [n1, _2]]) => n1));
+const InnerIds = new Set<number>([...Rooms.entries()].map(([_p, [_1, n2]]) => n2));
+const RoomPods = new Map<number, Pod>([...Rooms.entries()].flatMap(([p, [n1, n2]]) => [[n1, p], [n2, p]]));
 
 class State {
   private _pods: Map<Pod, [number, number]>;
-  cost: number = 0;
 
-  constructor(podA1: number,
+  constructor(
+    podA1: number,
     podA2: number,
     podB1: number,
     podB2: number,
@@ -70,17 +89,17 @@ class State {
     podC2: number,
     podD1: number,
     podD2: number,
-    cost: number = 0) {
+  ) {
     this._pods = new Map<Pod, [number, number]>();
     this._pods.set(Pod.A, [podA1, podA2]);
     this._pods.set(Pod.B, [podB1, podB2]);
     this._pods.set(Pod.C, [podC1, podC2]);
     this._pods.set(Pod.D, [podD1, podD2]);
-    this.cost = cost;
   }
 
   clone(): State {
-    return new State(this.podA[0],
+    return new State(
+      this.podA[0],
       this.podA[1],
       this.podB[0],
       this.podB[1],
@@ -88,7 +107,7 @@ class State {
       this.podC[1],
       this.podD[0],
       this.podD[1],
-      this.cost);
+    );
   }
 
   getPod(pod: Pod): [number, number] {
@@ -126,26 +145,6 @@ class State {
     return this.allLoc.indexOf(node) === -1;
   }
 
-  allEmpty(...nodes: number[]): boolean {
-    return nodes.every(n => this.isEmpty(n));
-  }
-
-  isEnterable(allowedPod: Pod, numA: number, numB: number): boolean {
-    if (this.allEmpty(numA, numB)) {
-      return true;
-    }
-
-    if (this.isEmpty(numA) && this.hasPod(numB) === allowedPod) {
-      return true;
-    }
-
-    if (this.isEmpty(numB) && this.hasPod(numA) === allowedPod) {
-      return true;
-    }
-
-    return false;
-  }
-
   hasPod(node: number): Pod | null {
     for (const p of Object.values(Pod)) {
       if (this._pods.get(p)!.some(n => n === node)) {
@@ -170,7 +169,7 @@ class State {
   }
 
   toString() {
-    return `{cost=${this.cost} a=[${this.podA.sort((a, b) => (a - b))}] b=[${this.podB.sort((a,
+    return `a=[${this.podA.sort((a, b) => (a - b))}] b=[${this.podB.sort((a,
       b) => (a - b))}] c=[${this.podC.sort((a, b) => (a - b))}] d=[${this.podD.sort((a, b) => (a - b))}]}`;
   }
 
@@ -203,8 +202,11 @@ class State {
 }
 
 class Day23 extends Solution {
+  private availableNodesCache: Map<string, [number, number][]>;
+
   constructor(example?: number, forcePrint: boolean = false) {
     super(23, 2021, example, forcePrint);
+    this.availableNodesCache = new Map();
   }
 
   part1(): number | string {
@@ -216,209 +218,84 @@ class Day23 extends Solution {
       #########
     */
 
-    /*
-    #############
-    #...........#
-    ###B#C#B#D###
-      #A#D#C#A#
-      #########
+    const example = new State(8, 14, 7, 11, 9, 12, 10, 13);
+    const real = new State(11, 13, 12, 14, 8, 10, 7, 9);
 
-      a = 8, 14
-      b = 7, 11
-      c = 9, 12
-      d = 10, 13
-    */
-
-    const start = new State(8, 14, 7, 11, 9, 12, 10, 13);
+    const start = this.example === 1 ? example : real;
     this.print(`start ${start.toPrettyString()}`);
 
     const goal = new State(7, 8, 9, 10, 11, 12, 13, 14);
-    // const goal = start.clone();
-    // goal.podB[0] = 6;
-    // goal.podC[0] = 0;
     this.print(`goal ${goal.toPrettyString()}`, 0, "green");
 
-    // this.print(`goal ${goal}`, 0, "green");
-
     const final = this.runPart1(start, goal);
+    return final || 0;
+  }
 
-    return final.cost;
+  private availableNodes(start: number, state: State): Map<number, number> {
+    const key = `${start}|${state.toString()}`;
+    const cached = this.availableNodesCache.get(key);
+    if (cached) {
+      return new Map(cached);
+    }
+    const next: [number, number][] = [];
+    const seen = new Map<number, number>();
+
+    next.push([start, 0]);
+    seen.set(start, 0);
+
+    while (next.length > 0) {
+      const [curr, currCost] = next.pop()!;
+      const currNode = Graph[curr];
+      seen.set(curr, currCost);
+
+      const newAvail = currNode.neighbors;
+      for (const [newAvailId, newAvailCost] of newAvail) {
+        if (state.isEmpty(newAvailId) && !seen.has(newAvailId)) {
+          next.push([newAvailId, currCost + newAvailCost]);
+          seen.set(newAvailId, currCost + newAvailCost);
+        }
+      }
+    }
+
+    this.availableNodesCache.set(key, [...seen.entries()]);
+
+    return seen;
   }
 
   private availableNode(nodeId: number, pod: Pod, state: State): [number, number][] {
     /*
     #############
-    #...........#   0 1. 2.3 .4 .5 6
-    ###.#.#.#.###      7  9 11 13
-      #.#.#.#.#        8 10 12 14
+    #...........#   0 1. 2.3 .4 .5 6 hall
+    ###.#.#.#.###      7  9 11 13 outer space
+      #.#.#.#.#        8 10 12 14 inner space
       #########
     */
-    // returns [node id, multiplier]
+    // returns [node id, num of steps]
     const results: [number, number][] = [];
-    switch (nodeId) {
-      case 0:
-        if (pod === Pod.A && state.allEmpty(1)) {
-          this.enterRoom(nodeId, pod, state, results);
-        } else if (pod === Pod.B && state.allEmpty(1, 2)) {
-          this.enterRoom(nodeId, pod, state, results);
-        } else if (pod === Pod.C && state.allEmpty(1, 2, 3)) {
-          this.enterRoom(nodeId, pod, state, results);
-        } else if (pod === Pod.D && state.allEmpty(1, 2, 3, 4)) {
-          this.enterRoom(nodeId, pod, state, results);
-        }
-        break;
-      case 1:
-        if (pod === Pod.A) {
-          this.enterRoom(nodeId, pod, state, results);
-        } else if (pod === Pod.B && state.allEmpty(2)) {
-          this.enterRoom(nodeId, pod, state, results);
-        } else if (pod === Pod.C && state.allEmpty(2, 3)) {
-          this.enterRoom(nodeId, pod, state, results);
-        } else if (pod === Pod.D && state.allEmpty(2, 3, 4)) {
-          this.enterRoom(nodeId, pod, state, results);
-        }
-        break;
-      case 2:
-        if ((pod === Pod.A)) {
-          this.enterRoom(nodeId, pod, state, results);
-        } else if (pod === Pod.B) {
-          this.enterRoom(nodeId, pod, state, results);
-        } else if (pod === Pod.C && state.allEmpty(3)) {
-          this.enterRoom(nodeId, pod, state, results);
-        } else if (pod === Pod.D && state.allEmpty(3, 4)) {
-          this.enterRoom(nodeId, pod, state, results);
-        }
-        break;
-      case 3:
-        if ((pod === Pod.A) && state.allEmpty(2)) {
-          this.enterRoom(nodeId, pod, state, results);
-        } else if (pod === Pod.B) {
-          this.enterRoom(nodeId, pod, state, results);
-        } else if (pod === Pod.C) {
-          this.enterRoom(nodeId, pod, state, results);
-        } else if (pod === Pod.D && state.allEmpty(4)) {
-          this.enterRoom(nodeId, pod, state, results);
-        }
-        break;
-      case 4:
-        if (pod === Pod.A && state.allEmpty(2, 3)) {
-          this.enterRoom(nodeId, pod, state, results);
-        } else if (pod === Pod.B && state.allEmpty(3)) {
-          this.enterRoom(nodeId, pod, state, results);
-        } else if (pod === Pod.C) {
-          this.enterRoom(nodeId, pod, state, results);
-        } else if (pod === Pod.D) {
-          this.enterRoom(nodeId, pod, state, results);
-        }
-        break;
-      case 5:
-        if (pod === Pod.A && state.allEmpty(2, 3, 4)) {
-          this.enterRoom(nodeId, pod, state, results);
-        } else if (pod === Pod.B && state.allEmpty(3, 4)) {
-          this.enterRoom(nodeId, pod, state, results);
-        } else if (pod === Pod.C && state.allEmpty(4)) {
-          this.enterRoom(nodeId, pod, state, results);
-        } else if (pod === Pod.D) {
-          this.enterRoom(nodeId, pod, state, results);
-        }
-        break;
-      case 6:
-        if (pod === Pod.A && state.allEmpty(2, 3, 4, 5)) {
-          this.enterRoom(nodeId, pod, state, results);
-        } else if (pod === Pod.B && state.allEmpty(3, 4, 5)) {
-          this.enterRoom(nodeId, pod, state, results);
-        } else if (pod === Pod.C && state.allEmpty(4, 5)) {
-          this.enterRoom(nodeId, pod, state, results);
-        } else if (pod === Pod.D && state.allEmpty(5)) {
-          this.enterRoom(nodeId, pod, state, results);
-        }
-        break;
-      case 7:
-        results.push([8, 1]);
-        if (pod !== Pod.A) {
-          results.push([1, 2], [2, 2]);
-        }
-        break;
-      case 8:
-        if (pod !== Pod.A) {
-          results.push([7, 1]);
-        }
-        break;
-      case 9:
-        results.push([10, 1]);
-        if (pod !== Pod.B) {
-          results.push([2, 2], [3, 2]);
-        }
-        break;
-      case 10:
-        if (pod !== Pod.B) {
-          results.push([9, 1]);
-        }
-        break;
-      case 11:
-        results.push([12, 1]);
-        if (pod !== Pod.C) {
-          results.push([3, 2], [4, 2]);
-        }
-        break;
-      case 12:
-        if (pod !== Pod.C) {
-          results.push([11, 1]);
-        }
-        break;
-      case 13:
-        results.push([14, 1]);
-        if (pod !== Pod.D) {
-          results.push([4, 2], [5, 2], [14, 1]);
-        }
-        break;
-      case 14:
-        if (pod !== Pod.D) {
-          results.push([13, 1]);
-        }
-        break;
-      default:
-        throw Error(`Unknown id ${nodeId}`);
+    const allAvailable = this.availableNodes(nodeId, state);
+    allAvailable.delete(nodeId);
+
+    // in hallway or in room it doesn't belong in
+    if (HallIds.has(nodeId) || (RoomPods.has(nodeId) && pod !== RoomPods.get(nodeId)!)) {
+      const [outerSpace, innerSpace] = Rooms.get(pod)!;
+      if (allAvailable.get(innerSpace)) {
+        // in hall and pod's room is empty, move to inner spot
+        results.push([innerSpace, allAvailable.get(innerSpace)!]);
+      } else if (state.hasPod(innerSpace) === pod && allAvailable.get(outerSpace)) {
+        // in hall and pod's room has same pod, move to outer spot
+        results.push([outerSpace, allAvailable.get(outerSpace)!]);
+      }
+    }
+    if (OuterIds.has(nodeId) && (pod !== RoomPods.get(nodeId)! || state.hasPod(nodeId + 1) !== RoomPods.get(nodeId)!)) {
+      // in outer room, can move to hallway if it doesn't belong in room or other pod is in room
+      [...allAvailable.entries()].filter(([n, _]) => HallIds.has(n)).forEach(([n, c]) => results.push([n, c]));
+    }
+    if (InnerIds.has(nodeId) && pod !== RoomPods.get(nodeId)!) {
+      // in inner room, can move to hallway if it doesn't belong in room
+      [...allAvailable.entries()].filter(([n, _]) => HallIds.has(n)).forEach(([n, c]) => results.push([n, c]));
     }
 
-    const avail = results.filter(([n, _]) => state.allLoc.indexOf(n) === -1);
-    return avail;
-  }
-
-  private enterRoom(curr: number, pod: Pod, state: State, results: [number, number][]) {
-    const [outerSpace, innerSpace] = room(pod);
-    if (state.isEmpty(outerSpace) && state.isEmpty(innerSpace)) {
-      results.push([innerSpace, this.distanceToRoom(pod, curr)]);
-    } else if (state.isEmpty(outerSpace) && state.hasPod(innerSpace) === pod) {
-      results.push([outerSpace, this.distanceToRoom(pod, curr) - 1]);
-    }
-  }
-
-  private distanceToRoom(pod: Pod, curr: number): number {
-    /*
-    #############
-    #...........#   0 1  2 3  4  5 6
-    ###.#.#.#.###      7  9 11 13
-      #.#.#.#.#        8 10 12 14
-      #########
-    */
-
-    const dist = new Map<Pod, number[]>();
-    dist.set(Pod.A, [4, 3, 3, 4, 6, 8, 9, 1, 0, 5, 6, 7, 8, 9, 10]);
-    dist.set(Pod.B, [6, 5, 3, 3, 5, 7, 8, 5, 6, 1, 0, 5, 6, 7, 8]);
-    dist.set(Pod.C, [8, 7, 5, 3, 3, 5, 6, 7, 8, 5, 6, 1, 0, 5, 6]);
-    dist.set(Pod.D, [9, 8, 6, 4, 3, 3, 4, 9, 10, 7, 8, 5, 6, 1, 0]);
-
-    const d = dist.get(pod)![curr];
-    return d;
-  }
-
-  private stateDistance(state: State): number {
-    let dist = 0;
-    for (const p of Object.values(Pod)) {
-      dist += sum(state.getPod(p).map(n => this.distanceToRoom(p, n)));
-    }
-    return dist;
+    return results;
   }
 
   private availableStates(state: State): HashMap<State, number> {
@@ -429,17 +306,15 @@ class Day23 extends Solution {
         this.availableNode(currNode, p, state).forEach(([nextNode, multiplier]) => {
           const newState = state.clone();
           newState.setPod(p, currNode, nextNode);
-          newState.cost += multiplier * costs(p);
           results.set(newState, multiplier * costs(p));
         });
       });
     }
-    // this.print(results.entries().join("\n"));
 
     return results;
   }
 
-  private runPart1(start: State, goal: State): State {
+  private runPart1(start: State, goal: State): number | null {
     const allNextStates = new HashMap<State, number>(s => s.toString());
     const allCosts = new HashMap<State, number>(s => s.toString());
 
@@ -452,106 +327,46 @@ class Day23 extends Solution {
       allNextStates.delete(currState);
       // allCosts.set(currState, cost);
 
-      if (step % 1000 === 0) {
-        this.print(`step=${step} currCost=${cost} costs=${allCosts.size()} next=${allNextStates.size()}`);
+      if (cost > 16500) {
+        allNextStates.entries().forEach(([s, c], i) => {
+          this.print(`${i} cost=${c} ${s.toPrettyString()}`);
+        });
+        this.print(`Cost too high ${cost}`);
+        return null;
+      }
+
+      if (step % 10000 === 0) {
+        this.print(`step=${step} currCost=${cost} costsSize=${allCosts.size()} nextSize=${allNextStates.size()} availableNodesCacheSize=${this.availableNodesCache.size}`);
         this.print(currState.toPrettyString());
       }
 
       if (currState.equals(goal)) {
-        this.print(`DONE ${cost}`);
-        return currState;
+        this.print(`DONE ${allCosts.get(currState)}`);
+        return allCosts.get(currState)!;
       }
 
       const newAvail = this.availableStates(currState).entries();
       for (const [a, c2] of newAvail) {
-        if (a.equals(goal)) {
-          this.print(`DONE ${cost + c2}`);
-          return a;
+        if (!allNextStates.has(a) || allNextStates.get(a)! > cost + c2) {
+          allNextStates.set(a, cost + c2);
+        }
+        if (!allCosts.has(a) || allCosts.get(a)! > cost + c2) {
+          allCosts.set(a, cost + c2);
         }
 
-        if (!allCosts.has(a)) {
-          allNextStates.set(a, cost + c2);
-          allCosts.set(a, cost + c2);
-        } else if (allCosts.get(a)! > cost + c2) {
-          allCosts.set(a, cost + c2);
+        if (a.equals(goal)) {
+          this.print(`DONE ${allCosts.get(currState)}`);
+          return allCosts.get(currState)!;
         }
       }
       step++;
     }
 
+    allCosts.entries().forEach(([s, c], i) => {
+      this.print(`${i} cost=${c} ${s.toPrettyString()}`);
+    });
     this.print(`Not found`);
-    return new State(0, 0, 0, 0, 0, 0, 0, 0);
-  }
-
-  private static mapToStr(m: Map<string, number>): string {
-    let output = "{";
-    const keys = [...m.keys()].sort();
-    for (const key of keys) {
-      output += `[${key}:${m.get(key)!}]`;
-    }
-    output += "}";
-    return output;
-  }
-
-  step(
-    pods: Map<string, number>,
-    nodes: Map<number, Node>,
-    goal: Map<string, number>,
-    steps: Map<string, number>[],
-  ): Map<string, number>[][] {
-    if (this.isSame(pods, goal)) {
-      this.print("Done");
-      return [steps];
-    }
-
-    const allSteps = [];
-
-    for (const [pod, loc] of pods) {
-      const pNode = nodes.get(loc)!;
-      const pAvailNodes = this.allAvailable(pNode, nodes, pods, new Set<number>());
-
-      for (const pa of pAvailNodes) {
-        const newPods = new Map<string, number>([...pods.entries()]);
-        newPods.set(pod, pa.id);
-
-        const seen = new HashSet<Map<string, number>>(Day23.mapToStr, steps);
-
-        if (!seen.has(newPods)) {
-          seen.add(newPods);
-
-          this.print(`avail ${pa.id}`);
-          this.print([...newPods.entries()].join("\n"));
-
-          const newSteps = [...steps];
-          newSteps.push(newPods);
-
-          const childSteps = this.step(newPods, nodes, goal, newSteps);
-          allSteps.push(...childSteps);
-        }
-      }
-    }
-
-    return allSteps;
-
-  }
-
-  isSame(a: Map<string, number>, b: Map<string, number>): boolean {
-    for (const [k, v] of a) {
-      if (b.get(k) !== v) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-
-  allAvailable(start: Node, nodes: Map<number, Node>, pods: Map<string, number>, seen: Set<number>): Node[] {
-    const avail = start.neighborIds().filter(n => !seen.has(n));
-    avail.forEach(a => seen.add(a));
-    const availNodes = avail.map(a => nodes.get(a)!).filter(n => [...pods.values()].indexOf(n.id) === -1);
-    availNodes.push(...availNodes.flatMap(a => this.allAvailable(a, nodes, pods, seen)));
-    return availNodes;
+    return null;
   }
 
   part2(): number | string {
@@ -559,4 +374,5 @@ class Day23 extends Solution {
   }
 }
 
-(new Day23(1)).run();
+(new Day23(undefined, true)).run();
+
