@@ -142,7 +142,7 @@ class State {
   }
 
   isEmpty(node: number): boolean {
-    return this.allLoc.indexOf(node) === -1;
+    return this.hasPod(node) === null;
   }
 
   hasPod(node: number): Pod | null {
@@ -155,22 +155,19 @@ class State {
   }
 
   get allLoc(): number[] {
-    const all = this.podA.sort((a, b) => (a - b)).concat(
+    return this.podA.sort((a, b) => (a - b)).concat(
       this.podB.sort((a, b) => (a - b)),
       this.podC.sort((a, b) => (a - b)),
       this.podD.sort((a, b) => (a - b)),
     );
-    return all;
   }
 
   equals(other: State): boolean {
-    const otherAllLoc = other.allLoc;
-    return this.allLoc.map((v, i) => otherAllLoc[i] === v).filter(a => a).length === this.allLoc.length;
+    return this.toString() === other.toString();
   }
 
   toString() {
-    return `a=[${this.podA.sort((a, b) => (a - b))}] b=[${this.podB.sort((a,
-      b) => (a - b))}] c=[${this.podC.sort((a, b) => (a - b))}] d=[${this.podD.sort((a, b) => (a - b))}]}`;
+    return `{${this.allLoc.join("|")}`;
   }
 
   toPrettyString() {
@@ -323,50 +320,37 @@ class Day23 extends Solution {
 
     let step = 0;
     while (allNextStates.size() > 0) {
+      const startSort = Date.now();
       const sorted = allNextStates.entries().sort(([_1, n1], [_2, n2]) => n2 - n1);
-      const [currState, _] = sorted.pop()!;
-      const cost = allCosts.get(currState)!;
+      const [currState] = sorted.pop()!;
       allNextStates.delete(currState);
-      // allCosts.set(currState, cost);
+      const sortDuration = Date.now() - startSort;
+
+      const cost = allCosts.get(currState)!;
 
       if (step % 10000 === 0) {
-        this.print(`step=${step} currCost=${cost} costsSize=${allCosts.size()} nextSize=${allNextStates.size()} availableNodesCacheSize=${this.availableNodesCache.size}`);
+        this.print(`step=${step} currCost=${cost} costsSize=${allCosts.size()} nextSize=${allNextStates.size()} availableNodesCacheSize=${this.availableNodesCache.size} sortDuration=${sortDuration}`);
         this.print(currState.toPrettyString());
       }
 
-      // if (currState.equals(goal)) {
-      //   this.print(`DONE ${allCosts.get(currState)}`);
-      //   return allCosts.get(currState)!;
-      // }
+      if (currState.equals(goal)) {
+        this.print(`DONE ${allCosts.get(currState)}`);
+        return allCosts.get(currState)!;
+      }
 
       const newAvail = this.availableStates(currState).entries();
       for (const [a, c2] of newAvail) {
-        if (!allNextStates.has(a) || allNextStates.get(a)! > cost + c2) {
-          allNextStates.set(a, cost + c2);
+        const newCost = cost + c2;
+        if (!allCosts.has(a) || allCosts.get(a)! > newCost) {
+          allCosts.set(a, newCost);
+          allNextStates.set(a, newCost);
         }
-        if (!allCosts.has(a) || allCosts.get(a)! > cost + c2) {
-          allCosts.set(a, cost + c2);
-        }
-
-        // if (a.equals(goal)) {
-        //   this.print(`Next DONE ${allCosts.get(a)}`);
-        //   return allCosts.get(a)!;
-        // }
       }
       step++;
     }
 
-    // allCosts.entries().forEach(([s, c], i) => {
-    //   this.print(`${i} cost=${c} ${s.toPrettyString()}`);
-    // });
-    // this.print(`Not found`);
-    if (allCosts.has(goal)) {
-      this.print(`found`);
-      return allCosts.get(goal)!;
-    } else {
-      this.print(`not found`);
-      return 0;
-    }
+    this.print(`not found`, 0, "red");
+    return 0;
   }
 
   part2(): number | string {
@@ -375,6 +359,3 @@ class Day23 extends Solution {
 }
 
 (new Day23(undefined, true)).run();
-
-
-// not right 10491, 18515, 18491, 18496
