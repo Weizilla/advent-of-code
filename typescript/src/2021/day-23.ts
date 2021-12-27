@@ -329,23 +329,15 @@ class Day23 extends Solution {
       allNextStates.delete(currState);
       // allCosts.set(currState, cost);
 
-      if (cost > 16500) {
-        allNextStates.entries().forEach(([s, c], i) => {
-          this.print(`${i} cost=${c} ${s.toPrettyString()}`);
-        });
-        this.print(`Cost too high ${cost}`);
-        return null;
-      }
-
       if (step % 10000 === 0) {
         this.print(`step=${step} currCost=${cost} costsSize=${allCosts.size()} nextSize=${allNextStates.size()} availableNodesCacheSize=${this.availableNodesCache.size}`);
         this.print(currState.toPrettyString());
       }
 
-      if (currState.equals(goal)) {
-        this.print(`DONE ${allCosts.get(currState)}`);
-        return allCosts.get(currState)!;
-      }
+      // if (currState.equals(goal)) {
+      //   this.print(`DONE ${allCosts.get(currState)}`);
+      //   return allCosts.get(currState)!;
+      // }
 
       const newAvail = this.availableStates(currState).entries();
       for (const [a, c2] of newAvail) {
@@ -356,19 +348,25 @@ class Day23 extends Solution {
           allCosts.set(a, cost + c2);
         }
 
-        if (a.equals(goal)) {
-          this.print(`Next DONE ${allCosts.get(a)}`);
-          return allCosts.get(a)!;
-        }
+        // if (a.equals(goal)) {
+        //   this.print(`Next DONE ${allCosts.get(a)}`);
+        //   return allCosts.get(a)!;
+        // }
       }
       step++;
     }
 
-    allCosts.entries().forEach(([s, c], i) => {
-      this.print(`${i} cost=${c} ${s.toPrettyString()}`);
-    });
-    this.print(`Not found`);
-    return null;
+    // allCosts.entries().forEach(([s, c], i) => {
+    //   this.print(`${i} cost=${c} ${s.toPrettyString()}`);
+    // });
+    // this.print(`Not found`);
+    if (allCosts.has(goal)) {
+      this.print(`found`);
+      return allCosts.get(goal)!;
+    } else {
+      this.print(`not found`);
+      return 0;
+    }
   }
 
   part2(): number | string {
