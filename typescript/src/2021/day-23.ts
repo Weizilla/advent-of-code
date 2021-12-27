@@ -45,6 +45,8 @@ class Node {
   #...........#   0 1  2 3  4  5 6
   ###.#.#.#.###      7  9 11 13
     #.#.#.#.#        8 10 12 14
+    #.#.#.#.#       15 17 19 21
+    #.#.#.#.#       16 18 20 22
     #########
 */
 const Graph = [
@@ -55,14 +57,30 @@ const Graph = [
   new Node(4, false, [3, 2], [11, 2], [13, 2], [5, 2]),
   new Node(5, false, [4, 2], [13, 2], [6, 1]),
   new Node(6, false, [5, 1]),
+
   new Node(7, false, [1, 2], [2, 2], [8, 1]),
-  new Node(8, true, [7, 1]),
+  new Node(8, false, [7, 1], [15, 1]),
+
   new Node(9, false, [2, 2], [3, 2], [10, 1]),
-  new Node(10, true, [9, 1]),
+  new Node(10, false, [9, 1], [17, 1]),
+
   new Node(11, false, [3, 2], [4, 2], [12, 1]),
-  new Node(12, true, [11, 1]),
+  new Node(12, false, [11, 1], [19, 1]),
+
   new Node(13, false, [4, 2], [5, 2], [14, 1]),
-  new Node(14, true, [13, 1]),
+  new Node(14, false, [13, 1], [21, 1]),
+
+  new Node(15, false, [8, 1], [16, 1]),
+  new Node(16, true, [15, 1]),
+
+  new Node(17, false, [10, 1], [18, 1]),
+  new Node(18, true, [17, 1]),
+
+  new Node(19, false, [12, 1], [20, 1]),
+  new Node(20, true, [19, 1]),
+
+  new Node(21, false, [14, 1], [22, 1]),
+  new Node(22, true, [21, 1]),
 ];
 
 class Pod {
@@ -85,10 +103,10 @@ class Pod {
 }
 
 const Pods = {
-  A: new Pod("a", 1, 7, 8),
-  B: new Pod("b", 10, 9, 10),
-  C: new Pod("c", 100, 11, 12),
-  D: new Pod("d", 1000, 13, 14),
+  A: new Pod("a", 1, 7, 8, 15, 16),
+  B: new Pod("b", 10, 9, 10, 17, 18),
+  C: new Pod("c", 100, 11, 12, 19, 20),
+  D: new Pod("d", 1000, 13, 14, 21, 22),
 };
 
 class State {
@@ -170,6 +188,14 @@ class State {
     output += `|${this.hasPod(10) || "."}`;
     output += `|${this.hasPod(12) || "."}`;
     output += `|${this.hasPod(14) || "."}|  \n`;
+    output += `  |${this.hasPod(15) || "."}`;
+    output += `|${this.hasPod(17) || "."}`;
+    output += `|${this.hasPod(19) || "."}`;
+    output += `|${this.hasPod(21) || "."}|  \n`;
+    output += `  |${this.hasPod(16) || "."}`;
+    output += `|${this.hasPod(18) || "."}`;
+    output += `|${this.hasPod(20) || "."}`;
+    output += `|${this.hasPod(22) || "."}|  \n`;
     output += `  ---------`;
 
     return output.toUpperCase();
@@ -335,8 +361,35 @@ class Day23 extends Solution {
   }
 
   part2(): number | string {
-    return 0;
+    /*
+    #############
+    #...........#   0 1  2 3  4  5 6
+    ###.#.#.#.###      7  9 11 13
+      #.#.#.#.#        8 10 12 14
+      #.#.#.#.#       15 17 19 21
+      #.#.#.#.#       16 18 20 22
+      #########
+    */
+    const example = new State([16, 19, 14, 22], [7, 17, 11, 12], [9, 10, 20, 21], [8, 15, 18, 13]);
+
+    /*
+    ###D#D#A#A###
+      #D#C#B#A#
+      #D#B#A#C#
+      #C#C#B#B#
+      #########
+     */
+    const real = new State([11, 19, 13, 14], [17, 12, 20, 22], [16, 18, 10, 21], [7, 8, 15, 9]);
+
+    const start = this.example === 1 ? example : real;
+    this.print(`start ${start.toPrettyString()}`);
+
+    const goal = new State([7, 8, 15, 16], [9, 10, 17, 18], [11, 12, 19, 20], [13, 14, 21, 22]);
+    this.print(`goal ${goal.toPrettyString()}`, 0, "green");
+
+    const final = this.runPart1(start, goal);
+    return final || 0;
   }
 }
 
-(new Day23(1, true)).run();
+(new Day23(undefined, true)).run();
