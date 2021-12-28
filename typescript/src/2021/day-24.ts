@@ -1,53 +1,22 @@
 import { Solution } from "../solution";
 import { range } from "../utils";
-import chalk from "chalk";
+import { HashMap, HashSet } from "../collections";
 
 class State {
   w: number;
   x: number;
   y: number;
   z: number;
-  input: number[];
-  inputIndex: number;
-  commandIndex: number;
-  commandLength: number;
 
-  constructor(
-    input: number[],
-    commandLength: number,
-    w: number = 0,
-    x: number = 0,
-    y: number = 0,
-    z: number = 0,
-    inputIndex = 0,
-    commandIndex = 0,
-  ) {
+  constructor(w: number = 0, x: number = 0, y: number = 0, z: number = 0) {
     this.w = w;
     this.x = x;
     this.y = y;
     this.z = z;
-    this.input = input;
-    this.commandLength = commandLength;
-
-    this.inputIndex = inputIndex;
-    this.commandIndex = commandIndex;
   }
 
   clone(): State {
-    return new State(
-      this.input,
-      this.commandLength,
-      this.w,
-      this.x,
-      this.y,
-      this.z,
-      this.inputIndex,
-      this.commandIndex,
-    );
-  }
-
-  key(): string {
-    return this.input.slice(0, this.inputIndex).join("");
+    return new State(this.w, this.x, this.y, this.z);
   }
 
   set(varName: string, value: number) {
@@ -92,24 +61,100 @@ class State {
     return Number.isNaN(parsed) ? this.get(varInput) : parsed;
   }
 
-  getInput(): number {
-    const r = this.input[this.inputIndex];
-    this.inputIndex++;
-    return r;
-  }
-
-  getAndIncCommandIndex(): number {
-    const i = this.commandIndex;
-    this.commandIndex++;
-    return i;
-  }
-
-  hasNext(): boolean {
-    return this.commandIndex < this.commandLength;
-  }
-
   toString(): string {
-    return `${this.commandIndex} inputIndex=${this.inputIndex} w=${this.w} x=${this.x} y=${this.y} z=${this.z}`;
+    return `{w=${this.w} x=${this.x} y=${this.y} z=${this.z}}`;
+  }
+}
+
+class Cache {
+  private done: HashMap<number[], State>;
+  private remaining: HashMap<number, HashSet<string>>;
+
+  constructor() {
+    this.done = new HashMap<number[], State>(n => n.join(""));
+    this.remaining = new HashMap<number, HashSet<string>>(s => s.toString());
+  }
+
+  getDoneCache(curr: number[]): [State | null, number] {
+    for (let i = curr.length - 1; i > 1; i--) {
+      const newCurr = curr.slice(0, i);
+      const cached = this.done.get(newCurr);
+      if (cached) {
+        return [cached, i];
+      }
+    }
+
+    return [null, 0];
+  }
+
+  inRemainingCache(remaining: number[], state: State): boolean {
+    return this.remaining.get(state.z)?.has(remaining.join("")) || false;
+  }
+
+  skip(curr: number[], remaining: number[], state: State): number[] {
+    const remainings = this.remaining.get(state.z)!.values()
+      .filter(r => r.length === remaining.length)
+      .map(n => parseInt(n, 10));
+    const min = Math.min(...remainings);
+    const newRemaining = min.toString().split("").map(n => parseInt(n, 10));
+
+    const newCurr = [...curr];
+    for (let i = 0; i < newRemaining.length; i++) {
+      newCurr[newCurr.length - i - 1] = newRemaining[newRemaining.length - i - 1];
+    }
+
+    // print(`curr=${curr.join("")} oldr=${remaining.join("")} newr=${newRemaining.join("")}
+    // newcurr=${newCurr.join("")}`);
+
+    return newCurr;
+  }
+
+  add(done: number[], remaining: number[], state: State) {
+    const remainings = this.remaining.get(state.z) || new HashSet<string>(s => s.toString());
+    this.remaining.set(state.z, remainings);
+    remainings.add(remaining.join(""));
+    // print(`Add to cached ${remaining.join("")} z: ${state.z}`);
+
+    if (done.length > 0) {
+      this.done.set(done, state);
+    }
+  }
+
+  size(): number {
+    return this.remaining.size();
+  }
+
+  print(): string {
+    let output = "";
+    for (const k of this.remaining.keys().sort((a, b) => a - b)) {
+      const remainings = [...this.remaining.get(k)!].filter(l => l.length <= 5)
+        .map(n => parseInt(n, 10))
+        .sort((a, b) => a - b);
+      for (const r of remainings) {
+        output += ` ${k} ${r}\n`;
+      }
+    }
+
+    return output;
+  }
+
+  printLengths(): string {
+    let output = "";
+    for (const k of this.remaining.keys().sort((a, b) => a - b)) {
+      const lengths = new Map<number, number>();
+      const remainings = this.remaining.get(k)!;
+      remainings.values().forEach(r => {
+        const l = lengths.get(r.length) || 0;
+        lengths.set(r.length, l + 1);
+      });
+
+      output += `${k}\n`;
+      for (const lk of [...lengths.keys()].sort((a, b) => a - b)) {
+        output += `  len=${lk} num=${lengths.get(lk)}\n`;
+      }
+    }
+
+    return output;
   }
 }
 
@@ -120,10 +165,9 @@ class Day24 extends Solution {
 
   part1(): number | string {
     const commands = this.readInput();
-    const result = this.runPart1(commands);
-    return result;
+    this.runPart1b(commands);
     // this.findDups(commands);
-    return 0;
+    return 1;
   }
 
   private findDups(commands: string[]) {
@@ -143,67 +187,139 @@ class Day24 extends Solution {
     this.print(output.filter(o => o.length > 0).join("\n"));
   }
 
-  private runPart1(commands: string[]): number | string {
-    // const curr = "11161151131128".split("").map(n => parseInt(n, 10));
-    const step = 1;
-    const dupResults = new Set();
-    for (let i = 11161151131128 - (step * 200); i < 11161151131128 + step * 200; i += step) {
-      const curr = i.toString().split("").map(n => parseInt(n, 10));
-      const [result, states] = this.runProgram(curr, commands, new Map());
-      this.print(`${curr.join("")} | ${states.map((s,
-        c) => `${chalk.blue(curr[c - 1] === undefined ? "" : curr[c - 1])} ` +
-        `${s.x.toString().padStart(2)} ${s.y.toString().padStart(2)} ${s.z.toString()
-          .padStart(6)}`)
-        .join("|")}`);
+  // private runPart1(commands: string[]): number | string {
+  //   // const curr = "11161151131128".split("").map(n => parseInt(n, 10));
+  //   const step = 1;
+  //   const dupResults = new Set();
+  //   for (let i = 11161151131128 - (step * 200); i < 11161151131128 + step * 200; i += step) {
+  //     const curr = i.toString().split("").map(n => parseInt(n, 10));
+  //     const [result, states] = this.runProgram(curr, commands, new Map());
+  //     this.print(`${curr.join("")} | ${states.map((s,
+  //       c) => `${chalk.blue(curr[c - 1] === undefined ? "" : curr[c - 1])} ` +
+  //       `${s.x.toString().padStart(2)} ${s.y.toString().padStart(2)} ${s.z.toString()
+  //         .padStart(6)}`)
+  //       .join("|")}`);
+  //
+  //     dupResults.add(result);
+  //   }
+  //
+  //   return dupResults.size;
+  // }
 
-      dupResults.add(result);
-    }
-
-    return dupResults.size;
-  }
-
-  private equals(n1: number[], n2: number[]): boolean {
-    for (let i = 0; i < n1.length; i++) {
-      if (n1[i] !== n2[i]) {
-        return false;
+  private runPart1b(commands: string[]): string {
+    const allCommands: string[][] = [];
+    let currCommands: string[];
+    commands.forEach(command => {
+      if (command.indexOf("inp") !== -1) {
+        currCommands = [];
+        allCommands.push(currCommands);
       }
-    }
-    return true;
-  }
+      currCommands.push(command);
+    });
 
-  private decrease(input: number[]) {
-    input[input.length - 1]--;
+    const cached = new Cache();
 
-    for (let i = input.length - 1; i >= 0; i--) {
-      if (input[i] === 0) {
-        input[i] = 9;
-        input[i - 1]--;
+    let curr = [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9];
+    const goal = [1, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9];
+    let cacheHit = 0;
+    let count = 0;
+    let state;
+    let commandIndex;
+    while (this.greaterThan(curr, goal)) {
+      const [cachedState, newCommandIndex] = cached.getDoneCache(curr);
+      if (cachedState) {
+        state = cachedState;
+        commandIndex = newCommandIndex;
+      } else {
+        state = new State();
+        commandIndex = 0;
       }
-    }
-  }
 
-  private loadState(input: number[], commandLength: number, cache: Map<string, State>): State {
-    for (let i = input.length - 1; i >= 0; i--) {
-      const key = input.slice(0, i).join("");
-      const cached = cache.get(key);
-      if (cached) {
-        if (key !== cached.key()) {
-          throw Error(`Keys do not match ${key} ${cached.key()}`);
+      const intermediate: [number[], number[], State][] = [];
+
+      let bail = false;
+      for (let i = commandIndex; i < allCommands.length; i++) {
+        const command = allCommands[i];
+        const remaining = curr.slice(i);
+
+        // if (remaining.length <= 2) {
+        // this.print(`Remaining curr=${curr.join("")} remaining=${remaining.join("")} state=${state.toString()}`);
+        // }
+
+        if (cached.inRemainingCache(remaining, state)) {
+          // this.print(`Found cached  curr=${curr.join("")} remaining=${remaining.join("")}
+          // state=${state.toString()}`);
+          curr = cached.skip(curr, remaining, state);
+          bail = true;
+          cacheHit++;
+          break;
+        } else {
+          intermediate.push([curr.slice(0, curr.length - remaining.length), remaining, state.clone()]);
+          // this.print(`${remaining} ${state}`, 2, "blue");
+          state = this.runProgram(state, curr[i], command);
         }
-        // this.print(`Loaded from cache ${key}`);
-        return cached;
+      }
+
+      if (bail || state.z !== 0) {
+        intermediate.forEach(([d, r, s]) => cached.add(d, r, s));
+      } else {
+        this.print(`DONE ${curr.join}`);
+        return curr.join("");
+      }
+
+      // this.print(`${curr.join("")} ${state}`);
+      // this.print(intermediate);
+      curr = this.decrease(curr);
+
+      if (count % 10000 === 0) {
+        this.print(`${curr.join("")} count ${count} cache size ${cached.size()} cache hit ${cacheHit}`, 0, "green");
+      }
+      count++;
+    }
+
+    // this.print(`Failed cache ${failed.print()}`);
+    this.print(`NOT FOUND checked ${count} cache size ${cached.size()} cache hit ${cacheHit}`, 0, "red");
+
+    return "";
+  }
+
+  private greaterThan(n1: number[], n2: number[]): boolean {
+    return parseInt(n1.join(""), 10) > parseInt(n2.join(""), 10);
+  }
+
+  private decrease(input: number[], amount: number = 1): number[] {
+    const decreased = parseInt(input.join(""), 10) - amount;
+    const asArray = decreased.toString().split("").map(n => parseInt(n, 10));
+
+    for (let i = asArray.length - 1; i >= 0; i--) {
+      if (asArray[i] === 0) {
+        asArray[i] = 9;
+        asArray[i - 1]--;
       }
     }
 
-    return new State(input, commandLength);
+    return asArray;
   }
 
-  private runProgram(input: number[], commands: string[], cache: Map<string, State>): [number, State[]] {
-    const state = this.loadState(input, commands.length, cache);
-    const historicalStates = [];
+  // private loadState(input: number[], commandLength: number, cache: Map<string, State>): State {
+  //   for (let i = input.length - 1; i >= 0; i--) {
+  //     const key = input.slice(0, i).join("");
+  //     const cached = cache.get(key);
+  //     if (cached) {
+  //       if (key !== cached.key()) {
+  //         throw Error(`Keys do not match ${key} ${cached.key()}`);
+  //       }
+  //       // this.print(`Loaded from cache ${key}`);
+  //       return cached;
+  //     }
+  //   }
+  //
+  //   return new State(input, commandLength);
+  // }
 
-    while (state.hasNext()) {
-      let command = commands[state.getAndIncCommandIndex()];
+  private runProgram(state: State, input: number, commands: string[]): State {
+    let usedInput = false;
+    commands.forEach(command => {
       const splits = command.split(" ");
       const [var1Name, var2] = [...splits.slice(1)];
       const var1Value = state.get(var1Name)!;
@@ -212,12 +328,12 @@ class Day24 extends Solution {
 
       switch (splits[0]) {
         case "inp":
-          // cache.set(state.key(), state.clone());
-          historicalStates.push(state.clone());
-          inputDigit = state.getInput();
-          // this.print(`input=${state.inputIndex - 1} inputDigit=${inputDigit} z=${state.get("z")}`);
+          if (usedInput) {
+            throw new Error("Already used input");
+          }
+          inputDigit = input;
           state.set(var1Name, inputDigit);
-          command += ` [${inputDigit}]`;
+          usedInput = true;
           break;
         case "add":
           var2Value = state.getOrParse(var2);
@@ -246,11 +362,9 @@ class Day24 extends Solution {
 
       // this.print(`${command.padStart(10)} \n            ${state}`, 0, command.indexOf("inp") !== -1 ? "blue" :
       // "black");
-    }
-    historicalStates.push(state);
-    const result = state.get("z")!;
+    });
 
-    return [result, historicalStates];
+    return state;
 
   }
 
