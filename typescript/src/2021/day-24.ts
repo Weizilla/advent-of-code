@@ -171,7 +171,9 @@ class Day24 extends Solution {
     // const firstHalf = this.runPart1(commands);
     // const secondHalf = this.runBackwards(commands);
 
-    this.runForwards(commands);
+    const finalInput = this.runForwards(commands);
+    const r = this.runWithInput(finalInput, commands);
+    this.print(`Run with input ${finalInput.join("")} result ${r}`);
 
     // const diff = [...firstHalf.values()].filter(v => secondHalf.has(v));
     //
@@ -182,10 +184,11 @@ class Day24 extends Solution {
     return 1;
   }
 
-  private runWithInput(commands: string[]) {
-    const input = "33445566".split("").map(n => parseInt(n, 10));
+  private runWithInput(input: number[], commands: string[]): number {
+    // const input = inputString.split("").map(n => parseInt(n, 10));
     const state = this.runProgram(new State(), input, commands);
     this.print(`input=${input.join("")} result=${state}`);
+    return state.z;
   }
 
   private findDups(commands: string[]) {
@@ -258,28 +261,91 @@ class Day24 extends Solution {
     return dedupedResults;
   }
 
-  private runForwards(commands: string[]) {
+  private runForwards(commands: string[]): number[] {
     const allCommands = this.parseAllCommands(commands);
 
     const highestDigits = range(allCommands.length).map(_ => new Map<number, number>());
-    const outputZs = new Set<number>();
-    let inputZs = [0];
+    const outputZs = new Map<number, number[][]>();
+    let inputZs = new Map<number, number[][]>();
+    inputZs.set(0, [[0]]);
+
     for (let commandIndex = 0; commandIndex < allCommands.length; commandIndex++) {
       const currCommands = allCommands[commandIndex];
-      for (const inputZ of inputZs) {
+      for (const inputZ of inputZs.keys()) {
         for (let inputDigit = 1; inputDigit <= 9; inputDigit++) {
           const result = this.runProgram(new State(0, 0, 0, inputZ), [inputDigit], currCommands);
-          outputZs.add(result.z);
+
+          if (outputZs.has(result.z)) {
+            const newZSoFars = [];
+            for (const zSoFar of inputZs.get(inputZ)!) {
+              const newZSoFar = [...zSoFar];
+              newZSoFar.push(result.z);
+              newZSoFars.push(newZSoFar);
+            }
+            outputZs.get(result.z)!.push(...newZSoFars);
+          } else {
+            const newZSoFars = [];
+            for (const zSoFar of inputZs.get(inputZ)!) {
+              const newZSoFar = [...zSoFar];
+              newZSoFar.push(result.z);
+              newZSoFars.push(newZSoFar);
+            }
+            outputZs.set(result.z, newZSoFars);
+          }
+
           const highestDigit = highestDigits[commandIndex];
           const currHighest = highestDigit.get(result.z) || 0;
           highestDigit.set(result.z, Math.max(currHighest, inputDigit));
         }
       }
 
+      for (const outputZkey of outputZs.keys()) {
+        const outputZPath = outputZs.get(outputZkey)!;
+        const singlePath = this.consolidate(highestDigits, outputZPath);
+        outputZs.set(outputZkey, [singlePath]);
+      }
+
       this.print(`Found ${outputZs.size} for command index ${commandIndex}`);
-      inputZs = [...outputZs.values()];
+      inputZs = new Map([...outputZs.entries()]);
       outputZs.clear();
     }
+
+    // const randomZOutput = [...inputZs.keys()][0];
+    // this.print(randomZOutput);
+    const goal = 0;
+    const zPaths = inputZs.get(goal)!;
+    const highestPath = zPaths[0];
+
+    const finalInput: number[] = [];
+    for (let i = 1; i < highestPath.length; i++) {
+      const highestDigit = highestDigits[i - 1].get(highestPath[i])!;
+      finalInput.push(highestDigit);
+    }
+    this.print(`Found ${zPaths.length} paths with highest ${finalInput.join("")} for goal ${goal}`);
+
+
+    return finalInput;
+  }
+
+  private consolidate(highestDigits: Map<number, number>[], zPaths: number[][]): number[] {
+    let highest: number = 0;
+    let highestPath: number[] = [];
+
+    for (const zPath of zPaths) {
+      const finalInput: number[] = [];
+      for (let i = 1; i < zPath.length; i++) {
+        const highestDigit = highestDigits[i - 1].get(zPath[i])!;
+        finalInput.push(highestDigit);
+      }
+
+      const numeric = parseInt(finalInput.join(""), 10);
+      if (numeric > highest) {
+        highestPath = zPath;
+        highest = numeric;
+      }
+    }
+
+    return highestPath;
   }
 
   private runBackwards(commands: string[]) {
