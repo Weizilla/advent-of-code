@@ -165,9 +165,27 @@ class Day24 extends Solution {
 
   part1(): number | string {
     const commands = this.readInput();
-    this.runPart1b(commands);
+    // this.runPart1b(commands);
     // this.findDups(commands);
+    // this.runPart1a(commands);
+    // const firstHalf = this.runPart1(commands);
+    // const secondHalf = this.runBackwards(commands);
+
+    this.runForwards(commands);
+
+    // const diff = [...firstHalf.values()].filter(v => secondHalf.has(v));
+    //
+    // this.print(`First half size ${firstHalf.size} second half size ${secondHalf.size} diff size ${diff.length}`);
+
+    // this.runWithInput(commands);
+
     return 1;
+  }
+
+  private runWithInput(commands: string[]) {
+    const input = "33445566".split("").map(n => parseInt(n, 10));
+    const state = this.runProgram(new State(), input, commands);
+    this.print(`input=${input.join("")} result=${state}`);
   }
 
   private findDups(commands: string[]) {
@@ -187,35 +205,146 @@ class Day24 extends Solution {
     this.print(output.filter(o => o.length > 0).join("\n"));
   }
 
-  // private runPart1(commands: string[]): number | string {
-  //   // const curr = "11161151131128".split("").map(n => parseInt(n, 10));
-  //   const step = 1;
-  //   const dupResults = new Set();
-  //   for (let i = 11161151131128 - (step * 200); i < 11161151131128 + step * 200; i += step) {
-  //     const curr = i.toString().split("").map(n => parseInt(n, 10));
-  //     const [result, states] = this.runProgram(curr, commands, new Map());
-  //     this.print(`${curr.join("")} | ${states.map((s,
-  //       c) => `${chalk.blue(curr[c - 1] === undefined ? "" : curr[c - 1])} ` +
-  //       `${s.x.toString().padStart(2)} ${s.y.toString().padStart(2)} ${s.z.toString()
-  //         .padStart(6)}`)
-  //       .join("|")}`);
-  //
-  //     dupResults.add(result);
-  //   }
-  //
-  //   return dupResults.size;
-  // }
+  private runPart1(commands: string[]): Set<number> {
+    const allCommands = this.parseAllCommands(commands).slice(0, 7);
+
+    const cached = new Cache();
+
+    let curr = [9, 9, 9, 9, 9, 9, 9];
+    const goal = [1, 1, 1, 1, 1, 1, 1];
+    let cacheHit = 0;
+    let count = 0;
+    let state;
+    let commandIndex;
+    const dedupedResults = new Set<number>();
+    while (this.greaterThan(curr, goal)) {
+      const [cachedState, newCommandIndex] = cached.getDoneCache(curr);
+      if (cachedState) {
+        state = cachedState;
+        commandIndex = newCommandIndex;
+      } else {
+        state = new State();
+        commandIndex = 0;
+      }
+
+      const intermediate: [number[], number[], State][] = [];
+
+      for (let i = commandIndex; i < allCommands.length; i++) {
+        const command = allCommands[i];
+        const remaining = curr.slice(i);
+
+        if (cached.inRemainingCache(remaining, state)) {
+          cacheHit++;
+          break;
+        } else {
+          intermediate.push([curr.slice(0, curr.length - remaining.length), remaining, state.clone()]);
+          state = this.runProgram(state, [curr[i]], command);
+        }
+      }
+
+      intermediate.forEach(([d, r, s]) => cached.add(d, r, s));
+      dedupedResults.add(state.z);
+
+      curr = this.decrease(curr);
+
+      if (count % 10000 === 0) {
+        this.print(`${curr.join("")} count ${count} cache size ${cached.size()} cache hit ${cacheHit}`, 0, "green");
+      }
+      count++;
+    }
+
+    this.print(`count=${count} deduped=${dedupedResults.size} cache size ${cached.size()} cache hit ${cacheHit}`);
+
+    return dedupedResults;
+  }
+
+  private runForwards(commands: string[]) {
+    const allCommands = this.parseAllCommands(commands);
+
+    const highestDigits = range(allCommands.length).map(_ => new Map<number, number>());
+    const outputZs = new Set<number>();
+    let inputZs = [0];
+    for (let commandIndex = 0; commandIndex < allCommands.length; commandIndex++) {
+      const currCommands = allCommands[commandIndex];
+      for (const inputZ of inputZs) {
+        for (let inputDigit = 1; inputDigit <= 9; inputDigit++) {
+          const result = this.runProgram(new State(0, 0, 0, inputZ), [inputDigit], currCommands);
+          outputZs.add(result.z);
+          const highestDigit = highestDigits[commandIndex];
+          const currHighest = highestDigit.get(result.z) || 0;
+          highestDigit.set(result.z, Math.max(currHighest, inputDigit));
+        }
+      }
+
+      this.print(`Found ${outputZs.size} for command index ${commandIndex}`);
+      inputZs = [...outputZs.values()];
+      outputZs.clear();
+    }
+  }
+
+  private runBackwards(commands: string[]) {
+    const allCommands = this.parseAllCommands(commands);
+
+    const highestDigits = range(allCommands.length).map(_ => new Map<number, number>());
+
+    let desired = new Map<number, number[][]>();
+    desired.set(0, [[0]]);
+
+    for (let i = 0; i < allCommands.length; i++) {
+      const nextDesired = new Map<number, number[][]>();
+      const digitIndex = allCommands.length - 1 - i;
+      const currCommands = allCommands[digitIndex];
+
+      for (let zInput = 0; zInput < 1_000_000; zInput++) {
+        for (let digitInput = 1; digitInput < 10; digitInput++) {
+          const result = this.runProgram(new State(0, 0, 0, zInput), [digitInput], currCommands);
+          if (desired.has(result.z)) {
+            const currHighest = highestDigits[digitIndex].get(result.z) || 0;
+            const highest = Math.max(currHighest, digitInput);
+            highestDigits[digitIndex].set(result.z, highest);
+
+            const prevZs = desired.get(result.z)!;
+            const newZs: number[][] = [];
+            for (const prevZ of prevZs) {
+              const newZ = [...prevZ];
+              newZ.reverse();
+              newZ.push(zInput);
+              newZ.reverse();
+              newZs.push(newZ);
+            }
+
+            nextDesired.set(zInput, newZs);
+          }
+        }
+      }
+
+      if (nextDesired.size === 0) {
+        this.print(`No desired numbers found i=${i}`, 0, "red");
+        break;
+      }
+
+      this.print(`Found ${nextDesired.size} numbers for digitIndex=${digitIndex}`);
+      desired = nextDesired;
+    }
+
+    for (const zs of desired.values()) {
+      for (const zss of zs) {
+        let output = "";
+        for (let i = 1; i < zss.length; i++) {
+          const z = zss[i];
+          output += `[${highestDigits[highestDigits.length - zss.length + i].get(z)}]:${z},`;
+        }
+        this.print(output);
+      }
+    }
+
+    this.print([...desired.entries()].join("\n"));
+    this.print(`Desired has zero? ${desired.has(0)}`);
+
+  }
 
   private runPart1b(commands: string[]): string {
-    const allCommands: string[][] = [];
-    let currCommands: string[];
-    commands.forEach(command => {
-      if (command.indexOf("inp") !== -1) {
-        currCommands = [];
-        allCommands.push(currCommands);
-      }
-      currCommands.push(command);
-    });
+    const allCommands = this.parseAllCommands(commands);
 
     const cached = new Cache();
 
@@ -256,7 +385,7 @@ class Day24 extends Solution {
         } else {
           intermediate.push([curr.slice(0, curr.length - remaining.length), remaining, state.clone()]);
           // this.print(`${remaining} ${state}`, 2, "blue");
-          state = this.runProgram(state, curr[i], command);
+          state = this.runProgram(state, [curr[i]], command);
         }
       }
 
@@ -281,6 +410,19 @@ class Day24 extends Solution {
     this.print(`NOT FOUND checked ${count} cache size ${cached.size()} cache hit ${cacheHit}`, 0, "red");
 
     return "";
+  }
+
+  private parseAllCommands(commands: string[]) {
+    const allCommands: string[][] = [];
+    let currCommands: string[];
+    commands.forEach(command => {
+      if (command.indexOf("inp") !== -1) {
+        currCommands = [];
+        allCommands.push(currCommands);
+      }
+      currCommands.push(command);
+    });
+    return allCommands;
   }
 
   private greaterThan(n1: number[], n2: number[]): boolean {
@@ -317,9 +459,9 @@ class Day24 extends Solution {
   //   return new State(input, commandLength);
   // }
 
-  private runProgram(state: State, input: number, commands: string[]): State {
-    let usedInput = false;
-    commands.forEach(command => {
+  private runProgram(state: State, input: number[], commands: string[]): State {
+    let inputIndex = 0;
+    for (const command of commands) {
       const splits = command.split(" ");
       const [var1Name, var2] = [...splits.slice(1)];
       const var1Value = state.get(var1Name)!;
@@ -328,12 +470,13 @@ class Day24 extends Solution {
 
       switch (splits[0]) {
         case "inp":
-          if (usedInput) {
-            throw new Error("Already used input");
+          if (inputIndex >= input.length) {
+            this.print("Already used input", 0, "red");
+            return state;
           }
-          inputDigit = input;
+          inputDigit = input[inputIndex];
           state.set(var1Name, inputDigit);
-          usedInput = true;
+          inputIndex++;
           break;
         case "add":
           var2Value = state.getOrParse(var2);
@@ -362,7 +505,7 @@ class Day24 extends Solution {
 
       // this.print(`${command.padStart(10)} \n            ${state}`, 0, command.indexOf("inp") !== -1 ? "blue" :
       // "black");
-    });
+    }
 
     return state;
 
