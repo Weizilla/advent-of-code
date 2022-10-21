@@ -3,6 +3,8 @@ package solution
 import (
 	"fmt"
 	"os"
+	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 )
@@ -10,13 +12,30 @@ import (
 const NoExample int = -1
 const AllExamples int = 0
 
-func check(e error) {
+var FileNamePattern, _ = regexp.Compile("([0-9]+)/day-([0-9]+)")
+
+func Check(e error) {
 	if e != nil {
 		panic(e)
 	}
 }
 
-func ReadInput(year int, day int, example ...int) string {
+func findYearDay() (int, int) {
+	for i := 0; i < 10; i++ {
+		_, file, _, _ := runtime.Caller(i)
+		matches := FileNamePattern.FindStringSubmatch(file)
+		if len(matches) > 0 {
+			year, _ := strconv.Atoi(matches[1])
+			day, _ := strconv.Atoi(matches[2])
+			return year, day
+		}
+	}
+
+	panic("year day not found")
+}
+
+func ReadInput(example ...int) string {
+	var year, day = findYearDay()
 	var path string
 	if len(example) > 0 {
 		exampleId := example[0]
@@ -30,15 +49,15 @@ func ReadInput(year int, day int, example ...int) string {
 	}
 
 	dat, err := os.ReadFile(path)
-	check(err)
+	Check(err)
 
 	contents := string(dat)
 
 	return contents
 }
 
-func ReadInputStrings(year int, day int, example ...int) []string {
-	content := ReadInput(year, day, example...)
+func ReadInputStrings(example ...int) []string {
+	content := ReadInput(example...)
 	allStrings := strings.Split(content, "\n")
 
 	goodStrings := make([]string, 0)
@@ -50,13 +69,13 @@ func ReadInputStrings(year int, day int, example ...int) []string {
 	return goodStrings
 }
 
-func ReadInputInts(year int, day int, example ...int) []int {
-	lines := ReadInputStrings(year, day, example...)
+func ReadInputInts(example ...int) []int {
+	lines := ReadInputStrings(example...)
 
 	ints := make([]int, len(lines))
 	for i, n := range lines {
 		newInt, err := strconv.Atoi(n)
-		check(err)
+		Check(err)
 		ints[i] = newInt
 	}
 

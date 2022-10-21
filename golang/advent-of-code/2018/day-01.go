@@ -5,11 +5,8 @@ import (
 	"fmt"
 )
 
-const year = 2018
-const day = 1
-
-func day1() any {
-	inputs := solution.ReadInputInts(year, day)
+func day1Part1() any {
+	inputs := solution.ReadInputInts()
 	sum := 0
 
 	for _, value := range inputs {
@@ -19,8 +16,8 @@ func day1() any {
 	return sum
 }
 
-func day2() any {
-	inputs := solution.ReadInputInts(year, day)
+func day1Part2() any {
+	inputs := solution.ReadInputInts()
 
 	seen := map[int]bool{}
 	sum := 0
@@ -37,5 +34,5 @@ func day2() any {
 }
 
 func main() {
-	fmt.Println(day2())
+	fmt.Println(day1Part2())
 }
