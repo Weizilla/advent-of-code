@@ -11,7 +11,7 @@ pub trait Solution {
 
 pub fn read_input(year: i32, day: i32) -> String {
     let day = format!("{:02}", day);
-    let file_path = format!("../../../inputs/{year}/day-{day}-input.txt");
+    let file_path = format!("../../inputs/{year}/day-{day}-input.txt");
     let contents = fs::read_to_string(file_path).expect("Error reading input");
     return contents;
 }
