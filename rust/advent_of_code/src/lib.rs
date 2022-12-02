@@ -24,7 +24,7 @@ pub fn read_input(args: SolutionArgs) -> String {
     let day = format!("{:02}", args.day);
     let year = args.year;
     let suffix = match args.input_type {
-        INPUT => "input.txt".to_string(),
+        INPUT => "input".to_string(),
         EXAMPLE(i) => format!("example-{i}"),
     };
     let file_path = format!("../../inputs/{year}/day-{day}-{suffix}.txt");
