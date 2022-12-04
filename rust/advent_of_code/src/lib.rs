@@ -45,7 +45,7 @@ impl Solution for Day0N {
         SolutionArgs {
             year: 2022,
             day: N,
-            input_type: InputType::INPUT,
+            input_type: InputType::EXAMPLE(1),
         }
     }
 
