@@ -33,6 +33,10 @@ pub fn read_input(args: SolutionArgs) -> String {
     return contents;
 }
 
+pub fn read_lines(args: SolutionArgs) -> Vec<String> {
+    read_input(args).lines().map(|s| s.to_string()).collect()
+}
+
 /*
 TEMPLATE
 use advent_of_code::{InputType, read_input, SolutionArgs};
