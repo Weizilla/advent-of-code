@@ -39,16 +39,16 @@ pub fn read_lines(args: SolutionArgs) -> Vec<String> {
 
 /*
 TEMPLATE
-use advent_of_code::{InputType, read_input, SolutionArgs};
+use advent_of_code::{InputType, read_lines, SolutionArgs};
 use advent_of_code::Solution;
 
-pub struct Day0N {}
+pub struct Day0Z {}
 
-impl Solution for Day0N {
+impl Solution for Day0Z {
     fn args(&self) -> SolutionArgs {
         SolutionArgs {
             year: 2022,
-            day: N,
+            day: Z,
             input_type: InputType::EXAMPLE(1),
         }
     }
