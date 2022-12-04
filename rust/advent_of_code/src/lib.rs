@@ -1,4 +1,5 @@
 use std::fs;
+
 use crate::InputType::{EXAMPLE, INPUT};
 
 pub enum InputType {
@@ -31,3 +32,29 @@ pub fn read_input(args: SolutionArgs) -> String {
     let contents = fs::read_to_string(file_path).expect("Error reading input");
     return contents;
 }
+
+/*
+TEMPLATE
+use advent_of_code::{InputType, read_input, SolutionArgs};
+use advent_of_code::Solution;
+
+pub struct Day0N {}
+
+impl Solution for Day0N {
+    fn args(&self) -> SolutionArgs {
+        SolutionArgs {
+            year: 2022,
+            day: N,
+            input_type: InputType::INPUT,
+        }
+    }
+
+    fn part1(&self) -> Option<String> {
+        None
+    }
+
+    fn part2(&self) -> Option<String> {
+        None
+    }
+}
+**/
