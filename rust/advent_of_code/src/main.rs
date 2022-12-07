@@ -6,7 +6,7 @@ mod year2016;
 mod year2022;
 
 fn main() {
-    let solution = year2022::day_05::Day05 {};
+    let solution = year2022::day_06::Day06 {};
     let day = solution.args().day;
     let year = solution.args().year;
 
