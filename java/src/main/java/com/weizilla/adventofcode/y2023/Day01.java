@@ -1,13 +1,13 @@
 package com.weizilla.adventofcode.y2023;
 
-import com.google.common.base.Strings;
+import com.weizilla.adventofcode.utils.Day;
 import com.weizilla.adventofcode.utils.InputReader;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class Day01 {
+public class Day01 extends Day {
     private static final Map<String, Integer> WORDS = Map.of(
         "one", 1,
         "two", 2,
@@ -20,7 +20,7 @@ public class Day01 {
         "nine", 9
     );
 
-    public static Object part1() {
+    public Object part1() {
         var input = InputReader.readInput(2023, 1);
 
         var result = input.stream()
@@ -44,7 +44,7 @@ public class Day01 {
         return nums;
     }
 
-    public static String part2() {
+    public String part2() {
         var input = InputReader.readInput(2023, 1);
 
         var result = input.stream()
@@ -75,8 +75,6 @@ public class Day01 {
             }
         }
 
-        System.out.println("Input " + input + " nums " + result);
-
         return result;
     }
 
@@ -84,10 +82,5 @@ public class Day01 {
         int first = ints.getFirst();
         int last = ints.getLast();
         return first * 10 + last;
-    }
-
-    public static void main(String[] args) {
-        Object result = Day01.part2();
-        System.out.println(result);
     }
 }
