@@ -9,13 +9,15 @@ import java.nio.file.Path;
 import java.util.List;
 
 public class InputReader {
-    public static List<String> readInput(int year, int day) {
-        String inputPath = String.format("inputs/%d/day-%02d-input.txt", year, day);
+    public static List<String> readInput() {
+        var runDay = Utils.getRunDay();
+        String inputPath = String.format("inputs/%d/day-%02d-input.txt", runDay.year(), runDay.day());
         return readStrings(inputPath);
     }
 
-    public static List<String> readInput(int year, int day, int example) {
-        String inputPath = String.format("inputs/%d/day-%02d-example-%d.txt", year, day, example);
+    public static List<String> readInput(int example) {
+        var runDay = Utils.getRunDay();
+        String inputPath = String.format("inputs/%d/day-%02d-example-%d.txt", runDay.year(), runDay.day(), example);
         return readStrings(inputPath);
     }
 
@@ -30,10 +32,4 @@ public class InputReader {
         }
     }
 
-
-    public static void main(String[] args) {
-        var reader = new InputReader();
-        var strings = reader.readInput(2023, 1);
-        System.out.println(strings);
-    }
 }
