@@ -9,17 +9,18 @@ import java.nio.file.Path;
 import java.util.List;
 
 public class InputReader {
-    public static List<String> readInput() {
+    public static List<String> readStrings() {
         var runDay = Utils.getRunDay();
         String inputPath = String.format("inputs/%d/day-%02d-input.txt", runDay.year(), runDay.day());
         return readStrings(inputPath);
     }
 
-    public static List<String> readInput(int example) {
+    public static List<String> readStrings(int example) {
         var runDay = Utils.getRunDay();
         String inputPath = String.format("inputs/%d/day-%02d-example-%d.txt", runDay.year(), runDay.day(), example);
         return readStrings(inputPath);
     }
+
 
     private static List<String> readStrings(String inputPath) {
         try {
@@ -27,6 +28,52 @@ public class InputReader {
             return Files.readAllLines(path, StandardCharsets.UTF_8).stream()
                 .filter(s -> !Strings.isNullOrEmpty(s))
                 .toList();
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading file", e);
+        }
+    }
+
+    public static Matrix readMatrix() {
+        try {
+            var runDay = Utils.getRunDay();
+            String inputPath = String.format("inputs/%d/day-%02d-input.txt", runDay.year(), runDay.day());
+            Path path = Path.of("").toAbsolutePath().getParent().resolve(inputPath);
+            var stream = Files.readAllLines(path, StandardCharsets.UTF_8).stream()
+                .filter(s -> !Strings.isNullOrEmpty(s))
+                .toList();
+
+            var matrix = new Matrix();
+            for (int y = 0; y < stream.size(); y++) {
+                String line = stream.get(y);
+                for (int x = 0; x < line.length(); x++) {
+                    String value = line.charAt(x) + "";
+                    matrix.put(x, y, value);
+                }
+            }
+            return matrix;
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading file", e);
+        }
+    }
+
+    public static Matrix readMatrix(int example) {
+        try {
+            var runDay = Utils.getRunDay();
+            String inputPath = String.format("inputs/%d/day-%02d-example-%d.txt", runDay.year(), runDay.day(), example);
+            Path path = Path.of("").toAbsolutePath().getParent().resolve(inputPath);
+            var stream = Files.readAllLines(path, StandardCharsets.UTF_8).stream()
+                .filter(s -> !Strings.isNullOrEmpty(s))
+                .toList();
+
+            var matrix = new Matrix();
+            for (int y = 0; y < stream.size(); y++) {
+                String line = stream.get(y);
+                for (int x = 0; x < line.length(); x++) {
+                    String value = line.charAt(x) + "";
+                    matrix.put(x, y, value);
+                }
+            }
+            return matrix;
         } catch (IOException e) {
             throw new RuntimeException("Error reading file", e);
         }

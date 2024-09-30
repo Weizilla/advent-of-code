@@ -27,6 +27,7 @@ public class Runner {
 
     private static List<Method> getAllMethods(Object object) {
         return Arrays.stream(object.getClass().getDeclaredMethods())
+            .filter(m -> m.getName().equals("part1") || m.getName().equals("part2"))
             .sorted(Comparator.comparing(Method::getName))
             .toList();
     }
@@ -34,7 +35,7 @@ public class Runner {
     public static void main(String[] args) {
         try {
             List<Class<? extends Day>> classes = getAllClasses();
-            Class<? extends Day> newestClass = (Class<? extends Day>) Iterables.getLast(classes);
+            Class<? extends Day> newestClass = Iterables.getLast(classes);
             Day instance = (Day) newestClass.getConstructors()[0].newInstance();
 
             List<Method> methods = getAllMethods(instance);
