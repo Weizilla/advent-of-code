@@ -3,9 +3,13 @@ package com.weizilla.adventofcode.y2023;
 import com.google.common.collect.Sets;
 import com.weizilla.adventofcode.utils.Day;
 import com.weizilla.adventofcode.utils.InputReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -29,14 +33,35 @@ public class Day04 extends Day {
     public Object part2() {
         var lines = InputReader.readStrings();
         var cards = lines.stream().map(Day04::getCard).toList();
-        var numWinning = numWinning(cards);
+        var wons = wons(cards);
 
+        var totalCards = 0;
+        var memo = new HashMap<Integer, Integer>();
         for (int i = 0; i < cards.size(); i++) {
-            int numWin = numWinning[i];
-            
+            var numCards = numCards(i, wons, memo);
+            totalCards += numCards;
         }
 
-        return "";
+        return totalCards;
+    }
+
+    private static int numCards(int cardId, int[] numWinning, Map<Integer, Integer> memo) {
+        if (cardId >= numWinning.length) {
+            return 0;
+        }
+
+        if (memo.containsKey(cardId)) {
+            return memo.get(cardId);
+        }
+
+        int totalCards = 1;
+        int totalWon = numWinning[cardId];
+        for (int i = 1; i <= totalWon; i++) {
+            totalCards += numCards(cardId + i, numWinning, memo);
+        }
+
+        memo.put(cardId, totalCards);
+        return totalCards;
     }
 
     private static Card getCard(String line) {
@@ -53,7 +78,7 @@ public class Day04 extends Day {
         return new Card(id, winning, own);
     }
 
-    private int[] numWinning(List<Card> cards) {
+    private int[] wons(List<Card> cards) {
         var result = new int[cards.size()];
         for (int i = 0; i < cards.size(); i++) {
             Card card = cards.get(i);
