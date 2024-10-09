@@ -67,61 +67,99 @@ public class Day05 extends Day {
 
         return maps;
     }
-}
-
-enum Cat {
-    LOCATION(null),
-    HUMIDITY(LOCATION),
-    TEMPERATURE(HUMIDITY),
-    LIGHT(TEMPERATURE),
-    WATER(LIGHT),
-    FERTILIZER(WATER),
-    SOIL(FERTILIZER),
-    SEED(SOIL);
-
-    private final Cat destination;
-
-    Cat(Cat destionation) {
-        this.destination = destionation;
-    }
-
-    public Cat getDestination() {
-        return destination;
-    }
-}
-
-class CatMap {
-    private final NavigableMap<Long, Integer> lengths;
-    private final Map<Long, Long> destinations;
-
-    public CatMap() {
-        lengths = new TreeMap<>();
-        destinations = new HashMap<>();
-    }
-
-    public void addRange(long destination, long source, int length) {
-        lengths.put(source, length);
-        destinations.put(source, destination);
-    }
-
-    public long getDestination(long source) {
-        var entry = lengths.floorEntry(source);
-        if (entry == null) {
-            return source;
-        }
-        var start = entry.getKey();
-        var length = entry.getValue();
-        if (start + length < source) {
-            return source;
-        }
-        return destinations.get(start) + source - start;
-    }
 
     @Override
-    public String toString() {
-        return "CatMap{" +
-            "lengths=" + lengths +
-            ", destinations=" + destinations +
-            '}';
+    public Object part2() {
+        var lines = InputReader.readStrings(1);
+
+        var startValues = Arrays.stream(lines.get(0).split(":")[1].trim().split(" "))
+            .map(Long::valueOf)
+            .toList();
+
+        var startRanges = new HashMap<Long, Long>();
+        for (int i = 0; i < startValues.size(); i += 2) {
+            startRanges.put(startValues.get(i), startValues.get(i + 1));
+        }
+
+        print("{}", startRanges);
+
+        var catMaps = parseMaps(lines);
+        print("{}", catMaps);
+
+        Cat currCat = Cat.SEED;
+        var currValues = new ArrayList<Long>();
+
+        
+
+        while (currCat != Cat.LOCATION) {
+            var catMap = catMaps.get(currCat);
+
+            var nextValues = new ArrayList<Long>();
+            for (long currValue : currValues) {
+                nextValues.add(catMap.getDestination(currValue));
+            }
+            currValues = nextValues;
+            currCat = currCat.getDestination();
+        }
+
+        return currValues.stream().min(Long::compareTo).get();
+
+    }
+
+    private enum Cat {
+        LOCATION(null),
+        HUMIDITY(LOCATION),
+        TEMPERATURE(HUMIDITY),
+        LIGHT(TEMPERATURE),
+        WATER(LIGHT),
+        FERTILIZER(WATER),
+        SOIL(FERTILIZER),
+        SEED(SOIL);
+
+        private final Cat destination;
+
+        Cat(Cat destionation) {
+            this.destination = destionation;
+        }
+
+        public Cat getDestination() {
+            return destination;
+        }
+    }
+
+    private static class CatMap {
+        private final NavigableMap<Long, Integer> lengths;
+        private final Map<Long, Long> destinations;
+
+        public CatMap() {
+            lengths = new TreeMap<>();
+            destinations = new HashMap<>();
+        }
+
+        public void addRange(long destination, long source, int length) {
+            lengths.put(source, length);
+            destinations.put(source, destination);
+        }
+
+        public long getDestination(long source) {
+            var entry = lengths.floorEntry(source);
+            if (entry == null) {
+                return source;
+            }
+            var start = entry.getKey();
+            var length = entry.getValue();
+            if (start + length < source) {
+                return source;
+            }
+            return destinations.get(start) + source - start;
+        }
+
+        @Override
+        public String toString() {
+            return "CatMap{" +
+                "lengths=" + lengths +
+                ", destinations=" + destinations +
+                '}';
+        }
     }
 }
