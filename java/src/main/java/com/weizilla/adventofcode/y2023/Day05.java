@@ -1,7 +1,6 @@
 package com.weizilla.adventofcode.y2023;
 
 import com.weizilla.adventofcode.utils.Day;
-import com.weizilla.adventofcode.utils.InputReader;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,9 +11,13 @@ import java.util.NavigableMap;
 import java.util.TreeMap;
 
 public class Day05 extends Day {
+    public Day05(Integer example) {
+        super(example);
+    }
+
     @Override
     public Object part1() {
-        var lines = InputReader.readStrings();
+        var lines = reader.readStrings();
 
         var startSeeds = Arrays.stream(lines.get(0).split(":")[1].trim().split(" "))
             .map(Long::valueOf)
@@ -70,7 +73,7 @@ public class Day05 extends Day {
 
     @Override
     public Object part2() {
-        var lines = InputReader.readStrings(1);
+        var lines = reader.readStrings();
 
         var startValues = Arrays.stream(lines.get(0).split(":")[1].trim().split(" "))
             .map(Long::valueOf)
@@ -89,7 +92,7 @@ public class Day05 extends Day {
         Cat currCat = Cat.SEED;
         var currValues = new ArrayList<Long>();
 
-        
+
 
         while (currCat != Cat.LOCATION) {
             var catMap = catMaps.get(currCat);
@@ -102,7 +105,8 @@ public class Day05 extends Day {
             currCat = currCat.getDestination();
         }
 
-        return currValues.stream().min(Long::compareTo).get();
+//        return currValues.stream().min(Long::compareTo).get();
+        return 0;
 
     }
 

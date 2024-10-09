@@ -36,13 +36,19 @@ public class Runner {
         try {
             List<Class<? extends Day>> classes = getAllClasses();
             Class<? extends Day> newestClass = Iterables.getLast(classes);
-            Day instance = (Day) newestClass.getConstructors()[0].newInstance();
+
+            Integer example = args.length > 0 ? Integer.parseInt(args[0]) : null;
+
+            Day instance = (Day) newestClass.getConstructors()[0].newInstance(example);
 
             List<Method> methods = getAllMethods(instance);
 
             Method latestMethod = Iterables.getLast(methods);
             Object result = latestMethod.invoke(instance);
-            logger.info("Running year {}, day {}, {}, result: {}", instance.getYear(), instance.getDay(), latestMethod.getName(), result);
+
+            String type = example != null ? ", example " + example : ", real";
+            logger.info("Running year {}, day {}, {}{}, result: {}", instance.getYear(), instance.getDay(),
+                latestMethod.getName(), type, result);
 
         } catch (Exception e) {
             logger.error("error", e);

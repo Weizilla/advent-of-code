@@ -1,18 +1,20 @@
 package com.weizilla.adventofcode.y2023;
 
 import com.weizilla.adventofcode.utils.Day;
-import com.weizilla.adventofcode.utils.InputReader;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.weizilla.adventofcode.utils.InputReader.readStrings;
-
 public class Day02 extends Day {
-    record GameSet(int red, int green, int blue) {}
-    record Game(int id, List<GameSet> gameSets) {
+    public Day02(Integer example) {
+        super(example);
+    }
+
+    private record GameSet(int red, int green, int blue) {}
+
+    private record Game(int id, List<GameSet> gameSets) {
         public int maxRed() {
             return gameSets.stream()
                 .mapToInt(GameSet::red)
@@ -40,7 +42,7 @@ public class Day02 extends Day {
         int maxGreen = 13;
         int maxBlue = 14;
 
-        List<String> strings = InputReader.readStrings();
+        List<String> strings = reader.readStrings();
         int result = strings.stream()
             .map(Day02::parse)
             .filter(g -> g.maxBlue() <= maxBlue && g.maxGreen() <= maxGreen && g.maxRed() <= maxRed)
@@ -52,7 +54,7 @@ public class Day02 extends Day {
 
     @Override
     public Object part2() {
-        List<String> strings = InputReader.readStrings();
+        List<String> strings = reader.readStrings();
         var result = strings.stream()
             .map(Day02::parse)
             .mapToInt(g -> g.maxRed() * g.maxBlue() * g.maxGreen())
@@ -89,6 +91,5 @@ public class Day02 extends Day {
     private static int numOrZero(String input) {
         return input != null ? Integer.parseInt(input) : 0;
     }
-
 
 }

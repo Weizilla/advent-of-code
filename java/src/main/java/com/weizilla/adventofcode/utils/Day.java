@@ -5,13 +5,17 @@ import org.slf4j.LoggerFactory;
 
 public abstract class Day {
     private static final Logger logger = LoggerFactory.getLogger(Day.class);
-    private int year;
-    private int day;
+    protected final InputReader reader;
+    private final int year;
+    private final int day;
+    private final Integer example;
 
-    protected Day() {
+    protected Day(Integer example) {
         RunDay runDay = Utils.getRunDay();
         this.year = runDay.year();
         this.day = runDay.day();
+        this.example = example;
+        reader = new InputReader(year, day, example);
     }
 
     public Object part1() {
@@ -24,14 +28,20 @@ public abstract class Day {
     }
 
     public void print(String input, Object ... args) {
-        logger.info(input, args);
+        if (example != null) {
+            logger.info(input, args);
+        }
     }
 
     public int getYear() {
-        return this.year;
+        return year;
     }
 
     public int getDay() {
-        return this.day;
+        return day;
+    }
+
+    public Integer getExample() {
+        return example;
     }
 }

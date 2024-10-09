@@ -7,23 +7,29 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 public class InputReader {
-    public static List<String> readStrings() {
-        var runDay = Utils.getRunDay();
-        String inputPath = String.format("inputs/%d/day-%02d-input.txt", runDay.year(), runDay.day());
-        return readStrings(inputPath);
+    private final int year;
+    private final int day;
+    private final Integer example;
+
+    public InputReader(int year, int day, Integer example) {
+        this.year = year;
+        this.day = day;
+        this.example = example;
     }
 
-    public static List<String> readStrings(int example) {
-        var runDay = Utils.getRunDay();
-        String inputPath = String.format("inputs/%d/day-%02d-example-%d.txt", runDay.year(), runDay.day(), example);
-        return readStrings(inputPath);
+    private String getInputPath() {
+        String inputPath = example != null
+            ? String.format("inputs/%d/day-%02d-example-%d.txt", year, day, example)
+            : String.format("inputs/%d/day-%02d-input.txt", year, day);
+        return inputPath;
     }
 
-
-    private static List<String> readStrings(String inputPath) {
+    public List<String> readStrings() {
         try {
+            String inputPath = getInputPath();
             Path path = Path.of("").toAbsolutePath().getParent().resolve(inputPath);
             return Files.readAllLines(path, StandardCharsets.UTF_8).stream()
                 .filter(s -> !Strings.isNullOrEmpty(s))
@@ -33,10 +39,9 @@ public class InputReader {
         }
     }
 
-    public static Matrix readMatrix() {
+    public Matrix readMatrix() {
         try {
-            var runDay = Utils.getRunDay();
-            String inputPath = String.format("inputs/%d/day-%02d-input.txt", runDay.year(), runDay.day());
+            String inputPath = getInputPath();
             Path path = Path.of("").toAbsolutePath().getParent().resolve(inputPath);
             var stream = Files.readAllLines(path, StandardCharsets.UTF_8).stream()
                 .filter(s -> !Strings.isNullOrEmpty(s))
@@ -55,28 +60,4 @@ public class InputReader {
             throw new RuntimeException("Error reading file", e);
         }
     }
-
-    public static Matrix readMatrix(int example) {
-        try {
-            var runDay = Utils.getRunDay();
-            String inputPath = String.format("inputs/%d/day-%02d-example-%d.txt", runDay.year(), runDay.day(), example);
-            Path path = Path.of("").toAbsolutePath().getParent().resolve(inputPath);
-            var stream = Files.readAllLines(path, StandardCharsets.UTF_8).stream()
-                .filter(s -> !Strings.isNullOrEmpty(s))
-                .toList();
-
-            var matrix = new Matrix();
-            for (int y = 0; y < stream.size(); y++) {
-                String line = stream.get(y);
-                for (int x = 0; x < line.length(); x++) {
-                    String value = line.charAt(x) + "";
-                    matrix.put(x, y, value);
-                }
-            }
-            return matrix;
-        } catch (IOException e) {
-            throw new RuntimeException("Error reading file", e);
-        }
-    }
-
 }

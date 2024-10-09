@@ -1,13 +1,10 @@
 package com.weizilla.adventofcode.y2023;
 
 import com.weizilla.adventofcode.utils.Day;
-import com.weizilla.adventofcode.utils.InputReader;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import static com.weizilla.adventofcode.utils.InputReader.readStrings;
 
 public class Day01 extends Day {
     private static final Map<String, Integer> WORDS = Map.of(
@@ -22,8 +19,12 @@ public class Day01 extends Day {
         "nine", 9
     );
 
+    public Day01(Integer example) {
+        super(example);
+    }
+
     public Object part1() {
-        var input = InputReader.readStrings();
+        var input = reader.readStrings();
 
         var result = input.stream()
             .map(Day01::toNums)
@@ -47,7 +48,7 @@ public class Day01 extends Day {
     }
 
     public String part2() {
-        var input = InputReader.readStrings();
+        var input = reader.readStrings();
 
         var result = input.stream()
             .map(Day01::toNums2)

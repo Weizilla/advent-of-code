@@ -10,12 +10,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static com.weizilla.adventofcode.utils.InputReader.readMatrix;
 
 public class Day03 extends Day {
+    public Day03(Integer example) {
+        super(example);
+    }
+
     @Override
     public Object part1() {
-        var matrix = readMatrix();
+        var matrix = reader.readMatrix();
         var nums = new ArrayList<Integer>();
 
         for (int y = matrix.getMinY(); y <= matrix.getMaxY(); y++) {
@@ -50,7 +53,7 @@ public class Day03 extends Day {
 
     @Override
     public Object part2() {
-        var matrix = readMatrix();
+        var matrix = reader.readMatrix();
         var stars = stars(matrix);
         var starsWithNums = new HashMap<Point, List<Integer>>();
 

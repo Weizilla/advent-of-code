@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Runner (Example Prompt" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="com.weizilla.adventofcode.utils.Runner" />
+    <module name="adventofcode" />
+    <option name="PROGRAM_PARAMETERS" value="$Prompt$" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="com.weizilla.adventofcode.utils.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

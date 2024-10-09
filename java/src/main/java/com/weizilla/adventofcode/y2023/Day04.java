@@ -2,9 +2,6 @@ package com.weizilla.adventofcode.y2023;
 
 import com.google.common.collect.Sets;
 import com.weizilla.adventofcode.utils.Day;
-import com.weizilla.adventofcode.utils.InputReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -14,11 +11,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Day04 extends Day {
+    public Day04(Integer example) {
+        super(example);
+    }
+
     private record Card(int id, Set<Integer> winning, Set<Integer> own) {}
 
     @Override
     public Object part1() {
-        var lines = InputReader.readStrings();
+        var lines = reader.readStrings();
         var cards = lines.stream().map(Day04::getCard).toList();
 
         var s = cards.stream()
@@ -31,7 +32,7 @@ public class Day04 extends Day {
 
     @Override
     public Object part2() {
-        var lines = InputReader.readStrings();
+        var lines = reader.readStrings();
         var cards = lines.stream().map(Day04::getCard).toList();
         var wons = wons(cards);
 
