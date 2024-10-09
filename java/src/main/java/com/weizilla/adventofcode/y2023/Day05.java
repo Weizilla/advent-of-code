@@ -110,6 +110,24 @@ public class Day05 extends Day {
 
     }
 
+    private CatMap merge(CatMap source, CatMap dest) {
+        var s = source.getLengths();
+        var d = dest.getLengths();
+
+        var sKeys = new ArrayList<>(s.navigableKeySet());
+        var dKeys = new ArrayList<>(s.navigableKeySet());
+
+        var sIndex = 0;
+        var dIndex = 0;
+        var result = new CatMap();
+        while (sIndex <= sKeys.size() && dIndex <= dKeys.size()) {
+            var currS = sKeys.get(sIndex);
+            var currD = dKeys.get(sIndex);
+
+
+        }
+    }
+
     private enum Cat {
         LOCATION(null),
         HUMIDITY(LOCATION),
@@ -132,38 +150,44 @@ public class Day05 extends Day {
     }
 
     private static class CatMap {
-        private final NavigableMap<Long, Integer> lengths;
-        private final Map<Long, Long> destinations;
+        private final NavigableMap<Long, Mapping> mappings;
 
         public CatMap() {
-            lengths = new TreeMap<>();
-            destinations = new HashMap<>();
+            mappings = new TreeMap<>();
         }
 
         public void addRange(long destination, long source, int length) {
-            lengths.put(source, length);
-            destinations.put(source, destination);
+            mappings.put(source, new Mapping(source, destination, length));
         }
 
         public long getDestination(long source) {
-            var entry = lengths.floorEntry(source);
+            var entry = mappings.floorEntry(source);
             if (entry == null) {
                 return source;
             }
             var start = entry.getKey();
-            var length = entry.getValue();
+            var length = entry.getValue().length();
+            var destination = entry.getValue().destination();
             if (start + length < source) {
                 return source;
             }
-            return destinations.get(start) + source - start;
+            return destination + source - start;
         }
+
+        public NavigableMap<Long, Mapping> getMappings() {
+            return mappings;
+        }
+
 
         @Override
         public String toString() {
             return "CatMap{" +
-                "lengths=" + lengths +
-                ", destinations=" + destinations +
+                "mappings=" + mappings +
                 '}';
         }
     }
+
+    private record Mapping(long source, long destination, int length) {
+    }
+
 }
