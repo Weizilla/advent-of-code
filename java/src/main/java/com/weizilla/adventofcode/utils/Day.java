@@ -27,6 +27,10 @@ public abstract class Day {
         return null;
     }
 
+    public void print(Object input) {
+        print("{}", input);
+    }
+
     public void print(String input, Object ... args) {
         if (example != null) {
             logger.info(input, args);

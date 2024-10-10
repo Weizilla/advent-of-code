@@ -92,40 +92,103 @@ public class Day05 extends Day {
         Cat currCat = Cat.SEED;
         var currValues = new ArrayList<Long>();
 
-
+        CatMap merged = null;
+//        for (var e : startRanges.entrySet()) {
+//            merged.addRange(e.getKey(), e.getKey(), e.getValue());
+//        }
 
         while (currCat != Cat.LOCATION) {
             var catMap = catMaps.get(currCat);
 
-            var nextValues = new ArrayList<Long>();
-            for (long currValue : currValues) {
-                nextValues.add(catMap.getDestination(currValue));
+            if (merged == null) {
+                merged = catMap;
+                continue;
+            } else {
+                merged = merge(merged, catMap);
             }
-            currValues = nextValues;
+
             currCat = currCat.getDestination();
         }
+
+        print(merged);
 
 //        return currValues.stream().min(Long::compareTo).get();
         return 0;
 
     }
 
-    private CatMap merge(CatMap source, CatMap dest) {
-        var s = source.getLengths();
-        var d = dest.getLengths();
-
-        var sKeys = new ArrayList<>(s.navigableKeySet());
-        var dKeys = new ArrayList<>(s.navigableKeySet());
-
-        var sIndex = 0;
-        var dIndex = 0;
+    private CatMap merge(CatMap firstCatMap, CatMap secondCatMap) {
         var result = new CatMap();
-        while (sIndex <= sKeys.size() && dIndex <= dKeys.size()) {
-            var currS = sKeys.get(sIndex);
-            var currD = dKeys.get(sIndex);
+        /*
+          S  D
+          ----    S   D
+          first   ----
+          ----    second
+                  ----
+         */
 
+        for (Mapping first : firstCatMap.getMappings().sequencedValues()) {
+            for (Mapping second : secondCatMap.getMappings().sequencedValues()) {
+                if (first.destEnd() < second.source() || first.destination() > second.sourceEnd())  {
+                    // no overlap
+                    continue;
+                }
 
+                long midSource;
+                long midDest;
+                if (first.destination() < second.source()) {
+                    /* S  D
+                      ----    S   D
+                      first   ----
+                              second */
+                    long len = second.source() - first.destination();
+                    result.addRange(first.destination(), first.source(), len);
+                    midSource = first.source() + len;
+                    midDest = second.destination();
+                } else if (first.destination() > second.source()){
+                    /*        S   D
+                      S  D    ------
+                      ----    second
+                      first
+                              */
+                    long len = first.destination() - second.source();
+                    result.addRange(second.destination(), second.source(), len);
+                    midSource = first.source();
+                    midDest = second.destination() + len;
+                } else {
+                    midSource = first.source();
+                    midDest = first.destination();
+                }
+
+                long midLen;
+                if (first.destEnd() < second.sourceEnd()) {
+                    /*
+                      first
+                      ----    second
+                      S  D    -----
+                              S   D
+                     */
+                    long len = second.sourceEnd() - first.destEnd();
+                    result.addRange(second.destination() - len, second.source() - len, len);
+                    midLen = midSource - first.source();
+                } else if (first.destEnd() > second.sourceEnd()) {
+                    /*        second
+                      first   ------
+                      ----    S    D
+                      S  D
+                     */
+                    long len = first.destEnd() - second.sourceEnd();
+                    result.addRange(first.destEnd() - len, first.sourceEnd() - len, len);
+                    midLen = midDest - second.destination();
+                } else {
+                    midLen = first.length();
+                }
+
+                result.addRange(midDest, midSource, midLen);
+            }
         }
+
+        return result;
     }
 
     private enum Cat {
@@ -156,7 +219,7 @@ public class Day05 extends Day {
             mappings = new TreeMap<>();
         }
 
-        public void addRange(long destination, long source, int length) {
+        public void addRange(long destination, long source, long length) {
             mappings.put(source, new Mapping(source, destination, length));
         }
 
@@ -187,7 +250,14 @@ public class Day05 extends Day {
         }
     }
 
-    private record Mapping(long source, long destination, int length) {
+    private record Mapping(long source, long destination, long length) {
+        public long sourceEnd() {
+            return source + length;
+        }
+
+        public long destEnd() {
+            return destination + length;
+        }
     }
 
 }
