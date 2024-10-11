@@ -79,7 +79,7 @@ public class Day05 extends Day {
             .map(Long::valueOf)
             .toList();
 
-        var startRanges = new HashMap<Long, Long>();
+        var startRanges = new TreeMap<Long, Long>();
         for (int i = 0; i < startValues.size(); i += 2) {
             startRanges.put(startValues.get(i), startValues.get(i + 1));
         }
@@ -112,8 +112,17 @@ public class Day05 extends Day {
 
         print(merged);
 
-//        return currValues.stream().min(Long::compareTo).get();
-        return 0;
+        long minDest = Long.MAX_VALUE;
+        for (long start : startRanges.navigableKeySet()) {
+            long range = startRanges.get(start);
+
+            for (int i = 0; i < range; i++) {
+                var destination = merged.getDestination(start + i);
+                minDest = Math.min(minDest, destination);
+            }
+        }
+
+        return minDest;
 
     }
 
@@ -131,6 +140,8 @@ public class Day05 extends Day {
             for (Mapping second : secondCatMap.getMappings().sequencedValues()) {
                 if (first.destEnd() < second.source() || first.destination() > second.sourceEnd())  {
                     // no overlap
+                    result.addRange(first.destination(), first.source(), first.length());
+                    result.addRange(second.destination(), second.source(), second.length());
                     continue;
                 }
 
