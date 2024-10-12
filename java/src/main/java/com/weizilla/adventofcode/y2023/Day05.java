@@ -8,7 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.NavigableMap;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 public class Day05 extends Day {
     public Day05(Integer example) {
@@ -79,127 +81,61 @@ public class Day05 extends Day {
             .map(Long::valueOf)
             .toList();
 
-        var startRanges = new TreeMap<Long, Long>();
+        NavigableMap<Long, Long> currValues = new TreeMap<>();
         for (int i = 0; i < startValues.size(); i += 2) {
-            startRanges.put(startValues.get(i), startValues.get(i + 1));
+            currValues.put(startValues.get(i), startValues.get(i + 1));
         }
 
-        print("{}", startRanges);
+        print("{}", currValues);
 
         var catMaps = parseMaps(lines);
-        print("{}", catMaps);
+//        print("{}", catMaps);
 
         Cat currCat = Cat.SEED;
-        var currValues = new ArrayList<Long>();
-
-        CatMap merged = null;
-//        for (var e : startRanges.entrySet()) {
-//            merged.addRange(e.getKey(), e.getKey(), e.getValue());
-//        }
-
         while (currCat != Cat.LOCATION) {
             var catMap = catMaps.get(currCat);
-
-            if (merged == null) {
-                merged = catMap;
-                continue;
-            } else {
-                merged = merge(merged, catMap);
-            }
-
+            currValues = map(currValues, catMap);
             currCat = currCat.getDestination();
         }
 
-        print(merged);
-
-        long minDest = Long.MAX_VALUE;
-        for (long start : startRanges.navigableKeySet()) {
-            long range = startRanges.get(start);
-
-            for (int i = 0; i < range; i++) {
-                var destination = merged.getDestination(start + i);
-                minDest = Math.min(minDest, destination);
-            }
-        }
-
-        return minDest;
+        return currValues.navigableKeySet().first();
 
     }
 
-    private CatMap merge(CatMap firstCatMap, CatMap secondCatMap) {
-        var result = new CatMap();
-        /*
-          S  D
-          ----    S   D
-          first   ----
-          ----    second
-                  ----
-         */
 
-        for (Mapping first : firstCatMap.getMappings().sequencedValues()) {
-            for (Mapping second : secondCatMap.getMappings().sequencedValues()) {
-                if (first.destEnd() < second.source() || first.destination() > second.sourceEnd())  {
-                    // no overlap
-                    result.addRange(first.destination(), first.source(), first.length());
-                    result.addRange(second.destination(), second.source(), second.length());
-                    continue;
-                }
+    private NavigableMap<Long, Long> map(NavigableMap<Long, Long> value, CatMap mapping) {
+        NavigableMap<Long, Long> result = new TreeMap<>();
 
-                long midSource;
-                long midDest;
-                if (first.destination() < second.source()) {
-                    /* S  D
-                      ----    S   D
-                      first   ----
-                              second */
-                    long len = second.source() - first.destination();
-                    result.addRange(first.destination(), first.source(), len);
-                    midSource = first.source() + len;
-                    midDest = second.destination();
-                } else if (first.destination() > second.source()){
-                    /*        S   D
-                      S  D    ------
-                      ----    second
-                      first
-                              */
-                    long len = first.destination() - second.source();
-                    result.addRange(second.destination(), second.source(), len);
-                    midSource = first.source();
-                    midDest = second.destination() + len;
-                } else {
-                    midSource = first.source();
-                    midDest = first.destination();
-                }
-
-                long midLen;
-                if (first.destEnd() < second.sourceEnd()) {
-                    /*
-                      first
-                      ----    second
-                      S  D    -----
-                              S   D
-                     */
-                    long len = second.sourceEnd() - first.destEnd();
-                    result.addRange(second.destination() - len, second.source() - len, len);
-                    midLen = midSource - first.source();
-                } else if (first.destEnd() > second.sourceEnd()) {
-                    /*        second
-                      first   ------
-                      ----    S    D
-                      S  D
-                     */
-                    long len = first.destEnd() - second.sourceEnd();
-                    result.addRange(first.destEnd() - len, first.sourceEnd() - len, len);
-                    midLen = midDest - second.destination();
-                } else {
-                    midLen = first.length();
-                }
-
-                result.addRange(midDest, midSource, midLen);
-            }
-        }
+        value.entrySet().stream()
+            .map(e -> map(e, mapping))
+            .forEach(result::putAll);
 
         return result;
+    }
+
+    private NavigableMap<Long, Long> map(Map.Entry<Long, Long> input, CatMap mapping) {
+        long start = input.getKey();
+        long len = input.getValue();
+        long end = start + len;
+        NavigableMap<Long, Long> result = new TreeMap<>();
+
+        Mapping m = mapping.getMappings().floorEntry(start).getValue();
+
+        // no overlap
+        if (m == null || (m.sourceEnd() < start)) {
+            result.put(start, len);
+            return result;
+        }
+
+        // input is within one map
+        if (start > m.source() && end < m.sourceEnd()) {
+            long destStart = m.destination() + (start - m.source());
+            result.put(destStart, len);
+        }
+
+        
+        // handle range across multiple mapping
+
     }
 
     private enum Cat {
