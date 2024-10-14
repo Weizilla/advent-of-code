@@ -1,5 +1,6 @@
 package com.weizilla.adventofcode.y2023;
 
+import com.google.common.collect.Range;
 import com.weizilla.adventofcode.utils.Day;
 
 import java.util.ArrayList;
@@ -81,9 +82,9 @@ public class Day05 extends Day {
             .map(Long::valueOf)
             .toList();
 
-        NavigableMap<Long, Long> currValues = new TreeMap<>();
+        List<Range<Long>> currValues = new ArrayList<>();
         for (int i = 0; i < startValues.size(); i += 2) {
-            currValues.put(startValues.get(i), startValues.get(i + 1));
+            currValues.add(Range.closed(startValues.get(i), startValues.get(i + 1)));
         }
 
         print("{}", currValues);
@@ -98,44 +99,28 @@ public class Day05 extends Day {
             currCat = currCat.getDestination();
         }
 
-        return currValues.navigableKeySet().first();
-
+        return currValues.stream().mapToLong(Range::lowerEndpoint).min();
     }
 
 
-    private NavigableMap<Long, Long> map(NavigableMap<Long, Long> value, CatMap mapping) {
-        NavigableMap<Long, Long> result = new TreeMap<>();
+    private List<Range<Long>> map(List<Range<Long>> values, CatMap mapping) {
+        List<Range<Long>> result = new ArrayList<>();
 
-        value.entrySet().stream()
+        values.stream()
             .map(e -> map(e, mapping))
-            .forEach(result::putAll);
+            .forEach(result::addAll);
 
         return result;
     }
 
-    private NavigableMap<Long, Long> map(Map.Entry<Long, Long> input, CatMap mapping) {
-        long start = input.getKey();
-        long len = input.getValue();
-        long end = start + len;
-        NavigableMap<Long, Long> result = new TreeMap<>();
+    private List<Range<Long>> map(Range<Long> input, CatMap mapping) {
+        List<Range<Long>> unmapped = List.of(input);
+        List<Range<Long>> mapped = new ArrayList<>();
 
-        Mapping m = mapping.getMappings().floorEntry(start).getValue();
+        //TODO
 
-        // no overlap
-        if (m == null || (m.sourceEnd() < start)) {
-            result.put(start, len);
-            return result;
-        }
 
-        // input is within one map
-        if (start > m.source() && end < m.sourceEnd()) {
-            long destStart = m.destination() + (start - m.source());
-            result.put(destStart, len);
-        }
-
-        
-        // handle range across multiple mapping
-
+        return mapped;
     }
 
     private enum Cat {
