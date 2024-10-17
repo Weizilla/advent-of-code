@@ -9,9 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
-import java.util.NavigableMap;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 public class Day05 extends Day {
     public Day05(Integer example) {
@@ -84,7 +82,7 @@ public class Day05 extends Day {
 
         List<Range<Long>> currValues = new ArrayList<>();
         for (int i = 0; i < startValues.size(); i += 2) {
-            currValues.add(Range.closed(startValues.get(i), startValues.get(i + 1)));
+            currValues.add(Range.closed(startValues.get(i), startValues.get(i) + startValues.get(i + 1)));
         }
 
         print("{}", currValues);
@@ -113,11 +111,57 @@ public class Day05 extends Day {
         return result;
     }
 
-    private List<Range<Long>> map(Range<Long> input, CatMap mapping) {
-        List<Range<Long>> unmapped = List.of(input);
+    private List<Range<Long>> map(Range<Long> ranges, CatMap allMappings) {
+        List<Range<Long>> unmapped = List.of(ranges);
         List<Range<Long>> mapped = new ArrayList<>();
 
-        //TODO
+        for (Mapping mapping : allMappings.getMappings().values()) {
+
+            List<Range<Long>> newUnmapped = new ArrayList<>();
+            for (Range<Long> curr : unmapped) {
+                if (curr.upperEndpoint() < mapping.source() || curr.lowerEndpoint() > mapping.sourceEnd()) {
+                    newUnmapped.add(curr);
+                    continue;
+                }
+
+                long centerLowerMapped = 0;
+                long centerUpperMapped = 0;
+
+                if (curr.lowerEndpoint() < mapping.source()) {
+                    // ----
+                    //  curr  ----
+                    //        mapping
+                    Range<Long> lowerDiff = Range.closed(curr.lowerEndpoint(), mapping.source());
+                    newUnmapped.add(lowerDiff);
+                    centerLowerMapped = mapping.destination();
+                } else if (curr.lowerEndpoint() >= mapping.source()) {
+                    //        ----
+                    // ----   mapping
+                    //  curr
+                    centerLowerMapped = curr.lowerEndpoint() - mapping.source() + mapping.destination();
+                }
+
+                if (curr.upperEndpoint() <= mapping.sourceEnd()) {
+                    // curr
+                    // ----  mapping
+                    //       ----
+
+                    centerUpperMapped = mapping.destEnd() - (mapping.sourceEnd() - curr.upperEndpoint());
+                } else if (curr.upperEndpoint() > mapping.sourceEnd()) {
+                    //        mapping
+                    // curr   ----
+                    // ----
+                    centerUpperMapped = mapping.destEnd();
+                    Range<Long> upperDiff = Range.closed(mapping.sourceEnd(), curr.upperEndpoint());
+                    newUnmapped.add(upperDiff);
+                }
+
+                mapped.add(Range.closed(centerLowerMapped, centerUpperMapped));
+            }
+            unmapped = newUnmapped;
+        }
+
+        mapped.addAll(unmapped);
 
 
         return mapped;
