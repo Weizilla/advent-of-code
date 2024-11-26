@@ -3,13 +3,14 @@ package com.weizilla.adventofcode.y2023;
 import com.weizilla.adventofcode.utils.Day;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
-public class Day07 extends Day {
+public class Day07Part2 extends Day {
     private static class Hand implements Comparable<Hand> {
         private final NavigableMap<Integer, Integer> counter;
         private final List<Integer> values;
@@ -69,6 +70,22 @@ public class Day07 extends Day {
             this.bid = bid;
         }
 
+        public boolean isMatchCounts(int...values) {
+            List<Integer> counts = counter.values().stream().sorted().toList();
+            if (counts.size() != values.length) {
+                return false;
+            }
+
+            List<Integer> wanted = Arrays.stream(values).sorted().boxed().toList();
+
+            return wanted.equals(counts);
+
+        }
+
+        public int getNumJoker() {
+            return this.counter.getOrDefault(1, 0);
+        }
+
         @Override
         public String toString() {
             return org + "[" + values + "] (" + type + ")";
@@ -76,7 +93,7 @@ public class Day07 extends Day {
     }
 
     private static final Map<Character, Integer> FACE_CARDS = Map.of(
-        'A', 14, 'K', 13, 'Q', 12, 'J', 11, 'T', 10
+        'A', 14, 'K', 13, 'Q', 12, 'J', 1, 'T', 10
     );
 
     private static final List<Type> TYPES = List.of(
@@ -89,12 +106,12 @@ public class Day07 extends Day {
         new HighCard()
     );
 
-    public Day07(Integer example) {
+    public Day07Part2(Integer example) {
         super(example);
     }
 
     @Override
-    public Object part1() {
+    public Object part2() {
         List<String> strings = reader.readStrings();
 
         List<Hand> hands = new ArrayList<>();
@@ -129,9 +146,13 @@ public class Day07 extends Day {
         }
 
         for (Type t : TYPES) {
-            if (t.isType(hand)) {
+            if (t.isType(hand) && (hand.getType() == null || hand.getType().rank < t.rank)) {
                 hand.setType(t);
             }
+        }
+
+        if (hand.getType() == null) {
+            throw new RuntimeException("No type found hand:" + hand);
         }
 
         return hand;
@@ -144,7 +165,13 @@ public class Day07 extends Day {
             this.rank = rank;
         }
 
-        abstract boolean isType(Hand hand);
+        public boolean isType(Hand hand) {
+            return isTypeJoker(hand) || isTypeNoJoker(hand);
+        }
+
+        abstract boolean isTypeNoJoker(Hand hand);
+
+        abstract boolean isTypeJoker(Hand hand);
 
         @Override
         public String toString() {
@@ -158,8 +185,14 @@ public class Day07 extends Day {
         }
 
         @Override
-        public boolean isType(Hand hand) {
-            return hand.counter.size() == 1;
+        public boolean isTypeNoJoker(Hand hand) {
+            return hand.isMatchCounts(5);
+        }
+
+        @Override
+        boolean isTypeJoker(Hand hand) {
+            int numJoker = hand.getNumJoker();
+            return numJoker > 0 && hand.isMatchCounts(numJoker, 5 - numJoker);
         }
     }
 
@@ -169,15 +202,28 @@ public class Day07 extends Day {
         }
 
         @Override
-        public boolean isType(Hand hand) {
-            if (hand.counter.size() != 2) {
-                return false;
+        public boolean isTypeNoJoker(Hand hand) {
+            return hand.isMatchCounts(4, 1);
+        }
+
+        @Override
+        boolean isTypeJoker(Hand hand) {
+            // 3 joker
+            if (hand.getNumJoker() == 3 && hand.isMatchCounts(1, 1, 3)) {
+                return true;
             }
 
-            int count1 = hand.getCounter().get(hand.keys().get(0));
-            int count2 = hand.getCounter().get(hand.keys().get(1));
+            // 2 joker
+            if (hand.getNumJoker() == 2 && hand.isMatchCounts(2, 2, 1)) {
+                return true;
+            }
 
-            return Math.max(count1, count2) == 4 && Math.min(count1, count2) == 1;
+            // 1 joker
+            if (hand.getNumJoker() == 1 && hand.isMatchCounts(1, 1, 3)) {
+                return true;
+            }
+
+            return false;
         }
     }
 
@@ -187,15 +233,13 @@ public class Day07 extends Day {
         }
 
         @Override
-        public boolean isType(Hand hand) {
-            if (hand.counter.size() != 2) {
-                return false;
-            }
+        public boolean isTypeNoJoker(Hand hand) {
+            return hand.isMatchCounts(2, 3);
+        }
 
-            int count1 = hand.getCounter().get(hand.keys().get(0));
-            int count2 = hand.getCounter().get(hand.keys().get(1));
-
-            return Math.max(count1, count2) == 3 && Math.min(count1, count2) == 2;
+        @Override
+        boolean isTypeJoker(Hand hand) {
+            return hand.getNumJoker() == 1 && (hand.isMatchCounts(1, 1, 3) || hand.isMatchCounts(1, 2, 2));
         }
     }
 
@@ -205,18 +249,13 @@ public class Day07 extends Day {
         }
 
         @Override
-        public boolean isType(Hand hand) {
-            if (hand.counter.size() != 3) {
-                return false;
-            }
+        public boolean isTypeNoJoker(Hand hand) {
+            return hand.isMatchCounts(3, 1, 1);
+        }
 
-            int count1 = hand.getCounter().get(hand.keys().get(0));
-            int count2 = hand.getCounter().get(hand.keys().get(1));
-            int count3 = hand.getCounter().get(hand.keys().get(2));
-
-            return (count1 == 1 && count2 == 1 && count3 == 3)
-                || (count1 == 1 && count2 == 3 && count3 == 1)
-                || (count1 == 3 && count2 == 1 && count3 == 1);
+        @Override
+        boolean isTypeJoker(Hand hand) {
+            return hand.getNumJoker() > 0 && hand.isMatchCounts(1, 1, 1, 2);
         }
     }
 
@@ -226,18 +265,13 @@ public class Day07 extends Day {
         }
 
         @Override
-        public boolean isType(Hand hand) {
-            if (hand.counter.size() != 3) {
-                return false;
-            }
+        public boolean isTypeNoJoker(Hand hand) {
+            return hand.isMatchCounts(2, 2, 1);
+        }
 
-            int count1 = hand.getCounter().get(hand.keys().get(0));
-            int count2 = hand.getCounter().get(hand.keys().get(1));
-            int count3 = hand.getCounter().get(hand.keys().get(2));
-
-            return (count1 == 2 && count2 == 2 && count3 == 1)
-                || (count1 == 2 && count2 == 1 && count3 == 2)
-                || (count1 == 1 && count2 == 2 && count3 == 2);
+        @Override
+        boolean isTypeJoker(Hand hand) {
+            return hand.getNumJoker() > 0 && hand.isMatchCounts(1, 1, 1, 2);
         }
     }
 
@@ -247,20 +281,13 @@ public class Day07 extends Day {
         }
 
         @Override
-        public boolean isType(Hand hand) {
-            if (hand.counter.size() != 4) {
-                return false;
-            }
+        public boolean isTypeNoJoker(Hand hand) {
+            return hand.isMatchCounts(1, 1, 1, 2);
+        }
 
-            int count1 = hand.getCounter().get(hand.keys().get(0));
-            int count2 = hand.getCounter().get(hand.keys().get(1));
-            int count3 = hand.getCounter().get(hand.keys().get(2));
-            int count4 = hand.getCounter().get(hand.keys().get(3));
-
-            return (count1 == 1 && count2 == 1 && count3 == 1 && count4 == 2)
-                || (count1 == 1 && count2 == 1 && count3 == 2 && count4 == 1)
-                || (count1 == 1 && count2 == 2 && count3 == 1 && count4 == 1)
-                || (count1 == 2 && count2 == 1 && count3 == 1 && count4 == 1);
+        @Override
+        boolean isTypeJoker(Hand hand) {
+            return hand.getNumJoker() > 0 && hand.isMatchCounts(1, 1, 1, 1, 1);
         }
     }
 
@@ -270,8 +297,13 @@ public class Day07 extends Day {
         }
 
         @Override
-        public boolean isType(Hand hand) {
-            return hand.counter.size() == 5;
+        public boolean isTypeNoJoker(Hand hand) {
+            return hand.isMatchCounts(1, 1, 1, 1, 1);
+        }
+
+        @Override
+        boolean isTypeJoker(Hand hand) {
+            return false;
         }
     }
 }
