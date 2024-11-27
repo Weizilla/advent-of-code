@@ -27,13 +27,21 @@ public abstract class Day {
         return null;
     }
 
+    public void printAlways(Object input) {
+        printAlways("{}", input);
+    }
+
+    public void printAlways(String input, Object ... args) {
+        logger.info(input, args);
+    }
+
     public void print(Object input) {
         print("{}", input);
     }
 
     public void print(String input, Object ... args) {
         if (example != null) {
-            logger.info(input, args);
+            printAlways(input, args);
         }
     }
 
