@@ -4,12 +4,20 @@ import com.weizilla.adventofcode.utils.Day;
 import com.weizilla.adventofcode.utils.Matrix;
 import com.weizilla.adventofcode.utils.Matrix.Entry;
 import com.weizilla.adventofcode.utils.Point;
-import org.checkerframework.checker.units.qual.N;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class Day06 extends Day {
+    private static final Map<Direction, String> CURR = Map.of(
+        Direction.N, "^", Direction.E, ">", Direction.S, "V", Direction.W, "<"
+    );
+
+    private static final Map<Direction, String> OLD = Map.of(
+        Direction.N, "|", Direction.E, "-", Direction.S, "|", Direction.W, "-"
+    );
+
     public Day06(Integer example) {
         super(example);
     }
@@ -20,34 +28,38 @@ public class Day06 extends Day {
 
         Entry starting = grid.findFirst((x, y, value) -> value.equals("^")).get();
 
-        int x = starting.x();
-        int y = starting.y();
-        Direction dir = Direction.N;
+        Visit curr = new Visit(starting.x(), starting.y(), Direction.N);
 
         Set<Point> visited = new HashSet<>();
 
-        while (x >= 0 && y >= 0 && x < grid.getMaxX() && y < grid.getMaxY()) {
-            switch (dir) {
-                case N -> y -= 1;
-                case S -> y += 1;
-                case E -> x += 1;
-                case W -> x -= 1;
+        int step = 0;
+        while (grid.isInBounds(curr.point)) {
+            grid.update(curr.point, OLD.get(curr.dir));
+            visited.add(curr.point);
+
+            if (isFrontBlocked(curr, grid)) {
+                curr = getRight(curr);
+            } else {
+                curr = getFront(curr);
             }
 
-            visited.add(new Point(x, y));
-
-            if (frontIsBlocked(x, y, dir, grid)) {
-                switch (dir) {
-                    case N -> dir = Direction.E;
-                    case E -> dir = Direction.S;
-                    case S -> dir = Direction.W;
-                    case W -> dir = Direction.N;
-                }
+            if (grid.isInBounds(curr.point)) {
+                grid.update(curr.point, CURR.get(curr.dir));
             }
-
+            print("{}\n{}", step, grid.prettyPrint());
+            step++;
         }
 
         return visited.size();
+    }
+
+    private static Direction getRightDirection(Direction dir) {
+        return switch (dir) {
+            case N -> Direction.E;
+            case E -> Direction.S;
+            case S -> Direction.W;
+            case W -> Direction.N;
+        };
     }
 
     @Override
@@ -56,62 +68,86 @@ public class Day06 extends Day {
 
         Entry starting = grid.findFirst((x, y, value) -> value.equals("^")).get();
 
-        int x = starting.x();
-        int y = starting.y();
-        Direction dir = Direction.N;
+        Visit curr = new Visit(starting.x(), starting.y(), Direction.N);
 
         Set<Visit> visited = new HashSet<>();
 
-        while (x >= 0 && y >= 0 && x < grid.getMaxX() && y < grid.getMaxY()) {
-            switch (dir) {
-                case N -> y -= 1;
-                case S -> y += 1;
-                case E -> x += 1;
-                case W -> x -= 1;
+        Set<Visit> obstacles = new HashSet<>();
+
+        int step = 0;
+        while (grid.isInBounds(curr.point)) {
+            grid.update(curr.point, OLD.get(curr.dir));
+            visited.add(curr);
+
+            if (checkLoop(curr, grid, visited)) {
+                Visit front = getFront(curr);
+                grid.update(curr.point, "O");
+                obstacles.add(front);
             }
 
-            visited.add(new Visit(x, y, dir));
-
-            Point right = getRight(x, y, dir);
-            if (visited.contains(new Visit(right.x(), right.y(), dir))) {
-                Point front =
+            if (isFrontBlocked(curr, grid)) {
+                curr = getRight(curr);
+            } else {
+                curr = getFront(curr);
             }
 
-            if (isFrontBlocked(x, y, dir, grid)) {
-                switch (dir) {
-                    case N -> dir = Direction.E;
-                    case E -> dir = Direction.S;
-                    case S -> dir = Direction.W;
-                    case W -> dir = Direction.N;
-                }
+            if (grid.isInBounds(curr.point)) {
+                grid.update(curr.point, CURR.get(curr.dir));
             }
-
+            print("{}\n{}", step, grid.prettyPrint());
+            step++;
         }
 
-        return visited.size();
+        return obstacles.size();
     }
 
-    private record Visit(int x, int y, Direction dir) { }
-
-    private boolean isFrontBlocked(int x, int y, Direction dir, Matrix grid) {
-        return "#".equals(grid.get(getFront(x, y, dir))) || "O".equals(grid.get(getFront(x, y, dir)));
+    private record Visit(Point point, Direction dir) {
+        Visit(int x, int y, Direction dir) {
+            this(new Point(x, y), dir);
+        }
     }
 
-    private Point getFront(int x, int y, Direction dir) {
+    private boolean isFrontBlocked(Visit visit, Matrix grid) {
+        Visit front = getFront(visit);
+        return "#".equals(grid.get(front.point));
+    }
+
+    private Visit getFront(Visit visit) {
+        int x = visit.point.x();
+        int y = visit.point.y();
+        Direction dir = visit.dir();
         return switch (dir) {
-            case N -> new Point(x, y - 1);
-            case E -> new Point(x + 1, y);
-            case S -> new Point(x, y + 1);
-            case W -> new Point(x - 1, y);
+            case N -> new Visit(x, y - 1, dir);
+            case E -> new Visit(x + 1, y, dir);
+            case S -> new Visit(x, y + 1, dir);
+            case W -> new Visit(x - 1, y, dir);
         };
     }
 
-    private Point getRight(int x, int y, Direction dir) {
+    private boolean checkLoop(Visit visit, Matrix grid, Set<Visit> visited) {
+        Visit curr = getRight(visit);
+        String value = grid.get(curr.point);
+        while (!"#".equals(value) && grid.isInBounds(curr.point)) {
+            boolean hitPath = visited.contains(curr);
+            if (hitPath) {
+                return true;
+            }
+            curr = getFront(curr);
+            value = grid.get(curr.point);
+        }
+        return false;
+    }
+
+    private Visit getRight(Visit visit) {
+        Direction dir = visit.dir;
+        int x = visit.point.x();
+        int y = visit.point.y();
+        Direction r = getRightDirection(dir);
         return switch (dir) {
-            case N -> new Point(x + 1, y);
-            case E -> new Point(x, y + 1);
-            case S -> new Point(x - 1, y);
-            case W -> new Point(x, y - 1);
+            case N -> new Visit(x + 1, y, r);
+            case E -> new Visit(x, y + 1, r);
+            case S -> new Visit(x - 1, y, r);
+            case W -> new Visit(x, y - 1, r);
         };
     }
 
