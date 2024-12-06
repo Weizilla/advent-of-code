@@ -81,8 +81,11 @@ public class Day06 extends Day {
 
             if (checkLoop(curr, grid, visited)) {
                 Visit front = getFront(curr);
-                grid.update(curr.point, "O");
-                obstacles.add(front);
+                if (!"#".equals(grid.get(front.point))) {
+                    grid.update(front.point, "O");
+                    obstacles.add(front);
+                    print("OOOOOOOOOOOO {}\n{}", step, grid.prettyPrint());
+                }
             }
 
             if (isFrontBlocked(curr, grid)) {
