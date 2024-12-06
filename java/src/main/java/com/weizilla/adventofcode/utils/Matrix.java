@@ -2,6 +2,8 @@ package com.weizilla.adventofcode.utils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 public class Matrix {
     private final Map<Point, String> values;
@@ -31,6 +33,10 @@ public class Matrix {
 
     public String get(int x, int y) {
         return values.get(new Point(x, y));
+    }
+
+    public String get(Point point) {
+        return values.get(point);
     }
 
     public int getMaxY() {
@@ -65,6 +71,20 @@ public class Matrix {
         return minX;
     }
 
+    public Optional<Entry> findFirst(TriPredicate predicate) {
+        for (int y = getMinY(); y <= getMaxY(); y++) {
+            for (int x = getMinX(); x <= getMaxX(); x++) {
+                String value = get(x, y);
+                boolean result = predicate.test(x, y, value);
+                if (result) {
+                    return Optional.of(new Entry(x, y, value));
+                }
+            }
+        }
+
+        return Optional.empty();
+    }
+
     public void iterate(Triconsumer consumer) {
         for (int y = getMinY(); y <= getMaxY(); y++) {
             for (int x = getMinX(); x <= getMaxX(); x++) {
@@ -74,9 +94,15 @@ public class Matrix {
         }
     }
 
+    public record Entry(int x, int y, String value) { }
+
     @FunctionalInterface
     public interface Triconsumer {
         void apply(int x, int y, String value);
+    }
+
+    public interface TriPredicate {
+        boolean test(int x, int y, String value);
     }
 
 }
