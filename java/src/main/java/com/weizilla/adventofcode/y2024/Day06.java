@@ -38,9 +38,9 @@ public class Day06 extends Day {
             visited.add(curr.point);
 
             if (isFrontBlocked(curr, grid)) {
-                curr = getRight(curr);
+                curr = turnRight(curr);
             } else {
-                curr = getFront(curr);
+                curr = moveFront(curr);
             }
 
             if (grid.isInBounds(curr.point)) {
@@ -72,26 +72,26 @@ public class Day06 extends Day {
 
         Set<Visit> visited = new HashSet<>();
 
-        Set<Visit> obstacles = new HashSet<>();
+        Set<Point> obstacles = new HashSet<>();
 
         int step = 0;
         while (grid.isInBounds(curr.point)) {
             grid.update(curr.point, OLD.get(curr.dir));
             visited.add(curr);
 
-            if (checkLoop(curr, grid, visited)) {
-                Visit front = getFront(curr);
-                if (!"#".equals(grid.get(front.point))) {
-                    grid.update(front.point, "O");
-                    obstacles.add(front);
-                    print("OOOOOOOOOOOO {}\n{}", step, grid.prettyPrint());
-                }
-            }
-
             if (isFrontBlocked(curr, grid)) {
-                curr = getRight(curr);
+                curr = turnRight(curr);
             } else {
-                curr = getFront(curr);
+                if (checkLoopTurn(curr, grid, visited)) {
+                    Visit front = moveFront(curr);
+                    if (!"#".equals(grid.get(front.point))) {
+                        grid.update(front.point, "O");
+                        obstacles.add(front.point);
+                        print("OOOOOOOOOOOO {}\n{}", step, grid.prettyPrint());
+                    }
+                }
+
+                curr = moveFront(curr);
             }
 
             if (grid.isInBounds(curr.point)) {
@@ -100,6 +100,8 @@ public class Day06 extends Day {
             print("{}\n{}", step, grid.prettyPrint());
             step++;
         }
+
+        obstacles.remove(curr.point);
 
         return obstacles.size();
     }
@@ -111,11 +113,11 @@ public class Day06 extends Day {
     }
 
     private boolean isFrontBlocked(Visit visit, Matrix grid) {
-        Visit front = getFront(visit);
+        Visit front = moveFront(visit);
         return "#".equals(grid.get(front.point));
     }
 
-    private Visit getFront(Visit visit) {
+    private Visit moveFront(Visit visit) {
         int x = visit.point.x();
         int y = visit.point.y();
         Direction dir = visit.dir();
@@ -127,31 +129,22 @@ public class Day06 extends Day {
         };
     }
 
-    private boolean checkLoop(Visit visit, Matrix grid, Set<Visit> visited) {
-        Visit curr = getRight(visit);
+    private boolean checkLoopTurn(Visit visit, Matrix grid, Set<Visit> visited) {
+        Visit curr = turnRight(visit);
         String value = grid.get(curr.point);
         while (!"#".equals(value) && grid.isInBounds(curr.point)) {
             boolean hitPath = visited.contains(curr);
             if (hitPath) {
                 return true;
             }
-            curr = getFront(curr);
+            curr = moveFront(curr);
             value = grid.get(curr.point);
         }
         return false;
     }
 
-    private Visit getRight(Visit visit) {
-        Direction dir = visit.dir;
-        int x = visit.point.x();
-        int y = visit.point.y();
-        Direction r = getRightDirection(dir);
-        return switch (dir) {
-            case N -> new Visit(x + 1, y, r);
-            case E -> new Visit(x, y + 1, r);
-            case S -> new Visit(x - 1, y, r);
-            case W -> new Visit(x, y - 1, r);
-        };
+    private Visit turnRight(Visit visit) {
+        return new Visit(visit.point, getRightDirection(visit.dir));
     }
 
     private enum Direction {N, E, S, W}
