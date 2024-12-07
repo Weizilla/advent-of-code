@@ -1,9 +1,9 @@
 ThisBuild / version := "0.1.0-SNAPSHOT"
 
-ThisBuild / scalaVersion := "3.5.2"
+ThisBuild / scalaVersion := "2.13.15"
 
 lazy val root = (project in file("."))
   .settings(
-    name := "scala",
+    name := "advent-of-code",
     idePackagePrefix := Some("com.weizilla.adventofcode")
   )

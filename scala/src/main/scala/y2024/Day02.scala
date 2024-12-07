@@ -12,7 +12,7 @@ class Day02 {
   }
 
   private def isSafe(nums: List[Int]): Boolean = {
-    val diffs = nums.zip(nums.tail).map(_ - _)
+    val diffs = nums.zip(nums.tail).map{case (a, b) => a - b}
     val allSameDirection = diffs.forall(a => a > 0) || diffs.forall(a => a < 0)
     val allInRange = diffs.map(a => a.abs).forall(a => a >= 1 && a <= 3)
 
@@ -38,15 +38,13 @@ class Day02 {
 
   private def isSafeSkip(nums: List[Int], skip: Int): Boolean = {
     val input = nums.zipWithIndex.filter(_._2 != skip).map(_._1)
-    val diffs = input.zip(input.tail).map(_ - _)
+    val diffs = input.zip(input.tail).map{case (a, b) => a - b}
     val allSameDirection = diffs.forall(a => a > 0) || diffs.forall(a => a < 0)
     val allInRange = diffs.map(a => a.abs).forall(a => a >= 1 && a <= 3)
 
     allSameDirection && allInRange
   }
 }
-
-
 
 object Application {
   def main(args: Array[String]): Unit = {
