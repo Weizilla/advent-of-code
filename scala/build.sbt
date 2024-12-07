@@ -7,3 +7,7 @@ lazy val root = (project in file("."))
     name := "advent-of-code",
     idePackagePrefix := Some("com.weizilla.adventofcode")
   )
+
+libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.5.12"
+libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5"
+libraryDependencies += "com.google.guava" % "guava" % "33.3.1-jre"

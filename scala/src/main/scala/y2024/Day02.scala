@@ -1,9 +1,12 @@
 package com.weizilla.adventofcode
 package y2024
 
-class Day02 {
-  def part1(): Any = {
-    val lines = new Reader().readLines(2)
+import utils.Day
+
+class Day02(example: Integer) extends Day(2024, 2, example) {
+
+  override def part1(): Any = {
+    val lines = reader.readLines()
 
     val numSafe = lines
       .map(l => l.split(" ").map(s => s.toInt).toList)
@@ -19,8 +22,8 @@ class Day02 {
     allSameDirection && allInRange
   }
 
-  def part2(): Any = {
-    val lines = new Reader().readLines(2)
+  override def part2(): Any = {
+    val lines = reader.readLines()
 
     val numSafe = lines
       .map(l => l.split(" ").map(s => s.toInt).toList)
@@ -43,12 +46,5 @@ class Day02 {
     val allInRange = diffs.map(a => a.abs).forall(a => a >= 1 && a <= 3)
 
     allSameDirection && allInRange
-  }
-}
-
-object Application {
-  def main(args: Array[String]): Unit = {
-    val day = new Day02()
-    println(day.part2())
   }
 }
