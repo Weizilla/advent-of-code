@@ -18,6 +18,7 @@ public class Runner {
         return ClassPath.from(ClassLoader.getSystemClassLoader())
             .getAllClasses().stream()
             .filter(c -> c.getPackageName().contains("com.weizilla.adventofcode.y"))
+            .filter(c -> c.getName().contains("Day"))
             .filter(c -> !c.getName().contains("$"))
             .map(ClassPath.ClassInfo::load)
             .map(c -> (Class<? extends Day>) c)
