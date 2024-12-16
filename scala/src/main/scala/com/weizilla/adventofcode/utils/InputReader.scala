@@ -12,6 +12,16 @@ class InputReader(val year: Int, val day: Int, val example: Integer) {
     }.get
   }
 
+  def readGrid(): Grid = {
+    val grid = new Grid()
+    for ((str, y) <- readLines().zipWithIndex) {
+      for ((value, x) <- str.split("").zipWithIndex) {
+        grid.add(x, y, value)
+      }
+    }
+    grid
+  }
+
   private def getInputPath = {
     val inputPath = if (example != null) {
       f"../inputs/$year/day-$day%02d-example-$example.txt"
