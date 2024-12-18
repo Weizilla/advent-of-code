@@ -17,6 +17,10 @@ class Grid extends mutable.Iterable[(Point, String)] {
     grid.get(Point(x, y))
   }
 
+  def set(point: Point, value: String): Unit = {
+    grid.put(point, value)
+  }
+
   def inBounds(point: Point): Boolean = {
     min.x <= point.x && point.x <= max.x && min.y <= point.y && point.y <= max.y
   }

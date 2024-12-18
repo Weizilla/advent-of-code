@@ -11,21 +11,21 @@ class Day(year: Int, day: Int, example: Integer) {
 
   def part2(): Any = { }
 
-  def printAlways(input: Any): Unit = {
-    printAlways("{}", input)
+  def printAlways(input: Any, args: Any *): Unit = {
+    if (args.isEmpty) {
+      logger.info("{}", input)
+    } else {
+      logger.info(input.toString, args: _*)
+    }
   }
 
-  def printAlways(input: String, args: Any *): Unit = {
-    logger.info(input, args:_*)
-  }
-
-  def print(input: Any): Unit = {
-    print("{}", input)
-  }
-
-  def print(input: String, args: Any *): Unit = {
+  def print(input: Any, args: Any *): Unit = {
     if (example != null) {
-      printAlways(input, args:_*)
+      if (args.isEmpty) {
+        printAlways("{}", input)
+      } else {
+        printAlways(input, args: _*)
+      }
     }
   }
 
