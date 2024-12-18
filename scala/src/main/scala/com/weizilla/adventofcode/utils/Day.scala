@@ -1,7 +1,7 @@
 package com.weizilla.adventofcode
 package utils
 
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.LoggerFactory
 
 class Day(year: Int, day: Int, example: Integer) {
   private val logger = LoggerFactory.getLogger(this.getClass)
@@ -16,7 +16,7 @@ class Day(year: Int, day: Int, example: Integer) {
   }
 
   def printAlways(input: String, args: Any *): Unit = {
-    logger.info(input, args)
+    logger.info(input, args:_*)
   }
 
   def print(input: Any): Unit = {
@@ -25,7 +25,7 @@ class Day(year: Int, day: Int, example: Integer) {
 
   def print(input: String, args: Any *): Unit = {
     if (example != null) {
-      printAlways(input, args)
+      printAlways(input, args:_*)
     }
   }
 
