@@ -69,7 +69,50 @@ class Day09(example: Integer) extends Day(2024, 9, example) {
 
   }
 
-  private trait Block extends Ordered[Block] {
+  override def part2(): Any = {
+    val line = reader.readLines().head
+
+    val fileBlocks = mutable.TreeMap[Int, FileBlock]()
+    val freeBlocks = mutable.ArrayDeque[FreeBlock]()
+
+    var id = 0
+    var index = 0
+    for ((value, i) <- line.split("").map(_.toInt).zipWithIndex if value != 0) {
+      if (i % 2 == 0) {
+        val block = FileBlock(index, value, id)
+        fileBlocks(id) = block
+        id += 1
+      } else {
+        val block = FreeBlock(index, value)
+        freeBlocks.addOne(block)
+      }
+      index += value
+    }
+
+    for (fileId <- fileBlocks.keys.toList.reverse) {
+      val file = fileBlocks(fileId)
+      freeBlocks.sortInPlace()
+      val maybeFree = freeBlocks.removeFirst(f => f.length >= file.length && f.start < file.start)
+      if (maybeFree.nonEmpty) {
+        val free = maybeFree.get
+        val diff = free.length - file.length
+        if (diff > 0) {
+          freeBlocks.addOne(FreeBlock(free.start + file.length, diff))
+          freeBlocks.sortInPlace()
+        }
+
+        fileBlocks(fileId) = FileBlock(free.start, file.length, file.id)
+
+        print(fileBlocks)
+      }
+    }
+
+    print(fileBlocks)
+
+    fileBlocks.values.map(_.checksum()).sum
+  }
+
+    private trait Block extends Ordered[Block] {
     def start: Int
     def length: Int
     def end: Int = { start + length }
@@ -90,7 +133,7 @@ class Day09(example: Integer) extends Day(2024, 9, example) {
     }
 
     override def toString: String = {
-      s"$start->$end($id)[${checksum()}]"
+      s"$start=>$end($id)[${checksum()}]"
     }
   }
 
