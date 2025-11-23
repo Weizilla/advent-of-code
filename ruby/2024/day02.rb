@@ -18,24 +18,10 @@ class Day02
 
   # @param [String] line
   def is_safe?(line)
-    a = line.split(" ").map { |a| a.to_i }
-
-    diffs = a.each_cons(2)
-      .filter { |p|p.length == 2 }
-      .map { |pair| pair[1] - pair[0] }
-
-    num_outside_range = diffs.count do |d|
-      abs_d = d.abs
-      abs_d < 1 || abs_d > 3
-    end
-
-    num_increasing = diffs.count do |d|
-      d > 0
-    end
-
-    num_outside_range == 0 && (num_increasing == diffs.count || num_increasing == 0)
+    levels = line.split(" ").map(&:to_i)
+    diffs = levels.each_cons(2).map { |a, b| b - a }
+    diffs.all? { |d| d.between?(1, 3) } || diffs.all? { |d| d.between?(-3, -1)}
   end
-
 end
 
 puts Day02.new.part1
