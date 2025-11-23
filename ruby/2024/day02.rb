@@ -8,7 +8,7 @@ class Day02
   def part1
     lines = read_input_lines
     safes = lines.map do |line|
-      is_safe?(line)
+      safe?(line)
     end
 
     safes.count { |s| s }
@@ -17,10 +17,10 @@ class Day02
   private
 
   # @param [String] line
-  def is_safe?(line)
-    levels = line.split(" ").map(&:to_i)
+  def safe?(line)
+    levels = line.split(' ').map(&:to_i)
     diffs = levels.each_cons(2).map { |a, b| b - a }
-    diffs.all? { |d| d.between?(1, 3) } || diffs.all? { |d| d.between?(-3, -1)}
+    diffs.all? { |d| d.between?(1, 3) } || diffs.all? { |d| d.between?(-3, -1) }
   end
 end
 
