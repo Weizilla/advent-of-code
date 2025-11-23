@@ -15,8 +15,6 @@ module Day02
       safes.count { |s| s }
     end
 
-    private
-
     # @param [String] line
     def safe?(line)
       levels = line.split.map(&:to_i)
@@ -37,14 +35,18 @@ module Day02
       safes.count { |s| s }
     end
 
-    private
-
     # @param [String] line
     def safe?(line)
+      return true if Part1.new.safe?(line)
+
       levels = line.split.map(&:to_i)
-      diffs = levels.each_cons(2).map { |a, b| b - a }
-      diffs.count { |d| d.between?(1, 3) } >= diffs.length - 1 ||
-        diffs.count { |d| d.between?(-3, -1) } >= diffs.length - 1
+      (0..(levels.length)).to_a.each do |l|
+        n = levels.dup
+        n.slice!(l)
+        return true if Part1.new.safe?(n.join(" "))
+      end
+
+      false
     end
   end
 end
