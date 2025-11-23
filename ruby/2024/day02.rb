@@ -2,26 +2,28 @@
 
 require_relative '../util'
 
-class Day02
-  include Util
+module Day02
+  class Part1
+    include Util
 
-  def part1
-    lines = read_input_lines
-    safes = lines.map do |line|
-      safe?(line)
+    def run
+      lines = read_input_lines
+      safes = lines.map do |line|
+        safe?(line)
+      end
+
+      safes.count { |s| s }
     end
 
-    safes.count { |s| s }
-  end
+    private
 
-  private
-
-  # @param [String] line
-  def safe?(line)
-    levels = line.split(' ').map(&:to_i)
-    diffs = levels.each_cons(2).map { |a, b| b - a }
-    diffs.all? { |d| d.between?(1, 3) } || diffs.all? { |d| d.between?(-3, -1) }
+    # @param [String] line
+    def safe?(line)
+      levels = line.split.map(&:to_i)
+      diffs = levels.each_cons(2).map { |a, b| b - a }
+      diffs.all? { |d| d.between?(1, 3) } || diffs.all? { |d| d.between?(-3, -1) }
+    end
   end
 end
 
-puts Day02.new.part1
+puts Day02::Part1.new.run
