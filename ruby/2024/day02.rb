@@ -18,6 +18,10 @@ module Day02
     # @param [String] line
     def safe?(line)
       levels = line.split.map(&:to_i)
+      levels_safe?(levels)
+    end
+
+    def levels_safe?(levels)
       diffs = levels.each_cons(2).map { |a, b| b - a }
       diffs.all? { |d| d.between?(1, 3) } || diffs.all? { |d| d.between?(-3, -1) }
     end
@@ -37,13 +41,13 @@ module Day02
 
     # @param [String] line
     def safe?(line)
-      return true if Part1.new.safe?(line)
-
       levels = line.split.map(&:to_i)
-      (0..(levels.length)).to_a.each do |l|
+      return true if Part1.new.levels_safe?(levels)
+
+      levels.each_index do |i|
         n = levels.dup
-        n.slice!(l)
-        return true if Part1.new.safe?(n.join(" "))
+        n.delete_at(i)
+        return true if Part1.new.levels_safe?(n)
       end
 
       false
