@@ -8,9 +8,9 @@ module Util
 
     if ARGV.length > 0 && ARGV[0].to_i.is_a?(Numeric)
       example = ARGV[0].to_i
-      lines = File.readlines("../inputs/#{year}/day-#{day_str}-example-#{example}.txt")
+      lines = File.readlines("../inputs/#{year}/day-#{day_str}-example-#{example}.txt", chomp: true)
     else
-      lines = File.readlines("../inputs/#{year}/day-#{day_str}-input.txt")
+      lines = File.readlines("../inputs/#{year}/day-#{day_str}-input.txt", chomp: true)
     end
     lines
   end
