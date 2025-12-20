@@ -6,7 +6,7 @@ module Util
 
     day_str = "%02d" % day
 
-    if ARGV.length > 0 && ARGV[0].to_i.is_a?(Numeric)
+    if ARGV.length > 0 && ARGV[0].to_i.is_a?(Numeric) && ARGV[0].to_i > 0
       example = ARGV[0].to_i
       lines = File.readlines("../inputs/#{year}/day-#{day_str}-example-#{example}.txt", chomp: true)
     else

@@ -2,7 +2,7 @@
 
 require_relative '../util'
 
-module Year2024
+module Year2025
   module Day01
     class Part1
       include Util
@@ -24,32 +24,38 @@ module Year2024
     class Part2
       include Util
 
-      def run
-        curr = 50
-        num_zeros = 0
+      def run(input = nil)
+        position = 50
 
-        lines = read_input_lines
-        lines.each do |l|
-          num = l[1..].to_i
-          if l.start_with?("L")
-            num *= -1
-          end
-          prev = curr
-          curr += num
-          while curr >= 100
-            curr -= 100
-          end
-          while curr < 0
-            curr += 100
-          end
-          if curr == 0
+        lines = input || read_input_lines
+        lines.sum do |l|
+          delta = l[1..].to_i
+          delta *= -1 if l.start_with?("L")
+
+          prev_pos = position
+          new_pos = position + delta
+          position = new_pos % 100
+
+          num_zeros = 0
+          if prev_pos.positive? != new_pos.positive? && !prev_pos.zero? && !new_pos.zero?
             num_zeros += 1
           end
+
+          if position.zero?
+            num_zeros += 1
+          end
+
+          num_zeros += ((position + delta) / 100.0).to_f.abs.to_i
+
+          puts "#{delta} #{position} #{num_zeros}"
+
+          num_zeros
         end
-        num_zeros
       end
     end
   end
 end
 
-p Year2024::Day01::Part1.new.run
+if __FILE__ == $0
+  p Year2025::Day01::Part2.new.run
+end
