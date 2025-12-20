@@ -8,27 +8,16 @@ module Year2024
       include Util
 
       def run
-        curr = 50
-        num_zeros = 0
+        position = 50
 
         lines = read_input_lines
-        lines.each do |l|
-          num = l[1..].to_i
-          if l.start_with?("L")
-            num *= -1
-          end
-          curr += num
-          while curr >= 100
-            curr -= 100
-          end
-          while curr < 0
-            curr += 100
-          end
-          if curr == 0
-            num_zeros += 1
-          end
+        lines.count do |l|
+          delta = l[1..].to_i
+          delta *= -1 if l.start_with?("L")
+
+          position = (position + delta) % 100
+          position.zero?
         end
-        num_zeros
       end
     end
 
@@ -63,4 +52,4 @@ module Year2024
   end
 end
 
-p Year2024::Day01::Part2.new.run
+p Year2024::Day01::Part1.new.run
