@@ -24,8 +24,8 @@ module Year2025
     class Part2
       include Util
 
-      def run(input = nil)
-        position = 50
+      def run(input_position = 50, input = nil)
+        position = input_position
 
         lines = input || read_input_lines
         lines.sum do |l|
