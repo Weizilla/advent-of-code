@@ -13,12 +13,11 @@ module Year2025
         id_ranges.sum { |r| invalid_ids(r) }
       end
 
-      private
-
       def invalid_ids(range)
         start = range.split("-")[0].to_i
         stop = range.split("-")[1].to_i
 
+        [start, stop]
       end
     end
 
