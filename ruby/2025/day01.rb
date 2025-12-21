@@ -30,24 +30,26 @@ module Year2025
         lines = input || read_input_lines
         lines.sum do |l|
           delta = l[1..].to_i
+          num_zeros = (delta / 100.0).to_f.abs.to_i
+
+          delta = delta % 100
           delta *= -1 if l.start_with?("L")
 
           prev_pos = position
           new_pos = position + delta
           position = new_pos % 100
 
-          num_zeros = 0
-          if prev_pos.positive? != new_pos.positive? && !prev_pos.zero? && !new_pos.zero?
+          if !new_pos.zero? && !prev_pos.zero? && new_pos.positive? != prev_pos.positive?
+            num_zeros += 1
+          end
+
+          if new_pos > 0 && prev_pos > 0 && new_pos < 100 != prev_pos < 100 && !position.zero?
             num_zeros += 1
           end
 
           if position.zero?
             num_zeros += 1
           end
-
-          num_zeros += ((position + delta) / 100.0).to_f.abs.to_i
-
-          puts "#{delta} #{position} #{num_zeros}"
 
           num_zeros
         end
